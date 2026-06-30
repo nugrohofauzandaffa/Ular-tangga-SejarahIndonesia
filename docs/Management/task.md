@@ -1,0 +1,30 @@
+# Task Management
+
+- [x] Phase 1: Project Setup
+- [x] Phase 2: Project Structure
+- [x] Phase 3: Domain Model
+- [x] Phase 4: TypeScript Interfaces
+  - [x] `src/types/player.ts`
+  - [x] `src/types/board.ts`
+  - [x] `src/types/question.ts`
+  - [x] `src/types/fact.ts`
+  - [x] `src/types/gameState.ts`
+- [x] Phase 5: Dummy Data
+  - [x] `src/data/questions.ts`
+  - [x] `src/data/facts.ts`
+  - [x] `src/data/board.ts`
+  - [x] `src/data/snakes.ts`
+  - [x] `src/data/ladders.ts`
+- [x] Phase 6: Game Engine
+  - [x] Dice Module (`src/lib/dice.ts`, `src/hooks/useDice.ts`, `src/components/dice/Dice.tsx`)
+  - [x] Score Module
+  - [x] Movement Module
+  - [x] Tile Resolution Module (`src/lib/tileResolver.ts`)
+  - [x] Quiz Module (`src/lib/quiz.ts`)
+  - [x] Turn & Win Condition Module (`src/lib/turnManager.ts`)
+  - [x] Main Game Engine Facade (`src/lib/gameEngine.ts`)
+- [ ] Phase 7: React Components
+- [ ] Phase 8: Integrasi
+- [ ] Phase 9: UI / Animation
+- [ ] Phase 10: Testing
+- [ ] Phase 11: Deployment
