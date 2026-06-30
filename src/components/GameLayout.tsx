@@ -51,7 +51,7 @@ export default function GameLayout() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCurrentBoard(generateRandomBoard(3, 3));
+    setCurrentBoard(generateRandomBoard(10, 3, 3));
     setIsMounted(true);
   }, []);
 
