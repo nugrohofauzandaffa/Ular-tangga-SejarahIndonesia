@@ -305,3 +305,15 @@
   - **Board Data**: `board.ts` kini menggunakan fungsi dinamis `generateRandomBoard(3,3)` menggantikan konstanta `board` yang sepenuhnya statis.
   - **Game Layout**: `GameLayout.tsx` kini menyimpan array papan dalam `currentBoard` state. Setiap kali pemain me-restart dengan tombol "Main Lagi", `generateRandomBoard()` akan dipanggil sehingga bentuk papan baru akan di-render.
 - **Status**: Completed (Siap untuk dilakukan Pengujian Ulang)
+
+## [Bugfix] - Fix TypeScript Missing Imports
+
+- **Phase**: Bugfix
+- **File yang dibuat atau diubah**:
+  - `src/lib/gameEngine.ts`
+  - `src/components/GameLayout.tsx`
+- **Alasan Perubahan**:
+  - Terdapat error TypeScript `Cannot find name 'GAME_CONSTANTS'` pada `gameEngine.ts` dan `Cannot find name 'Tile'` pada `GameLayout.tsx` akibat hilangnya baris import terkait.
+- **Dampak Perubahan**:
+  - Proyek dapat dikompilasi kembali (bebas dari error type checking).
+- **Status**: Completed

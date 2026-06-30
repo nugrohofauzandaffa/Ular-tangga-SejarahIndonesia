@@ -11,6 +11,7 @@ import { EffectModal } from './ui/EffectModal';
 
 import { Player, PlayerEffect } from '@/types/player';
 import { GameState } from '@/types/gameState';
+import { Tile } from '@/types/board';
 
 import { generateRandomBoard } from '@/data/papan/board';
 import { snakes } from '@/data/papan/snakes';
@@ -50,6 +51,7 @@ export default function GameLayout() {
   const [activeEffect, setActiveEffect] = useState<PlayerEffect | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentBoard(generateRandomBoard(3, 3));
     setIsMounted(true);
   }, []);

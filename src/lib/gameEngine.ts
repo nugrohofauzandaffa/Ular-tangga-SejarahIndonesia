@@ -2,6 +2,7 @@ import { GameState } from '../types/gameState';
 import { Tile, Snake, Ladder } from '../types/board';
 import { Question } from '../types/question';
 import { PlayerEffect, BuffType, DebuffType } from '../types/player';
+import { GAME_CONSTANTS } from '../constants/game';
 
 import { rollDice } from './dice';
 import { calculateMovement } from './movement';

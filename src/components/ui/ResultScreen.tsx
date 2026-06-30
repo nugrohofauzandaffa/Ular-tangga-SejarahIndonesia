@@ -1,6 +1,5 @@
 import React from 'react';
 import { GameState } from '@/types/gameState';
-import { Player } from '@/types/player';
 
 interface ResultScreenProps {
   gameState: GameState;
