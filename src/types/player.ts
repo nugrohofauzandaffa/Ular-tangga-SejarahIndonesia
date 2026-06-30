@@ -1,5 +1,5 @@
 export type BuffType = 'AntiSnake' | 'DoubleRoll' | 'StealPoint';
-export type DebuffType = 'AbsoluteRoll' | 'FactBanned' | 'DecreasedRoll';
+export type DebuffType = 'AbsoluteRoll' | 'Silence' | 'DecreasedRoll';
 
 export interface PlayerEffect {
   type: BuffType | DebuffType;

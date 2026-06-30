@@ -1,4 +1,4 @@
-export type QuestionDifficulty = 'Easy' | 'Medium' | 'Hard';
+export type QuestionDifficulty = 'Easy' | 'Medium' | 'Hard' | 'Extreme';
 
 export interface Question {
   id: string;

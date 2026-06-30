@@ -29,11 +29,6 @@ export const resolveTile = (
         contentId: tile.contentId,
       };
 
-    case 'Fact':
-      return {
-        type: 'Fact',
-        contentId: tile.contentId,
-      };
 
     case 'Bonus':
       return {

@@ -6,7 +6,6 @@ export type GameStatus =
   | 'moving'
   | 'answering_quiz'
   | 'showing_quiz_result'
-  | 'showing_fact'
   | 'showing_effect'
   | 'finished';
 
@@ -21,10 +20,19 @@ export interface ScoreStat {
   accuracy: number;
 }
 
+export interface GameLog {
+  id: string;
+  timestamp: number;
+  playerName: string;
+  message: string;
+  type: 'bonus' | 'penalty' | 'system';
+}
+
 export interface GameState {
   players: Player[];
   currentTurn: string; // Player ID
   winner: string | null; // Player ID
   gameStatus: GameStatus;
   dice: DiceState;
+  logs: GameLog[];
 }

@@ -24,7 +24,7 @@ export const HUD: React.FC<HUDProps> = ({ activePlayer, gameStatus = 'playing', 
           let icon = '✨';
           if (effect.type === 'AntiSnake') icon = '🛡️';
           if (effect.type === 'AbsoluteRoll') icon = '⛓️';
-          if (effect.type === 'FactBanned') icon = '🚫';
+          if (effect.type === 'Silence') icon = '🚫';
           if (effect.type === 'DecreasedRoll') icon = '📉';
           return (
             <span key={idx} className="text-xs bg-slate-200 rounded-full px-1.5 py-0.5" title={effect.type}>

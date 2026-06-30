@@ -18,10 +18,6 @@ export default function Tile({ tile, players = [] }: TileProps) {
       bgClass = "bg-blue-50";
       textClass = "text-blue-500 font-bold";
       break;
-    case 'Fact':
-      bgClass = "bg-green-50";
-      textClass = "text-green-500 font-bold";
-      break;
     case 'Bonus':
       bgClass = "bg-yellow-50";
       textClass = "text-yellow-600 font-bold";

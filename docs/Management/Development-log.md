@@ -317,3 +317,41 @@
 - **Dampak Perubahan**:
   - Proyek dapat dikompilasi kembali (bebas dari error type checking).
 - **Status**: Completed
+
+## [Phase 9.6] - Game Log System
+
+- **Phase**: Phase 9.6
+- **File yang dibuat atau diubah**:
+  - `src/types/gameState.ts`
+  - `src/lib/gameEngine.ts`
+  - `src/components/ui/GameLogBox.tsx` (Baru)
+  - `src/components/GameLayout.tsx`
+- **Alasan Perubahan**:
+  - Untuk memfasilitasi transparansi permainan, diperlukan sistem log aktivitas (Game Log). Karena adanya fitur *Bonus* dan *Penalty* yang bisa terjadi mendadak, pemain butuh riwayat visual untuk mengetahui kejadian spesifik yang menimpa pion mereka (misalnya jenis efek buff/debuff apa yang didapat).
+- **Dampak Perubahan**:
+  - *State* `logs` telah ditambahkan di `GameState`. *GameEngine* kini men-*push* pesan baru khusus ketika pemain mendapatkan Bonus atau Penalti.
+  - Secara visual, *Desktop* kini memiliki kotak riwayat (`GameLogBox`) yang bersanding di *sidebar* kanan, sedangkan *Mobile* memiliki tombol "📝 Log" khusus di samping kontrol dadu yang akan memicu jendela *Pop-up Modal* dari bawah layar. Panel log ini akan otomatis bergeser (*scroll*) ke bawah saat pesan baru masuk.
+- **Status**: Completed
+
+## [Phase 9.7] - Quiz Revamp & Fact Removal
+
+- **Phase**: Phase 9.7
+- **File yang dibuat atau diubah**:
+  - `src/types/question.ts`
+  - `src/types/board.ts`
+  - `src/types/player.ts`
+  - `src/types/gameState.ts`
+  - `src/data/questions.ts`
+  - `src/data/papan/board.ts`
+  - `src/lib/gameEngine.ts`
+  - `src/lib/tileResolver.ts`
+  - `src/components/GameLayout.tsx`
+  - `src/components/ui/EffectModal.tsx`
+  - `src/components/ui/HUD.tsx`
+  - `src/components/papan/Tile.tsx`
+  - `src/components/ui/FactModal.tsx` (Deleted)
+  - `src/data/facts/facts.ts` (Deleted)
+- **Alasan Perubahan**: Menghapus mekanik Fakta sepenuhnya untuk menyederhanakan game, merombak kuis dengan 4 tingkat kesulitan (Easy, Medium, Hard, Extreme) yang memiliki variasi poin penalti progresif, serta memperkenalkan debuff *Silence* (Kehilangan Giliran) pengganti *FactBanned*.
+- **Dampak Perubahan**: Papan kini memiliki lebih banyak kuis (10 titik acak), memberikan dinamika poin yang lebih variatif antara risiko dan imbalan kuis, sementara petak statis Fakta dihapus sepenuhnya dari game flow.
+- **Status**: Completed
+

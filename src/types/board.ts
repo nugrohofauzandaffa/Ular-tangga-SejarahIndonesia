@@ -1,4 +1,4 @@
-export type TileType = 'Normal' | 'Quiz' | 'Snake' | 'Ladder' | 'Bonus' | 'Penalty' | 'Fact';
+export type TileType = 'Normal' | 'Quiz' | 'Snake' | 'Ladder' | 'Bonus' | 'Penalty';
 
 export interface Tile {
   position: number;

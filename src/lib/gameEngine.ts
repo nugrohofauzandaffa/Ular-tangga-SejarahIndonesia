@@ -27,15 +27,16 @@ export interface ProcessTurnResult {
 const getRandomBuff = (): PlayerEffect => {
   const buffs: BuffType[] = ['AntiSnake', 'DoubleRoll', 'StealPoint'];
   const type = buffs[Math.floor(Math.random() * buffs.length)];
-  return { type, duration: -1 };
+  return { type, duration: -1 }; // -1 = until used/triggered
 };
 
-const getRandomDebuff = (): PlayerEffect => {
-  const debuffs: DebuffType[] = ['AbsoluteRoll', 'FactBanned', 'DecreasedRoll'];
+export const getRandomDebuff = (): PlayerEffect => {
+  const debuffs: DebuffType[] = ['AbsoluteRoll', 'Silence', 'DecreasedRoll'];
   const type = debuffs[Math.floor(Math.random() * debuffs.length)];
-  if (type === 'AbsoluteRoll') return { type, duration: 3 }; // 2 aktif + 1 putaran akuisisi
-  if (type === 'FactBanned') return { type, duration: -1 }; // -1 = until used
-  if (type === 'DecreasedRoll') return { type, duration: 2 }; // 1 aktif + 1 putaran akuisisi
+  
+  if (type === 'Silence') return { type, duration: -1 }; // -1 = until used
+  if (type === 'AbsoluteRoll') return { type, duration: 1 };
+  if (type === 'DecreasedRoll') return { type, duration: 1 }; // 1 aktif + 1 putaran akuisisi
   return { type, duration: 2 };
 };
 
@@ -46,6 +47,7 @@ export const processTurn = (
 ): ProcessTurnResult => {
   const newState = { ...state };
   newState.players = [...state.players];
+  newState.logs = [...(state.logs || [])];
 
   const activePlayer = getActivePlayer(newState.players, newState.currentTurn);
   if (!activePlayer) {
@@ -55,6 +57,31 @@ export const processTurn = (
   const activePlayerIndex = newState.players.findIndex((p) => p.id === activePlayer.id);
   const playerToUpdate = { ...activePlayer };
   playerToUpdate.activeEffects = [...(playerToUpdate.activeEffects || [])];
+
+  // 0. Check Silence (Skip Turn)
+  const silenceIndex = playerToUpdate.activeEffects.findIndex(e => e.type === 'Silence');
+  if (silenceIndex !== -1) {
+    playerToUpdate.activeEffects.splice(silenceIndex, 1);
+    newState.logs.push({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+      playerName: playerToUpdate.name,
+      message: 'Kehilangan giliran karena efek Silence',
+      type: 'system'
+    });
+    
+    // Decrement other effect durations since turn is skipped
+    playerToUpdate.activeEffects = playerToUpdate.activeEffects.map(e => {
+      if (e.duration > 0) return { ...e, duration: e.duration - 1 };
+      return e;
+    }).filter(e => e.duration !== 0);
+
+    newState.currentTurn = advanceTurn(newState.players, newState.currentTurn);
+    newState.players[activePlayerIndex] = playerToUpdate;
+    newState.gameStatus = 'idle';
+    newState.dice = { ...newState.dice, isRolling: false };
+    return { newState };
+  }
 
   // 1. Roll Dice
   let diceValue = diceValueOverride ?? rollDice();
@@ -113,33 +140,75 @@ export const processTurn = (
   let shouldAdvanceTurn = true;
 
   // 5. Handle Event
-  switch (tileEvent.type) {
-    case 'Normal':
-      newState.gameStatus = 'idle';
-      break;
+  let keepResolving = true;
+  while (keepResolving) {
+    keepResolving = false;
 
-    case 'Snake': {
-      const antiSnakeIndex = playerToUpdate.activeEffects.findIndex(e => e.type === 'AntiSnake');
-      if (antiSnakeIndex !== -1) {
-        // Block snake, consume buff
-        playerToUpdate.activeEffects.splice(antiSnakeIndex, 1);
-        tileEvent = { type: 'Normal' };
-      } else if (tileEvent.destination !== undefined) {
-        playerToUpdate.position = tileEvent.destination;
-      }
-      newState.gameStatus = 'idle';
-      break;
-    }
+    switch (tileEvent.type) {
+      case 'Normal':
+        newState.gameStatus = 'idle';
+        break;
 
-    case 'Ladder':
-      if (tileEvent.destination !== undefined) {
-        playerToUpdate.position = tileEvent.destination;
+      case 'Snake': {
+        const antiSnakeIndex = playerToUpdate.activeEffects.findIndex(e => e.type === 'AntiSnake');
+        if (antiSnakeIndex !== -1) {
+          // Block snake, consume buff
+          playerToUpdate.activeEffects.splice(antiSnakeIndex, 1);
+          newState.logs.push({
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            timestamp: Date.now(),
+            playerName: playerToUpdate.name,
+            message: 'Menahan gigitan ular menggunakan efek AntiSnake',
+            type: 'system'
+          });
+          tileEvent = { type: 'Normal' };
+          keepResolving = true;
+        } else if (tileEvent.destination !== undefined) {
+          playerToUpdate.position = tileEvent.destination;
+          
+          const destTile = context.board.find(t => t.position === playerToUpdate.position);
+          if (destTile && destTile.type !== 'Normal' && destTile.type !== 'Snake' && destTile.type !== 'Ladder') {
+             tileEvent = resolveTile(destTile, context.snakes, context.ladders);
+             keepResolving = true;
+          } else {
+             newState.gameStatus = 'idle';
+          }
+        }
+        break;
       }
-      newState.gameStatus = 'idle';
-      break;
+
+      case 'Ladder':
+        if (tileEvent.destination !== undefined) {
+          playerToUpdate.position = tileEvent.destination;
+          
+          const destTile = context.board.find(t => t.position === playerToUpdate.position);
+          if (destTile && destTile.type !== 'Normal' && destTile.type !== 'Snake' && destTile.type !== 'Ladder') {
+             tileEvent = resolveTile(destTile, context.snakes, context.ladders);
+             keepResolving = true;
+          } else {
+             newState.gameStatus = 'idle';
+          }
+        }
+        break;
 
     case 'Bonus': {
       acquiredEffect = getRandomBuff();
+      
+      let effectMsg = '';
+      switch (acquiredEffect.type) {
+        case 'AntiSnake': effectMsg = 'Mendapat kekebalan dari ular berikutnya'; break;
+        case 'DoubleRoll': effectMsg = 'Mendapat ekstra giliran melempar dadu'; break;
+        case 'StealPoint': effectMsg = 'Mencuri 3 Poin dari lawan teratas'; break;
+      }
+      
+      newState.logs.push({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: Date.now(),
+        playerName: playerToUpdate.name,
+        message: effectMsg,
+        type: 'bonus'
+      });
+
       if (acquiredEffect.type === 'StealPoint') {
         // Steal from highest
         let highestOpponentIndex = -1;
@@ -164,10 +233,20 @@ export const processTurn = (
         
         if (stolenAmount > 0) {
           playerToUpdate.score = addScore(playerToUpdate.score, stolenAmount).newScore;
+          
+          // Delayed log explicitly for the victim
+          newState.logs.push({
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            timestamp: Date.now() + 1, // Add 1ms to ensure it renders after the main log
+            playerName: newState.players[highestOpponentIndex].name,
+            message: `Poin berkurang ${stolenAmount} karena dicuri oleh ${playerToUpdate.name}`,
+            type: 'system'
+          });
         }
       } else {
         playerToUpdate.activeEffects.push(acquiredEffect);
       }
+      
       shouldAdvanceTurn = false;
       newState.gameStatus = 'showing_effect';
       break;
@@ -178,19 +257,21 @@ export const processTurn = (
       playerToUpdate.activeEffects.push(acquiredEffect);
       shouldAdvanceTurn = false;
       newState.gameStatus = 'showing_effect';
-      break;
-    }
-
-    case 'Fact': {
-      const factBannedIndex = playerToUpdate.activeEffects.findIndex(e => e.type === 'FactBanned');
-      if (factBannedIndex !== -1) {
-        playerToUpdate.activeEffects.splice(factBannedIndex, 1);
-        tileEvent = { type: 'Normal' };
-        newState.gameStatus = 'idle';
-      } else {
-        newState.gameStatus = 'showing_fact';
-        shouldAdvanceTurn = false;
+      
+      let effectMsg = '';
+      switch (acquiredEffect.type) {
+        case 'AbsoluteRoll': effectMsg = 'Lemparan dadu maksimal bernilai 4 di giliran berikutnya'; break;
+        case 'Silence': effectMsg = 'Akan kehilangan 1 giliran berikutnya'; break;
+        case 'DecreasedRoll': effectMsg = 'Lemparan dadu berikutnya akan dikurangi 2'; break;
       }
+      
+      newState.logs.push({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: Date.now(),
+        playerName: playerToUpdate.name,
+        message: effectMsg,
+        type: 'penalty'
+      });
       break;
     }
 
@@ -198,6 +279,7 @@ export const processTurn = (
       newState.gameStatus = 'answering_quiz';
       shouldAdvanceTurn = false;
       break;
+    }
   }
 
   // 6. Check Win (Post-Tile Resolution)
@@ -240,10 +322,24 @@ export const submitQuizAnswer = (
   const result = validateAnswer(question, answer);
   if (result.isCorrect) {
     playerToUpdate.correctAnswers += 1;
-    playerToUpdate.score = addScore(playerToUpdate.score, 10).newScore;
+    let reward = 0;
+    switch (question.difficulty) {
+      case 'Easy': reward = 3; break;
+      case 'Medium': reward = 5; break;
+      case 'Hard': reward = 10; break;
+      case 'Extreme': reward = 15; break;
+    }
+    playerToUpdate.score = addScore(playerToUpdate.score, reward).newScore;
   } else {
     playerToUpdate.wrongAnswers += 1;
-    playerToUpdate.score = reduceScore(playerToUpdate.score, 5).newScore;
+    let penalty = 0;
+    switch (question.difficulty) {
+      case 'Easy': penalty = 1; break;
+      case 'Medium': penalty = 2; break;
+      case 'Hard': penalty = 3; break;
+      case 'Extreme': penalty = 5; break;
+    }
+    playerToUpdate.score = reduceScore(playerToUpdate.score, penalty).newScore;
   }
 
   newState.players[activePlayerIndex] = playerToUpdate;
@@ -272,10 +368,6 @@ const tickDurationAndAdvanceTurn = (state: GameState): GameState => {
 };
 
 export const acknowledgeQuizResult = (state: GameState): GameState => {
-  return tickDurationAndAdvanceTurn(state);
-};
-
-export const acknowledgeFact = (state: GameState): GameState => {
   return tickDurationAndAdvanceTurn(state);
 };
 

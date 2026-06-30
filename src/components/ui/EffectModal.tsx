@@ -22,8 +22,8 @@ export const EffectModal: React.FC<EffectModalProps> = ({ effect, onAcknowledge 
         return { icon: '🥷', title: 'Curi Poin', desc: 'Kamu mendapat +3 Poin, dan mencuri 3 Poin dari lawan dengan skor tertinggi!' };
       case 'AbsoluteRoll':
         return { icon: '⛓️', title: 'Batas Dadu', desc: 'Kecepatanmu dibatasi! Dadu maksimal hanya angka 4 selama 2 putaran.' };
-      case 'FactBanned':
-        return { icon: '🚫', title: 'Buta Fakta', desc: 'Aksesmu ke petak Fakta berikutnya telah diblokir.' };
+      case 'Silence':
+        return { icon: '🚫', title: 'Kehilangan Giliran', desc: 'Kamu tidak dapat melempar dadu pada putaran berikutnya.' };
       case 'DecreasedRoll':
         return { icon: '📉', title: 'Kelelahan', desc: 'Hasil dadumu di putaran berikutnya akan dikurangi 2 langkah.' };
       default:
