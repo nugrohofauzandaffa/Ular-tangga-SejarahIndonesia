@@ -24,7 +24,23 @@
   - [x] Turn & Win Condition Module (`src/lib/turnManager.ts`)
   - [x] Main Game Engine Facade (`src/lib/gameEngine.ts`)
 - [ ] Phase 7: React Components
-- [ ] Phase 8: Integrasi
-- [ ] Phase 9: UI / Animation
+  - [x] Phase 7.1: Layout System (`src/components/GameLayout.tsx`)
+  - [x] Phase 7.2: Board Component (`src/components/Board.tsx`)
+  - [x] Phase 7.3: Tile Component (`src/components/Tile.tsx`)
+  - [x] Phase 7.4: Player Token Component (`src/components/player/PlayerToken.tsx`)
+  - [x] Phase 7.5: Dice Component (`src/components/dice/Dice.tsx`)
+  - [x] Phase 7.6: HUD Component (`src/components/ui/HUD.tsx`)
+  - [x] Phase 7.7: Quiz Modal Component (`src/components/quiz/QuizModal.tsx`)
+  - [x] Phase 7.8: Result Screen Component (`src/components/ui/ResultScreen.tsx`)
+  - [x] Phase 7.9: UI Integration (`src/components/GameLayout.tsx` dll)
+- [x] Phase 8: Quality Assurance
+  - [x] Phase 8.1: Test Plan (`docs/Test-Plan.md`)
+  - [x] Phase 8.2: Manual Testing
+- [ ] Phase 9: Buff, Debuff & Fact System
+  - [x] Phase 9.1: Design Review (`docs/Effect-System.md`)
+  - [x] Phase 9.2: Update Domain Model (Player & GameState)
+  - [x] Phase 9.3: Implement Buff/Debuff Logic in GameEngine
+  - [x] Phase 9.4: Fact Modal & Effect Modal UI
+  - [x] Phase 9.5: Random Spawn System (Bonus/Penalty)
 - [ ] Phase 10: Testing
 - [ ] Phase 11: Deployment

@@ -1,4 +1,4 @@
-import { Ladder } from '../types/board';
+import { Ladder } from '@/types/board';
 
 export const ladders: Ladder[] = [
   { start: 1, end: 38 },
@@ -9,5 +9,5 @@ export const ladders: Ladder[] = [
   { start: 36, end: 44 },
   { start: 51, end: 67 },
   { start: 71, end: 91 },
-  { start: 80, end: 100 }
+  { start: 80, end: 99 }
 ];

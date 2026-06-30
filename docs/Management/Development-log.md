@@ -104,3 +104,204 @@
 - **Dampak Perubahan**:
   - Fasad *Game Engine* kini terbentuk. UI tidak perlu lagi memanggil modul logika secara individu. UI hanya perlu memberikan injeksi data statis dan memanggil fungsi `processTurn`, `submitQuizAnswer`, `acknowledgeQuizResult`, atau `acknowledgeFact` yang otomatis mengembalikan state game terbaru (immutable). Dengan selesainya modul ini, **Phase 6 secara keseluruhan telah tuntas**.
 - **Status**: Waiting Review
+
+## [Phase 7.1] - Layout System
+
+- **Phase**: Phase 7.1
+- **File yang dibuat atau diubah**:
+  - `src/components/GameLayout.tsx`
+  - `src/app/page.tsx`
+- **Alasan Perubahan**:
+  - Diperlukan untuk merancang fondasi struktur layout utama yang memisahkan tata letak komponen antara Desktop dan Mobile sesuai dokumen `UX-Design.md` dan `Architecture.md`.
+- **Dampak Perubahan**:
+  - Mempersiapkan area peletakan komponen-komponen React selanjutnya (Board, HUD, Roll Dice) dalam grid atau flex layout yang responsif tanpa perlu khawatir menumpuk, serta menyediakan area sticky bottom panel untuk interaksi Mobile.
+- **Status**: Waiting Review
+
+## [Phase 7.2] - Board Component
+
+- **Phase**: Phase 7.2
+- **File yang dibuat atau diubah**:
+  - `src/components/Board.tsx`
+  - `src/components/GameLayout.tsx`
+- **Alasan Perubahan**:
+  - Diperlukan untuk merender papan permainan 10x10 menggunakan data asli dari `src/data/board.ts` dan mengganti area *placeholder* di dalam `GameLayout`.
+- **Dampak Perubahan**:
+  - Papan permainan kini tampil dengan 100 *tile* yang diurutkan dengan pola zig-zag (kiri-ke-kanan, kanan-ke-kiri). Setiap petak sudah memiliki indikator visual dasar terkait posisinya dan tipe petaknya (Quiz, Fact, Bonus, Penalty, dsb). Selain itu, komponen ini juga telah disiapkan untuk area peletakan bidak pemain (Player Token) serta *layer SVG overlay* untuk jalur ular dan tangga yang akan dikembangkan pada fase selanjutnya.
+- **Status**: Waiting Review
+
+## [Bugfix] - Fix Module Import Paths
+
+- **Phase**: Bugfix (Phase 7.2 context)
+- **File yang dibuat atau diubah**:
+  - `src/data/papan/board.ts`
+- **Alasan Perubahan**:
+  - Terdapat error "Cannot find module '@/data/snakes'" karena file `snakes.ts` dan `ladders.ts` sebenarnya berada di dalam folder `src/data/events/`, bukan langsung di dalam `src/data/`.
+- **Dampak Perubahan**:
+  - Komponen `Board.tsx` (dan dependensi lainnya) sekarang dapat meng-compile dan dirender tanpa error module path.
+- **Status**: Completed
+
+## [Phase 7.3] - Tile Component
+
+- **Phase**: Phase 7.3
+- **File yang dibuat atau diubah**:
+  - `src/components/Tile.tsx`
+  - `src/components/Board.tsx`
+- **Alasan Perubahan**:
+  - Diperlukan untuk memecah komponen `Board` agar lebih modular. `Tile` sekarang menjadi komponen independen yang hanya bertanggung jawab untuk me-render satu petak permainan berdasarkan tipe datanya (props `tile`).
+- **Dampak Perubahan**:
+  - Kode di `Board.tsx` menjadi jauh lebih bersih dan ringkas. Komponen `Tile.tsx` dapat dikelola, diubah gayanya, dan diperluas secara mandiri (misalnya ketika harus menampung interaksi animasi atau token pemain) di masa depan tanpa menyentuh keseluruhan grid papan.
+- **Status**: Completed
+
+## [Phase 7.4] - Player Token Component
+
+- **Phase**: Phase 7.4
+- **File yang dibuat atau diubah**:
+  - `src/components/player/PlayerToken.tsx`
+  - `src/components/papan/Tile.tsx`
+  - `src/components/papan/Board.tsx`
+- **Alasan Perubahan**:
+  - Diperlukan komponen visual khusus untuk mewakili pemain (bidak/token) di atas papan. `PlayerToken.tsx` merender lingkaran berwarna dengan inisial nama pemain. Modifikasi `Tile.tsx` diperlukan untuk menampung token-token tersebut (menyediakan area `div` berlapis). `Board.tsx` diubah sementara dengan menyediakan array data pemain statis (dummy) untuk menguji posisi token pada petak sebelum dihubungkan ke `Game Engine` asli.
+- **Dampak Perubahan**:
+  - Papan permainan sekarang dapat memvisualisasikan kehadiran pemain di petak tertentu. Pemain yang berpotongan di petak yang sama telah diprogram untuk bergeser sedikit (offset) agar tidak bertumpuk secara sempurna, memastikan setiap bidak dapat terlihat. 
+- **Status**: Completed
+
+## [Phase 7.5] - Dice Component
+
+- **Phase**: Phase 7.5
+- **File yang dibuat atau diubah**:
+  - `src/components/dice/Dice.tsx`
+  - `src/components/GameLayout.tsx`
+- **Alasan Perubahan**:
+  - Komponen antarmuka dadu yang ada perlu disesuaikan (*styling* ulang menggunakan Tailwind) agar memiliki bentuk kotak dadu yang nyata dan dapat ditempatkan ke dalam tata letak responsif aplikasi. Modifikasi `GameLayout.tsx` diperlukan untuk mendemonstrasikan integrasinya menggunakan React Hook `useDice`.
+- **Dampak Perubahan**:
+  - Dadu dapat diputar dengan mengklik tombol "Lempar Dadu". Pada mode *Desktop*, tombol dan dadu tampil vertikal di panel sebelah kanan (*Control Area*). Pada mode *Mobile*, komponen diringkas secara horizontal (*horizontal layout*) dan ditempelkan dengan rapi pada *Sticky Bottom Panel*, menyesuaikan aturan dari `UX-Design.md` tanpa memakan terlalu banyak ruang. Animasi pengacakan juga berfungsi dengan semestinya.
+- **Status**: Completed
+
+## [Phase 7.6] - HUD Component
+
+- **Phase**: Phase 7.6
+- **File yang dibuat atau diubah**:
+  - `src/components/ui/HUD.tsx`
+  - `src/components/GameLayout.tsx`
+- **Alasan Perubahan**:
+  - Diperlukan komponen *Heads-Up Display* (HUD) untuk menginformasikan status permainan terkini kepada pemain (siapa yang sedang mendapat giliran, posisi pion, dan skor terkini). `HUD.tsx` dibuat dengan menyesuaikan spesifikasi dari `UX-Design.md` di mana komponen ini harus memiliki antarmuka yang berbeda saat dimuat di layar besar (*Desktop Control Area*) dibandingkan saat di layar sentuh kecil (*Mobile Sticky Bottom Panel*).
+- **Dampak Perubahan**:
+  - Tampilan informasi permainan sekarang tersaji dengan estetik. Di PC, profil pemain (lengkap dengan inisial), angka posisi, dan skor dikemas di dalam satu *card* ringkas dengan indikator tajuk bergaya kapital. Di *Mobile*, informasi diringkas cukup menjadi dua baris teks agar menghemat ruang dan menempel mulus bersama komponen dadu di panel terbawah layar, sehingga pandangan pemain bisa tetap fokus pada papan permainan. Komponen sudah direkatkan dengan contoh data statis sebelum terhubung ke `Game Engine`.
+- **Status**: Completed
+
+## [Phase 7.7] - Quiz Modal Component
+
+- **Phase**: Phase 7.7
+- **File yang dibuat atau diubah**:
+  - `src/components/quiz/QuizModal.tsx`
+  - `src/components/GameLayout.tsx`
+- **Alasan Perubahan**:
+  - Permainan ini membutuhkan antarmuka pop-up (*modal*) untuk menyajikan pertanyaan edukasi sejarah secara interaktif ketika pemain menginjak petak `Quiz`. Komponen ini bertindak sebagai antarmuka yang mengirim jawaban pilihan pengguna untuk dinilai oleh `Quiz Module` (Business Logic) secara terisolasi tanpa mencampur logika permainan di level komponen UI.
+- **Dampak Perubahan**:
+  - Komponen `QuizModal` baru kini dapat menerima data `Question` utuh dan menampilkannya di atas area permainan yang sedikit diredupkan (memberikan efek fokus / *backdrop blur*). Jika pemain memilih jawaban yang salah, kotaknya menyala merah dan akan diberi penjelasan (*explanation*). Jika benar, ia akan berwarna hijau. Setelah itu, akan muncul tombol *"Lanjutkan Permainan"* untuk memberikan ruang bagi pemain membaca penjelasan sebelum menutup modal. Tombol sementara (*Test Quiz*) di header telah dipasang di `GameLayout.tsx` agar visualisasi komponen ini bisa diuji.
+- **Status**: Completed
+
+## [Phase 7.8] - Result Screen Component
+
+- **Phase**: Phase 7.8
+- **File yang dibuat atau diubah**:
+  - `src/components/ui/ResultScreen.tsx`
+  - `src/components/GameLayout.tsx`
+- **Alasan Perubahan**:
+  - Diperlukan layar selebrasi (Result Screen) untuk ditampilkan ketika kondisi menang telah tercapai (yakni saat `gameStatus === 'finished'`). Antarmuka ini mengomunikasikan dengan jelas siapa pemenangnya dan menampilkan papan peringkat akhir agar memberikan rasa pencapaian kepada pemain.
+- **Dampak Perubahan**:
+  - Komponen `ResultScreen.tsx` akan otomatis menutupi seluruh layar permainan ketika mendeteksi status permainan telah selesai. Di dalamnya, ia menobatkan pemenang di *header* besar berwarna elegan, lalu menampilkan *Leaderboard* terurut ke bawah berdasarkan skor. Total benar/salah tiap pemain juga direkap di sana. Dua tombol disediakan (Main Lagi dan Kembali ke Menu) yang mengandalkan fungsi *callback* eksternal sehingga murni menjaga UI terpisah dari logika navigasi/permainan utama. Saya juga menyisipkan tombol "Test Result" di *header* untuk pengujian visual.
+- **Status**: Completed
+
+## [Phase 7.9] - UI Integration
+
+- **Phase**: Phase 7.9
+- **File yang dibuat atau diubah**:
+  - `src/components/GameLayout.tsx`
+  - `src/components/papan/Board.tsx`
+  - `src/components/quiz/QuizModal.tsx`
+  - `docs/Integretion-Report.md`
+- **Alasan Perubahan**:
+  - Tiba waktunya untuk melepaskan seluruh *mockup* dan merakit semua kepingan *puzzle* komponen (Board, Dice, HUD, Kuis, Result Screen) bersama dengan "Otak" utama (*Game Engine*). Ini menyelaraskan *Phase 6* dan *Phase 7* menjadi satu aplikasi utuh yang reaktif. Berdasarkan masukan pengguna, pendekatan *Prop Drilling* tanpa `React Context` dipilih demi kesederhanaan arsitektur di tingkat MVP.
+- **Dampak Perubahan**:
+  - Seluruh status permainan *(GameState)* kini disentralisasi menggunakan *hook* `useState` di `GameLayout.tsx`. Antarmuka dadu, rute pion, dan modal akan mengikuti instruksi murni yang dikelola oleh `Game Engine`. Permainan sudah dapat dimainkan dari awal hingga akhir (dadu dikocok, pemain pindah, kuis ditanya, poin dihitung, pemenang diumumkan) secara lokal. Detail selengkapnya tertuang di `Integretion-Report.md`.
+- **Status**: Completed
+
+## [Phase 8.1] - Test Plan
+
+- **Phase**: Phase 8.1
+- **File yang dibuat atau diubah**:
+  - `docs/Test-Plan.md`
+- **Alasan Perubahan**:
+  - Menyusun dokumen Test Plan sebagai acuan standar pengujian kualitas (QA) komprehensif sebelum tahapan *Manual Testing*. Diperlukan pemetaan skenario pengujian yang jelas meliputi fungsi utama, edge case, responsivitas tampilan, tata letak UI, dan pengujian regresi untuk menghindari lolosnya *bug* ke tahap selanjutnya.
+- **Dampak Perubahan**:
+  - Tim kini memiliki referensi pengujian baku (`Test-Plan.md`) dengan pembagian 6 area fungsional, menggunakan format tabel dengan Test ID, langkah-langkah, hasil yang diharapkan (Expected Result), dan metrik Test Summary. Dokumen ini memastikan tidak ada skenario krusial (seperti *bounce-back*, tumpukan pion, dsb.) yang luput dari verifikasi QA Phase 8.2 nanti.
+- **Status**: Completed
+
+## [Phase 8.2] - Manual Testing (Bug Report)
+
+- **Phase**: Phase 8.2
+- **File yang dibuat atau diubah**:
+  - `docs/Management/Development-Log.md`
+- **Alasan Perubahan**:
+  - Menjalankan pengujian fungsional dan *gameplay* (QA) secara manual melalui `localhost:3000` (`npm run dev`) sebagaimana diinstruksikan dalam `Test-Plan.md`. Pengujian ini diperlukan untuk memvalidasi interaksi UI dengan *Game Engine* secara _real-time_.
+- **Dampak Perubahan / Laporan Pengujian**:
+  - **Ular & Tangga**: Berfungsi dengan baik. Pemain otomatis menaiki tangga dan turun saat terkena ular.
+  - **Sistem Kuis**: Berfungsi dengan baik. Mendarat di petak kuis (contoh: Tile 45) sukses memunculkan `QuizModal`, merespons jawaban, menambahkan skor, dan giliran beralih saat klik "Lanjutkan Permainan".
+  - **Temuan Bug (Kritis)**: Mendarat di **Tile 10 (Fact Tile / Fakta Sejarah)** menyebabkan permainan macet (*freeze*). Tombol dadu menjadi *disabled* secara permanen, tidak ada *modal* maupun informasi fakta yang muncul, dan giliran pemain tidak pernah berganti.
+  - **Penyebab**: *Game Engine* mendeteksi petak `Fact` dan mengubah `gameStatus` menjadi `'reading_fact'`, namun di lapisan presentasi (`GameLayout.tsx`) belum ada *UI component* (seperti `FactModal`) yang merespons status tersebut, sehingga permainan tersangkut tanpa jalan keluar.
+- **Status**: Completed
+
+## [Phase 9.1] - Planning: Fact, Bonus, dan Penalty (Buff/Debuff)
+
+- **Phase**: Phase 9
+- **File yang dibuat atau diubah**:
+  - `implementation_plan.md`
+  - `docs/Management/task.md`
+- **Alasan Perubahan**:
+  - Pengguna mengusulkan perubahan mekanika permainan secara signifikan untuk fungsi *Fact*, *Bonus*, dan *Penalty*. Perubahan ini memasukkan elemen *Buff* (AntiSnake, DoubleRoll, StealPoint) dan *Debuff* (absoluteRoll, factBanned, decresedRoll) yang melekat secara temporer atau permanen pada status *Player*. Oleh karenanya, dibutuhkan *Implementation Plan* sebelum menulis ulang logika agar *state management* tidak tumpang tindih.
+- **Dampak Perubahan**:
+  - Dokumen *Implementation Plan* telah dicetak. Menguraikan penambahan *array* `activeEffects` di dalam *Player model*, serta alur pengecekan dadu (Pre-Roll) dan penentuan efek (Post-Roll) pada *Game Engine*. Beberapa *Open Questions* telah diajukan ke pengguna untuk mengklarifikasi ambiguitas spesifikasi desain.
+- **Status**: Completed
+
+## [Phase 9.2] - Design Review: Effect System
+
+- **Phase**: Phase 9.2
+- **File yang dibuat atau diubah**:
+  - `docs/Effect-System.md`
+- **Alasan Perubahan**:
+  - Pengguna meminta ulasan desain komprehensif (*Design Review*) terhadap rancangan Buff, Debuff, dan sistem Fakta. Tujuannya adalah mendokumentasikan spesifikasi yang pasti (aturan *stacking*, prioritas efek, rincian durasi, perilaku antarmuka) agar arsitektur tidak simpang siur sebelum benar-benar diimplementasikan ke dalam *Game Engine*.
+- **Dampak Perubahan**:
+  - Tim sekarang memiliki buku pedoman `Effect-System.md` yang menetapkan secara mutlak kapan sebuah efek didapatkan, di mana disimpan (`activeEffects`), bagaimana *Turn Flow* memotong umurnya, dan efek apa yang menang jika bertabrakan (*Priority*). Beberapa poin keputusan (*Open Decisions*) juga disoroti untuk difinalisasi oleh pengguna.
+- **Status**: Completed
+
+## [Phase 9.3] - Implementation: Effect System & Modals
+
+- **Phase**: Phase 9 (9.2, 9.3, 9.4)
+- **File yang dibuat atau diubah**:
+  - `src/types/player.ts`
+  - `src/components/GameLayout.tsx`
+  - `src/lib/gameEngine.ts`
+  - `src/components/ui/FactModal.tsx`
+  - `src/components/ui/EffectModal.tsx`
+  - `src/components/ui/HUD.tsx`
+- **Alasan Perubahan**:
+  - Mengeksekusi penulisan kode setelah spesifikasi desain pada `Effect-System.md` disetujui. Tujuannya adalah mendatangkan mekanika *Buff* dan *Debuff* yang merespons lemparan dadu serta pergerakan pemain (seperti batasan *AbsoluteRoll*, pengurang dadu *DecreasedRoll*, *StealPoint* dari pemain tertinggi, dan imunitas *AntiSnake*), dilengkapi antarmuka visual pendukung.
+- **Dampak Perubahan**:
+  - **Domain Model**: `Player` kini memiliki tumpukan `activeEffects: PlayerEffect[]`.
+  - **Game Engine**: `processTurn` sekarang mengundi efek acak jika mendarat di *Bonus/Penalty*. Status `showing_effect` dan `showing_fact` menahan putaran giliran hingga pemain merespons UI.
+  - **UI/UX**: Diciptakannya `FactModal` dan `EffectModal` yang dipasang pada `GameLayout`. `HUD` juga diperbarui untuk menayangkan lencana status/efek yang sedang menempel pada tubuh pemain menggunakan deretan *icon* (seperti 🛡️, 📉, ⛓️, 🚫).
+- **Status**: Completed
+
+## [Phase 9.5] - Implementation: Random Spawn System
+
+- **Phase**: Phase 9 (9.5)
+- **File yang dibuat atau diubah**:
+  - `src/data/papan/board.ts`
+  - `src/components/GameLayout.tsx`
+- **Alasan Perubahan**:
+  - Agar letak petak Bonus dan Penalti tidak monoton. Hal ini meningkatkan *replayability* (keseruan bermain ulang) dengan mengacak lokasi spawn (3 Bonus, 3 Penalty) pada petak-petak `Normal` yang tersedia.
+- **Dampak Perubahan**:
+  - **Board Data**: `board.ts` kini menggunakan fungsi dinamis `generateRandomBoard(3,3)` menggantikan konstanta `board` yang sepenuhnya statis.
+  - **Game Layout**: `GameLayout.tsx` kini menyimpan array papan dalam `currentBoard` state. Setiap kali pemain me-restart dengan tombol "Main Lagi", `generateRandomBoard()` akan dipanggil sehingga bentuk papan baru akan di-render.
+- **Status**: Completed (Siap untuk dilakukan Pengujian Ulang)

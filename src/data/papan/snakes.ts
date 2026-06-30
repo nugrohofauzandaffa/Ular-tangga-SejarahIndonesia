@@ -1,4 +1,4 @@
-import { Snake } from '../types/board';
+import { Snake } from '@/types/board';
 
 export const snakes: Snake[] = [
   { head: 16, tail: 6 },

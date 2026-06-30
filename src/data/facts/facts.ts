@@ -1,4 +1,4 @@
-import { Fact } from '../types/fact';
+import { Fact } from '@/types/fact';
 
 export const facts: Fact[] = [
   {

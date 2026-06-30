@@ -86,3 +86,28 @@ Database:
 
 Version:
 v1.0
+
+## Platform Support
+
+Game mendukung dua jenis tampilan:
+
+- Desktop Browser
+- Mobile Browser
+
+Seluruh Business Logic dan Game Engine digunakan bersama.
+
+Perbedaan hanya terdapat pada tata letak (layout) antarmuka pengguna agar sesuai dengan ukuran layar masing-masing perangkat.
+
+## Responsive UX Strategy
+
+Desktop
+
+- Seluruh komponen tampil bersamaan.
+
+Mobile
+
+- Board berada pada area utama.
+- HUD dan tombol Roll selalu terlihat menggunakan sticky bottom panel.
+- Pemain tidak perlu melakukan scroll untuk melakukan aksi utama.
+- Menu sekunder ditempatkan pada drawer atau menu terpisah.
+- Gameplay utama harus dapat dimainkan menggunakan satu layar tanpa perpindahan posisi halaman.
