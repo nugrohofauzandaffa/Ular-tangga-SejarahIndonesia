@@ -22,6 +22,8 @@ export interface ProcessTurnResult {
   newState: GameState;
   tileEvent?: TileEvent;
   acquiredEffect?: PlayerEffect;
+  diceModifierInfo?: { type: 'DecreasedRoll' | 'AbsoluteRoll'; original: number; final: number };
+  antiSnakeTriggered?: boolean;
 }
 
 const getRandomBuff = (): PlayerEffect => {
@@ -58,7 +60,7 @@ export const processTurn = (
   const playerToUpdate = { ...activePlayer };
   playerToUpdate.activeEffects = [...(playerToUpdate.activeEffects || [])];
 
-  // 0. Check Silence (Skip Turn)
+  // 0.5 Check Silence (Skip Turn)
   const silenceIndex = playerToUpdate.activeEffects.findIndex(e => e.type === 'Silence');
   if (silenceIndex !== -1) {
     playerToUpdate.activeEffects.splice(silenceIndex, 1);
@@ -87,16 +89,53 @@ export const processTurn = (
   let diceValue = diceValueOverride ?? rollDice();
 
   // PRE-ROLL EFFECTS
+  let diceModifierInfo: ProcessTurnResult['diceModifierInfo'] = undefined;
+
   const absoluteRollIndex = playerToUpdate.activeEffects.findIndex(e => e.type === 'AbsoluteRoll');
   if (absoluteRollIndex !== -1 && diceValue > 4) {
+    const originalDice = diceValue;
     diceValue = 4;
+    diceModifierInfo = { type: 'AbsoluteRoll', original: originalDice, final: diceValue };
+    newState.logs.push({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+      playerName: playerToUpdate.name,
+      message: `Efek Batas Dadu aktif! Lemparan ${originalDice} dibatasi maksimal 4 langkah.`,
+      type: 'penalty'
+    });
   }
   
   const decreasedRollIndex = playerToUpdate.activeEffects.findIndex(e => e.type === 'DecreasedRoll');
   if (decreasedRollIndex !== -1) {
+    const originalDice = diceValue;
     diceValue = Math.max(1, diceValue - 2);
     // Hapus debuff DecreasedRoll setelah dipakai
     playerToUpdate.activeEffects.splice(decreasedRollIndex, 1);
+    
+    // Jika ada AbsoluteRoll sebelumnya, timpa dengan DecreasedRoll (karena terjadi di atasnya)
+    diceModifierInfo = { type: 'DecreasedRoll', original: originalDice, final: diceValue };
+    
+    newState.logs.push({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+      playerName: playerToUpdate.name,
+      message: `Efek Kelelahan aktif! Dadu awal ${originalDice} dikurangi 2 menjadi ${diceValue} langkah.`,
+      type: 'penalty'
+    });
+  }
+
+  // Efek Fase Krisis
+  let crisisBuffApplied = false;
+  if (newState.isCrisisPhaseActive && playerToUpdate.position < 80) {
+    diceValue += 2;
+    crisisBuffApplied = true;
+    newState.logs.push({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+      playerName: playerToUpdate.name,
+      message: 'Mendapat dorongan semangat +2 Langkah (Fase Krisis)',
+      type: 'bonus'
+    });
   }
 
   newState.dice = {
@@ -104,10 +143,25 @@ export const processTurn = (
     isRolling: false,
   };
 
+  // Tentukan MVP
+  const highestScore = Math.max(...newState.players.map(p => p.score));
+  const isMVP = playerToUpdate.score >= highestScore;
+
   // 2. Calculate Movement
   const oldPosition = playerToUpdate.position;
-  const movement = calculateMovement(playerToUpdate.position, diceValue);
+  const movement = calculateMovement(playerToUpdate.position, diceValue, isMVP);
   playerToUpdate.position = movement.newPosition;
+
+  // Cek apakah dipantulkan (Bouncing)
+  if (movement.isBounced) {
+    newState.logs.push({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+      playerName: playerToUpdate.name,
+      message: 'Gagal masuk garis akhir karena melebihi batas atau belum menjadi MVP! (Terpental)',
+      type: 'penalty'
+    });
+  }
 
   // 3. Check Win
   if (movement.hasReachedEnd) {
@@ -138,6 +192,7 @@ export const processTurn = (
   let tileEvent = resolveTile(tile, context.snakes, context.ladders);
   let acquiredEffect: PlayerEffect | undefined = undefined;
   let shouldAdvanceTurn = true;
+  let antiSnakeTriggered = false;
 
   // 5. Handle Event
   let keepResolving = true;
@@ -154,11 +209,12 @@ export const processTurn = (
         if (antiSnakeIndex !== -1) {
           // Block snake, consume buff
           playerToUpdate.activeEffects.splice(antiSnakeIndex, 1);
+          antiSnakeTriggered = true;
           newState.logs.push({
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
             timestamp: Date.now(),
             playerName: playerToUpdate.name,
-            message: 'Menahan gigitan ular menggunakan efek AntiSnake',
+            message: '🛡️ Menahan gigitan ular menggunakan efek AntiSnake',
             type: 'system'
           });
           tileEvent = { type: 'Normal' };
@@ -239,8 +295,8 @@ export const processTurn = (
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
             timestamp: Date.now() + 1, // Add 1ms to ensure it renders after the main log
             playerName: newState.players[highestOpponentIndex].name,
-            message: `Poin berkurang ${stolenAmount} karena dicuri oleh ${playerToUpdate.name}`,
-            type: 'system'
+            message: `⚠️ AWAS! ${stolenAmount} Poinmu dicuri oleh ${playerToUpdate.name}!`,
+            type: 'penalty'
           });
         }
       } else {
@@ -284,10 +340,23 @@ export const processTurn = (
 
   // 6. Check Win (Post-Tile Resolution)
   if (playerToUpdate.position === GAME_CONSTANTS.BOARD_SIZE) {
-    newState.winner = playerToUpdate.id;
-    newState.gameStatus = 'finished';
-    newState.players[activePlayerIndex] = playerToUpdate;
-    return { newState, tileEvent, acquiredEffect };
+    const isMVP = playerToUpdate.score >= Math.max(...newState.players.map(p => p.score));
+    if (isMVP) {
+      newState.winner = playerToUpdate.id;
+      newState.gameStatus = 'finished';
+      newState.players[activePlayerIndex] = playerToUpdate;
+      return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered };
+    } else {
+      // Ditolak dari 100 karena bukan MVP padahal habis naik tangga ke 100 (Sangat jarang, tapi buat jaga-jaga)
+      playerToUpdate.position = 99;
+      newState.logs.push({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: Date.now(),
+        playerName: playerToUpdate.name,
+        message: 'Ditolak dari petak akhir karena poin belum mencapai gelar MVP!',
+        type: 'penalty'
+      });
+    }
   }
 
   // 7. Finalize Turn
@@ -300,7 +369,23 @@ export const processTurn = (
   }
 
   newState.players[activePlayerIndex] = playerToUpdate;
-  return { newState, tileEvent, acquiredEffect };
+
+  // 8. Evaluasi Fase Krisis setelah pergerakan pemain selesai
+  const isAnyoneEndgameNow = newState.players.some(p => p.position >= 91);
+  if (isAnyoneEndgameNow && !newState.isCrisisPhaseActive) {
+    newState.isCrisisPhaseActive = true;
+    newState.logs.push({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+      playerName: 'Sistem',
+      message: 'Seseorang sudah memasuki zona akhir permainan.. semua player di zona bawah mendapatkan +2 langkah',
+      type: 'system'
+    });
+  } else if (!isAnyoneEndgameNow && newState.isCrisisPhaseActive) {
+    newState.isCrisisPhaseActive = false; // Jika semua pemain turun dari 91 akibat ular
+  }
+
+  return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered };
 };
 
 export const submitQuizAnswer = (
@@ -385,6 +470,16 @@ export const acknowledgeEffect = (state: GameState): GameState => {
       playerToUpdate.activeEffects.splice(doubleRollIndex, 1);
       newState.players[activePlayerIndex] = playerToUpdate;
       newState.gameStatus = 'idle';
+      
+      // Tambahkan log khusus untuk menegaskan giliran tambahan
+      newState.logs.push({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: Date.now(),
+        playerName: playerToUpdate.name,
+        message: '🎲 Mendapat Giliran Tambahan (Double Roll)!',
+        type: 'bonus'
+      });
+      
       return newState;
     }
   }

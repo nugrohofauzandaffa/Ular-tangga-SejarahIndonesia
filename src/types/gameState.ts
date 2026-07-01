@@ -35,4 +35,5 @@ export interface GameState {
   gameStatus: GameStatus;
   dice: DiceState;
   logs: GameLog[];
+  isCrisisPhaseActive?: boolean;
 }

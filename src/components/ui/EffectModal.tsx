@@ -1,12 +1,15 @@
 import React from 'react';
 import { PlayerEffect } from '@/types/player';
+import { useAudio } from '@/contexts/AudioContext';
 
 interface EffectModalProps {
   effect: PlayerEffect;
   onAcknowledge: () => void;
+  isBotTurn?: boolean;
 }
 
-export const EffectModal: React.FC<EffectModalProps> = ({ effect, onAcknowledge }) => {
+export const EffectModal: React.FC<EffectModalProps> = ({ effect, onAcknowledge, isBotTurn }) => {
+  const { playSFX } = useAudio();
   const isBuff = ['AntiSnake', 'DoubleRoll', 'StealPoint'].includes(effect.type);
   const colorClass = isBuff ? 'bg-green-600' : 'bg-red-600';
   const lightColorClass = isBuff ? 'text-green-100' : 'text-red-100';
@@ -50,10 +53,11 @@ export const EffectModal: React.FC<EffectModalProps> = ({ effect, onAcknowledge 
           </p>
 
           <button
-            onClick={onAcknowledge}
-            className={`w-full text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg ${buttonColorClass}`}
+            onClick={() => { playSFX('click'); onAcknowledge(); }}
+            disabled={isBotTurn}
+            className={`w-full text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg disabled:opacity-50 disabled:cursor-not-allowed ${buttonColorClass}`}
           >
-            Lanjutkan
+            {isBotTurn ? 'Bot Membaca Hasil...' : 'Lanjutkan'}
           </button>
         </div>
       </div>

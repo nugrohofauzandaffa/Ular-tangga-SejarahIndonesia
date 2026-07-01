@@ -15,4 +15,5 @@ export interface Player {
   correctAnswers: number;
   wrongAnswers: number;
   activeEffects: PlayerEffect[];
+  isBot?: boolean;
 }

@@ -23,7 +23,7 @@
   - [x] Quiz Module (`src/lib/quiz.ts`)
   - [x] Turn & Win Condition Module (`src/lib/turnManager.ts`)
   - [x] Main Game Engine Facade (`src/lib/gameEngine.ts`)
-- [ ] Phase 7: React Components
+- [x] Phase 7: React Components
   - [x] Phase 7.1: Layout System (`src/components/GameLayout.tsx`)
   - [x] Phase 7.2: Board Component (`src/components/Board.tsx`)
   - [x] Phase 7.3: Tile Component (`src/components/Tile.tsx`)
@@ -36,11 +36,13 @@
 - [x] Phase 8: Quality Assurance
   - [x] Phase 8.1: Test Plan (`docs/Test-Plan.md`)
   - [x] Phase 8.2: Manual Testing
-- [ ] Phase 9: Buff, Debuff & Fact System
+- [x] Phase 9: Buff, Debuff & Fact System (Game Log, Quiz Revamp)
   - [x] Phase 9.1: Design Review (`docs/Effect-System.md`)
   - [x] Phase 9.2: Update Domain Model (Player & GameState)
   - [x] Phase 9.3: Implement Buff/Debuff Logic in GameEngine
   - [x] Phase 9.4: Fact Modal & Effect Modal UI
   - [x] Phase 9.5: Random Spawn System (Bonus/Penalty)
-- [ ] Phase 10: Testing
-- [ ] Phase 11: Deployment
+- [x] Phase 10: Main Menu & Bot System
+- [x] Phase 11: Audio & Sound Effects (SFX) System
+- [x] Phase 12: Late Game Mechanics (Krisis) & MVP Win Condition
+- [ ] Phase 13: Deployment / Post-MVP

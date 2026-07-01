@@ -355,3 +355,95 @@
 - **Dampak Perubahan**: Papan kini memiliki lebih banyak kuis (10 titik acak), memberikan dinamika poin yang lebih variatif antara risiko dan imbalan kuis, sementara petak statis Fakta dihapus sepenuhnya dari game flow.
 - **Status**: Completed
 
+## [Phase 10] - Main Menu & Bot System
+
+- **Phase**: Phase 10
+- **File yang dibuat atau diubah**:
+  - `src/types/player.ts` (menambah atribut `isBot`)
+  - `src/components/ui/MainMenu.tsx` (File Baru)
+  - `src/app/page.tsx` (Routing state MainMenu)
+  - `src/components/GameLayout.tsx` (Bot Controller useEffect)
+- **Alasan Perubahan**:
+  - Pengguna membutuhkan halaman utama untuk merancang sesi permainan sebelum masuk ke area game (papan). Pemain harus bisa memilih jumlah pemain (maks 4), mengubah nama pemain sesuai keinginan, dan menentukan apakah karakter tersebut digerakkan oleh Manusia (Multiplayer Local) atau Bot (Solo).
+- **Dampak Perubahan**:
+  - Aplikasi kini dimulai dari layar `MainMenu`. Konfigurasi awal (jumlah pemain, nama, status bot/human) diteruskan ke dalam state awal `GameState` di `GameLayout.tsx`.
+  - Sistem AI dasar (Bot) telah tertanam di level komponen *frontend* menggunakan `useEffect`. Ketika giliran beralih ke pemain berstatus `isBot`, tombol dadu manual akan dinonaktifkan (`disabled`), dan UI akan otomatis memanggil fungsi lempar dadu, menebak kuis secara acak, dan menyetujui efek dalam kurun waktu jeda tertentu agar natural.
+- **Status**: Completed
+
+## [Phase 11] - Audio & Sound Effects (SFX) System
+
+- **Phase**: Phase 11
+- **File yang dibuat atau diubah**:
+  - `src/contexts/AudioContext.tsx` (File Baru)
+  - `src/app/layout.tsx` (Membungkus aplikasi dengan AudioProvider)
+  - `src/components/ui/AudioSettings.tsx` (Komponen kontrol di MainMenu)
+  - `src/components/ui/FloatingAudioControl.tsx` (Tombol *floating* di area papan game)
+  - `src/components/ui/MainMenu.tsx` (Injeksi AudioSettings)
+  - `src/components/GameLayout.tsx` (Pemanggilan hook untuk BGM & trigger SFX)
+- **Alasan Perubahan**:
+  - Pengguna ingin menambahkan dimensi pendengaran (suara) agar permainan lebih imersif. Diperlukan sebuah sistem global untuk mengelola `Volume` dan `Mute` yang state-nya tersimpan (diingat) oleh browser melalui `LocalStorage`.
+- **Dampak Perubahan**:
+  - Pustaka pihak ketiga `howler.js` telah ditambahkan ke proyek.
+  - Saat masuk ke layar permainan (papan), *Background Music* (BGM) akan diputar otomatis secara *looping*.
+  - Aksi melempar dadu, menebak kuis (benar/salah), serta mendapat efek (ular/tangga) kini memutar file `.mp3` khusus untuk umpan balik *real-time*.
+  - Pemain dapat menyesuaikan volume permainan di Main Menu dan menyembunyikan/memunculkan kembali *slider* volume saat di tengah-tengah papan melalui tombol gowes (⚙️) melayang.
+  - **Pemisahan BGM**: Ada dua *track* BGM yang berbeda, yakni `bgm_menu.mp3` untuk diputar di Menu Utama, dan `bgm.mp3` untuk diputar selama permainan berlangsung (dikendalikan via `AudioContext`).
+- **Status**: Completed
+
+## [Phase 12] - Late Game Mechanics (Krisis) & MVP Win Condition
+
+- **Phase**: Phase 12
+- **File yang dibuat atau diubah**:
+  - `src/types/gameState.ts` (Menambahkan `isCrisisPhaseActive`)
+  - `src/lib/movement.ts` (Menambahkan logika Bouncing dan isMVP)
+  - `src/lib/gameEngine.ts` (Menerapkan +2 dadu, pengecekan krisis, dan cek pemenang MVP)
+  - `src/data/papan/board.ts` (Memaksa petak 92, 95, 98 menjadi Kuis untuk area panen poin)
+  - `src/components/ui/CrisisAlertModal.tsx` (Pop-up UI baru)
+  - `src/components/GameLayout.tsx` (Injeksi modal dan handler penahanan aksi Bot)
+- **Alasan Perubahan**:
+  - Membutuhkan sistem *balancing* agar pemain tertinggal tetap punya harapan menang, serta memastikan pemenang (yang mendarat di 100) adalah pemain yang pintar menjawab soal sejarah (memiliki gelar MVP/Poin tertinggi), bukan cuma yang sekadar hoki melempar dadu.
+- **Dampak Perubahan**:
+  - Saat ada pion mendarat di petak 91-100, fase krisis aktif dan ditandai dengan pop-up pemberitahuan secara global. Pemain yang masih tertinggal (< 80) akan otomatis mendapat bonus +2 saat melempar dadu (notifikasi muncul di *Game Log*).
+  - Papan kini dijamin memiliki Kuis di petak 92, 95, dan 98 (selain dari penempatan acak reguler) untuk area *farming* skor di akhir.
+  - Jika seorang pemain mendarat di petak 100 namun skornya bukanlah yang tertinggi (Bukan MVP), pemain tersebut akan "terpental" dan dipaksa mundur dari garis finish sesuai sisa langkahnya atau tertahan di 99.
+- **Catatan Self-Review**:
+  - Ditemukan cacat logika (*timing bug*) di mana pengecekan kondisi Fase Krisis dilakukan di **awal** giliran (`processTurn`), sehingga jika pemain A mendarat di petak krisis, pop-up peringatan baru akan muncul di awal giliran pemain B, yang mana ini membingungkan secara UI/UX.
+  - **Perbaikan**: Pengecekan kondisi `isAnyoneEndgame` dipindah ke **akhir** giliran (setelah *movement* dan kalkulasi *tile* pemain bersangkutan selesai diproses), sehingga *pop-up* akan terpicu secara instan begitu pemain terkait mendarat di zona krisis.
+- **Status**: Completed
+
+## [Future Planning] - Potensi Update Program (Post-MVP)
+
+- **Phase**: Future Updates
+- **Area Pengembangan Berikutnya (Phase 13)**:
+  1. **Polishing Mode Solo (Bot)**: Membuat animasi pilihan saat Bot menjawab kuis, sehingga opsi yang dipilih Bot akan tersorot (ter- *highlight*) layaknya diklik oleh pemain manusia, memberikan interaksi yang lebih nyata.
+  2. **Perbaikan Layout Mobile**: Menyesuaikan antarmuka layar sentuh (*mobile*) agar fitur-fitur baru (seperti *floating audio control* dan *settings*) tidak bertabrakan atau menutupi elemen penting lainnya.
+  3. **Penggabungan Mute & Setting**: Menyederhanakan UI dengan menggabungkan/memindahkan fungsi tombol *Mute* ke dalam menu (atau tombol) *Setting* utama.
+  4. **Dynamic Position / Leaderboard Bar**: Menghilangkan indikator "Posisi Petak" statis pada HUD, dan menggantinya dengan informasi peringkat (1st, 2nd, 3rd) beserta Poin terkini. Urutan daftar pemain ini akan terus berubah dan tersortir secara otomatis (*real-time*) mengikuti siklus giliran (*lifecycle*) permainan.
+- **Tujuan**: Memperhalus antarmuka pengguna (UI/UX) di semua perangkat, memberikan kejelasan kompetisi antar pemain, dan membuat kecerdasan buatan (*Bot*) terasa lebih manusiawi.
+
+- **Ide Fitur Lanjutan Lainnya (Bisa Terus Dikembangkan)**:
+  - **Perbaikan Aksesibilitas Layar Sentuh (Mobile UI)**: Mengatasi celah (bug) krusial di mana interaksi pemain pada perangkat mobile/ponsel pintar masih terblokir atau belum bisa diinteraksi secara maksimal akibat tumpah tindih elemen tata letak (overlap) atau absennya event sentuh (touch). Memperbaiki proporsi ukuran dari tiap button seperti setting button dan container nya.
+  - **Penambahan Animasi Pergerakan pada tiap component (Dadu, Pion, Alert, Naik tangga, turun Ular)**: Mengganti perpindahan instan (teleportasi pion) menjadi animasi melangkah dari satu petak ke petak lainnya secara *smooth*. Selain itu, menambahkan animasi pada tiap component seperti dadu, pion, alert, naik tangga, turun ular menjadi lebih menarik dan interaktif.
+  - **Sistem Pencapaian In-Game (Fase "Ahli Sejarah Kuno")**: Merombak ide *badge* statis menjadi mekanik dinamis di dalam permainan. Ketika seorang pemain berhasil menjawab pertanyaan dengan benar sebanyak 5 kali berturut-turut (*combo* = 5), pemain akan mendapatkan gelar "Ahli Sejarah Kuno" yang memicu sebuah *pop-up*. Pemain tersebut kemudian berhak memilih 1 dari 2 pilihan *Buff Bonus* acak yang ditawarkan sistem untuk memperkuat posisinya. **Balancing**: Pemain akan terus mendapat pilihan *buff* setiap kali benar menjawab selama memegang gelar ini. Jika salah menjawab 1 kali, *buff* miliknya hangus tapi gelar tetap dipertahankan. Jika salah menjawab untuk kedua kalinya, barulah gelar "Ahli Sejarah Kuno" tersebut dicabut.
+  - **Kustomisasi Avatar Pahlawan**: Memungkinkan pemain memilih *avatar* tokoh pahlawan nasional, tidak sekadar warna dan inisial.
+  - **Efek Papan Dinamis (Event Petak)**: Misalnya ada petak "Mesin Waktu" yang mengacak posisi semua pemain, atau petak "Jebakan" yang membekukan pemain selama 2 putaran.
+  - **Tema dan Kustomisasi Visual (*Theming & Skin*)**: Mendesain ulang dan memungkinkan pemain memilih desain *board* (papan) berdasarkan sistem *theme* yang merepresentasikan sejarah lokal. Contoh: *Theme* Candi Borobudur, *Theme* Jakarta Monas, atau *Theme* Gedung Sate Jawa Barat. Pemain cukup memilih prasetel (preset) desain ini tanpa perlu repot mengatur kosmetik satu per satu.
+- **Status**: Proposed / Perencanaan (Waiting for Next Milestone)
+
+---
+### Phase 13.1: Polishing Mode Solo Bot (Sedang Dikerjakan)
+- **Tujuan**: Memberikan interaksi visual yang lebih nyata saat Bot mendapatkan petak kuis.
+- **Rencana Perubahan**:
+  - Memindahkan otak/logika *Bot Answering* dari `GameLayout.tsx` ke dalam `QuizModal.tsx`.
+  - Memberikan *delay* untuk menyimulasikan bot sedang membaca.
+  - Memilih opsi dan menyorot *button* yang dipilih oleh Bot sebelum mengevaluasi benar/salahnya.
+- **Status**: Completed (Logika animasi telah berjalan aman dan efisien di dalam `QuizModal.tsx` menggunakan perlindungan `useRef` untuk menghindari bug double-firing).
+
+---
+### Phase 13.2 & 13.3: Perbaikan Layout Mobile & Penggabungan Mute/Setting (Sedang Dikerjakan)
+- **Tujuan**: Membersihkan area bawah UI mobile untuk fokus pada kontrol *game* (dadu, log) dan menyederhanakan pengaturan audio.
+- **Rencana Perubahan**:
+  - Menggeser posisi *Floating Audio Control* dari pojok kanan bawah ke pojok kanan atas.
+  - Membuang tombol *mute* yang terpisah dari *Floating Audio Control*.
+  - Memanfaatkan kembali (reusable) komponen `AudioSettings.tsx` di dalam *pop-up floating control*.
+- **Status**: Completed (Tombol berhasil digeser ke area aman di bawah Header (Top-Right), UI terlihat jauh lebih elegan karena tombol Mute disatukan ke dalam pop-up Settings secara DRY menggunakan komponen `<AudioSettings />`).

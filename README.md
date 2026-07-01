@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎲 Ular Tangga Sejarah Indonesia
 
-## Getting Started
+**"Membawa Sejarah ke Meja Bermain: Edukasi Tanpa Bosan, Kompetisi Penuh Kejutan"**
 
-First, run the development server:
+Ular Tangga Sejarah Indonesia bukanlah sekadar adaptasi digital dari papan permainan klasik. Ini adalah proyek **EdTech Gamification** yang menyuntikkan nyawa kompetitif ke dalam pelajaran sejarah yang selama ini dianggap membosankan. 
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Game ini merevolusi konsep *keberuntungan murni (pure luck)* menjadi permainan **strategi dan pengetahuan**. Di sini, mencapai petak terakhir tidak menjamin kemenangan jika pemain miskin wawasan sejarah. Dengan mekanik Kuis Trivia, Sistem MVP, Fase Krisis (Catch-up Mechanic), serta beragam *Buff* dan *Debuff*, game ini menawarkan *replayability* (daya main ulang) yang sangat tinggi.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Fitur Utama (Core Features)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Sistem Mode Bermain**
+   - **Multiplayer Lokal (Pass-and-Play)**: Hingga 4 pemain dalam 1 perangkat (Tablet/PC/Smartphone). Sangat cocok untuk acara keluarga, waktu luang di sekolah, atau *ice-breaking*.
+   - **AI Bot Opponent**: Pemain tunggal dapat bermain melawan Bot komputer cerdas yang akan merespon dan melempar dadu secara otomatis.
 
-## Learn More
+2. **Kuis Sejarah Berjenjang (Trivia System)**
+   - Petak di papan bukan hanya berisi ular atau tangga, melainkan petak Kuis. Kuis terbagi menjadi 4 level (*Easy, Medium, Hard, Extreme*). Menjawab benar memberikan poin besar, menjawab salah mengurangi poin.
 
-To learn more about Next.js, take a look at the following resources:
+3. **Mekanik MVP & Keadilan Bermain**
+   - Menginjak petak 100 bukan akhir segalanya. Jika poin pemain lebih rendah dari lawannya, ia akan terpental kembali.
+   - **Fase Krisis**: Pemain yang tertinggal akan mendapat bantuan sementara (seperti penangkal racun ular) untuk menyeimbangkan kompetisi dan mencegah rasa bosan.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. **Ekosistem Efek (Buff & Debuff)**
+   - 🛡️ **Anti-Snake (Tameng)**: Menahan gigitan ular.
+   - 🎲 **Double Roll**: Giliran tambahan instan.
+   - 🥷 **Steal Point**: Mencuri poin dari pemain peringkat satu.
+   - ⛓️ **Absolute Roll**: Kecepatan dadu dibatasi (maksimal 4).
+   - 📉 **Decreased Roll**: Dadu terpotong 2 langkah akibat kelelahan.
+   - 🚫 **Silence**: Kehilangan giliran.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. **Dynamic HUD & Leaderboard**
+   - Antarmuka permainan modern dengan sistem Klasemen Sementara secara langsung (*real-time*) di layar perangkat Desktop dan Mobile.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠️ Stack Teknologi (Under the Hood)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Proyek ini dibangun menggunakan standar web modern:
+- **Next.js 16 (React)**: Arsitektur UI berbasis komponen yang sangat modular dan optimal.
+- **Tailwind CSS**: Desain UI/UX yang dinamis, animasi halus (*smooth*), efek *glassmorphism*, tanpa *file* CSS raksasa.
+- **TypeScript**: Kepastian tipe data untuk Game Engine yang aman.
+- **Client-Side Pure**: Seluruh logika permainan dan penyimpanan riwayat (kuis, turn, efek) berjalan 100% di peramban pengguna (*browser*) tanpa membebani server eksternal, membuat game ini _zero latency_.
+
+---
+
+## 💻 Panduan Menjalankan Secara Lokal (Local Setup)
+
+Pastikan Anda memiliki [Node.js](https://nodejs.org/) terpasang di komputer Anda.
+
+1. **Klon atau unduh repositori ini** ke komputer Anda.
+2. Buka terminal (CMD/PowerShell/Terminal) di dalam folder proyek.
+3. **Instal dependensi** dengan perintah:
+   ```bash
+   npm install
+   ```
+4. **Jalankan server pengembangan** dengan perintah:
+   ```bash
+   npm run dev
+   ```
+5. Buka peramban (browser) dan akses alamat: [http://localhost:3000](http://localhost:3000)
+
+_**Catatan Error Next.js:** Jika Anda mendapatkan pesan error `Blocked cross-origin resource HMR` saat menjalankan server dev, silakan mematikan server dengan menekan `Ctrl+C`, lalu ulangi jalankan `npm run dev`._
+
+> *Game ini membuktikan bahwa edukasi tidak harus kaku, dan pelajaran sejarah bisa disulap menjadi medan kompetisi adu cerdas yang penuh tawa dan strategi.*

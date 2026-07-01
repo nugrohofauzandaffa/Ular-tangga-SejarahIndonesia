@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Question } from '@/types/question';
 import { validateAnswer, QuizResult } from '@/lib/quiz';
+import { useAudio } from '@/contexts/AudioContext';
 
 interface QuizModalProps {
   question: Question | null;
   isOpen: boolean;
   onSubmit: (answer: string) => void;
   onComplete: () => void;
+  isBotTurn?: boolean;
 }
 
-export const QuizModal: React.FC<QuizModalProps> = ({ question, isOpen, onSubmit, onComplete }) => {
+export const QuizModal: React.FC<QuizModalProps> = ({ question, isOpen, onSubmit, onComplete, isBotTurn }) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [result, setResult] = useState<QuizResult | null>(null);
+  const { playSFX } = useAudio();
+  const botHasAnsweredRef = React.useRef(false);
 
   // Reset internal state when modal closes or question changes
   useEffect(() => {
     if (!isOpen) {
+      botHasAnsweredRef.current = false;
       setTimeout(() => {
         setSelectedOption(null);
         setResult(null);
@@ -23,26 +28,65 @@ export const QuizModal: React.FC<QuizModalProps> = ({ question, isOpen, onSubmit
     }
   }, [isOpen, question]);
 
+  // Logika simulasi bot menjawab kuis (Visual Automation)
+  useEffect(() => {
+    if (isOpen && isBotTurn && question && !selectedOption && !result && !botHasAnsweredRef.current) {
+      botHasAnsweredRef.current = true;
+      
+      // Delay 1: Pura-pura membaca soal
+      const thinkTimer = setTimeout(() => {
+        let pickedAnswer = "";
+        const isCorrect = Math.random() < 0.25; // 25% akurasi bot
+        if (isCorrect) {
+          pickedAnswer = question.correctAnswer;
+        } else {
+          const wrongOptions = question.options.filter(o => o !== question.correctAnswer);
+          pickedAnswer = wrongOptions[Math.floor(Math.random() * wrongOptions.length)] || wrongOptions[0];
+        }
+
+        // Animasi UI bot mengeklik pilihan
+        playSFX('click');
+        setSelectedOption(pickedAnswer);
+
+        // Delay 2: Jeda agar pemain bisa melihat apa yang diklik bot sebelum divalidasi
+        setTimeout(() => {
+          const validationResult = validateAnswer(question, pickedAnswer);
+          setResult(validationResult);
+          
+          if (validationResult.isCorrect) playSFX('correct');
+          else playSFX('wrong');
+
+          onSubmit(pickedAnswer);
+        }, 1500);
+
+      }, 2500);
+
+      return () => clearTimeout(thinkTimer);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, isBotTurn, question, selectedOption, result]);
+
   if (!isOpen || !question) return null;
 
   const handleSelectOption = (option: string) => {
-    if (result) return; // Mencegah pilihan berubah jika sudah disubmit
+    if (result || isBotTurn) return; // Mencegah pilihan berubah jika sudah disubmit atau bot
+    playSFX('click');
     setSelectedOption(option);
   };
 
   const handleSubmit = () => {
-    if (!selectedOption) return;
+    if (!selectedOption || isBotTurn) return;
+    playSFX('click');
     
-    // Gunakan Quiz Module untuk validasi (menghindari duplikasi logika)
     const validationResult = validateAnswer(question, selectedOption);
     setResult(validationResult);
     
-    // Kirim jawaban ke atas untuk diproses oleh Game Engine
     onSubmit(selectedOption);
   };
 
   const handleContinue = () => {
-    if (result) {
+    if (result && !isBotTurn) {
+      playSFX('click');
       onComplete();
     }
   };
@@ -70,7 +114,6 @@ export const QuizModal: React.FC<QuizModalProps> = ({ question, isOpen, onSubmit
             {question.options.map((option, index) => {
               const isSelected = selectedOption === option;
               
-              // Styling berdasarkan status (Belum dijawab / Benar / Salah)
               let buttonStyle = "border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-slate-700";
               
               if (result) {
@@ -89,8 +132,8 @@ export const QuizModal: React.FC<QuizModalProps> = ({ question, isOpen, onSubmit
                 <button
                   key={index}
                   onClick={() => handleSelectOption(option)}
-                  disabled={result !== null}
-                  className={`w-full text-left p-4 rounded-xl border-2 transition-all ${buttonStyle}`}
+                  disabled={result !== null || isBotTurn}
+                  className={`w-full text-left p-4 rounded-xl border-2 transition-all ${buttonStyle} disabled:cursor-not-allowed`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="flex items-center justify-center w-6 h-6 rounded-full bg-white border border-current text-xs font-bold shrink-0">
@@ -119,17 +162,18 @@ export const QuizModal: React.FC<QuizModalProps> = ({ question, isOpen, onSubmit
           {!result ? (
             <button
               onClick={handleSubmit}
-              disabled={!selectedOption}
+              disabled={!selectedOption || isBotTurn}
               className="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-full sm:w-auto"
             >
-              Jawab
+              {isBotTurn ? 'Bot Sedang Berpikir...' : 'Jawab'}
             </button>
           ) : (
             <button
               onClick={handleContinue}
-              className="px-6 py-3 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-900 transition-colors w-full sm:w-auto"
+              disabled={isBotTurn}
+              className="px-6 py-3 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-full sm:w-auto"
             >
-              Lanjutkan Permainan
+              {isBotTurn ? 'Bot Membaca Hasil...' : 'Lanjutkan Permainan'}
             </button>
           )}
         </div>

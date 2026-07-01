@@ -57,6 +57,15 @@ export const generateRandomBoard = (quizCount: number = 10, bonusCount: number =
     baseBoard[idx].type = 'Penalty';
   }
 
+  // 6. Pastikan ada kuis di zona akhir (91-99) untuk kesempatan farm MVP
+  const lateGameTiles = [92, 95, 98]; // Posisi kuis tetap di akhir permainan
+  lateGameTiles.forEach(pos => {
+    if (baseBoard[pos - 1].type === 'Normal') {
+      baseBoard[pos - 1].type = 'Quiz';
+      baseBoard[pos - 1].contentId = shuffledQuestions[Math.floor(Math.random() * shuffledQuestions.length)].id;
+    }
+  });
+
   return baseBoard;
 };
 
