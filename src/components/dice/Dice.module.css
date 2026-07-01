@@ -8,29 +8,49 @@
 .dice {
   width: 80px;
   height: 80px;
-  background-color: #ffffff;
-  border: 3px solid #333333;
-  border-radius: 12px;
+  background-color: #fdf6e3;
+  border: 3px solid #8b7355;
+  border-radius: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 32px;
   font-weight: bold;
-  color: #333333;
-  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.1s;
+  color: #5c4033;
+  box-shadow: inset 0 0 10px rgba(139, 69, 19, 0.2), 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .rolling {
-  animation: shake 0.4s infinite linear;
+  animation: tumble 0.4s infinite ease-in-out;
+  color: transparent; /* Sembunyikan teks/angka biasa saat roll */
 }
 
-@keyframes shake {
-  0% { transform: translate(1px, 1px) rotate(0deg); }
-  25% { transform: translate(-2px, -2px) rotate(-15deg); }
-  50% { transform: translate(-3px, 0px) rotate(15deg); }
-  75% { transform: translate(3px, 2px) rotate(0deg); }
-  100% { transform: translate(1px, -1px) rotate(0deg); }
+.rolling::after {
+  content: '🎲';
+  font-size: 40px;
+  color: initial;
+  animation: spinInner 0.2s infinite linear;
+}
+
+@keyframes tumble {
+  0% { 
+    transform: scale(1) rotate(0deg) translateY(0); 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  50% { 
+    transform: scale(1.15) rotate(180deg) translateY(-15px); 
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+  }
+  100% { 
+    transform: scale(1) rotate(360deg) translateY(0); 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@keyframes spinInner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
 }
 
 .rollButton {
@@ -40,16 +60,26 @@
   cursor: pointer;
   border: none;
   border-radius: 8px;
-  background-color: #2563eb;
+  background-color: #b45309; /* amber-700 */
   color: #ffffff;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba(180, 83, 9, 0.4);
 }
 
 .rollButton:hover:not(:disabled) {
-  background-color: #1d4ed8;
+  background-color: #92400e;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(180, 83, 9, 0.5);
+}
+
+.rollButton:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(180, 83, 9, 0.4);
 }
 
 .rollButton:disabled {
-  background-color: #94a3b8;
+  background-color: #d6d3d1;
+  color: #78716c;
   cursor: not-allowed;
+  box-shadow: none;
 }

@@ -42,7 +42,20 @@
   - [x] Phase 9.3: Implement Buff/Debuff Logic in GameEngine
   - [x] Phase 9.4: Fact Modal & Effect Modal UI
   - [x] Phase 9.5: Random Spawn System (Bonus/Penalty)
+  - [x] Rekonstruksi Reward Garis Akhir (Finish Line Reward)
+  - [x] Pengurangan Dampak Tangga Ekstrem (28 ke 54)
+  - [x] Penyesuaian Reward Efek (StealPoint menjadi 7)
+  - [x] Visualisasi "Zona Farming" pada UI (Tile 91-99)
+  - [x] Self review & Smoke test
+  - [x] Update Development Log/ Post-MVP
 - [x] Phase 10: Main Menu & Bot System
 - [x] Phase 11: Audio & Sound Effects (SFX) System
 - [x] Phase 12: Late Game Mechanics (Krisis) & MVP Win Condition
 - [ ] Phase 13: Deployment / Post-MVP
+- [x] Phase Q1: Visualisasi Ular & Tangga
+- [x] Phase Q2: Peningkatan Estetika Papan
+- [x] Phase Q3: Dice Animation
+- [x] Phase Q4: Player Movement Animation
+- [x] Phase Q5: Snake & Ladder Transition Animation
+- [x] Phase Q6: Result Screen Improvement
+- [x] Phase Q7: Audio Polish

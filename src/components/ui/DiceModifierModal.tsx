@@ -61,7 +61,7 @@ export const DiceModifierModal: React.FC<DiceModifierModalProps> = ({ info, onAc
         
         {!isBotTurn && (
           <button
-            onClick={onAcknowledge}
+            onClick={() => { playSFX('click'); onAcknowledge(); }}
             className="mt-8 w-full py-3 bg-red-600 text-white rounded-xl font-bold shadow-[0_4px_14px_0_rgba(220,38,38,0.39)] hover:bg-red-700 hover:shadow-[0_6px_20px_rgba(220,38,38,0.23)] hover:-translate-y-0.5 transition-all"
           >
             Lanjutkan

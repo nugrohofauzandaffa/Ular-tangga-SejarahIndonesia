@@ -21,6 +21,7 @@ import { snakes } from '@/data/papan/snakes';
 import { ladders } from '@/data/papan/ladders';
 import { questions } from '@/data/questions';
 
+import { calculateMovement } from '@/lib/movement';
 import {
   processTurn,
   submitQuizAnswer,
@@ -132,42 +133,76 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
     }
   }, [gameState.gameStatus, gameState.currentTurn, activePlayer, gameContext, playSFX]);
 
+  const triggerPostEffects = (result: ProcessTurnResult) => {
+    if (result.antiSnakeTriggered) {
+      setShowAntiSnakeToast(true);
+      playSFX('ladder'); // Suara positif saat selamat
+      setTimeout(() => setShowAntiSnakeToast(false), 2500);
+    }
+
+    if (result.tileEvent?.type === 'Quiz' && result.tileEvent.contentId) {
+      setActiveQuestionId(result.tileEvent.contentId);
+    }
+
+    // Tampilkan Pop-up Modifier Dadu jika ada
+    if (result.diceModifierInfo) {
+      setDiceModifierPopup(result.diceModifierInfo);
+      setTimeout(() => setDiceModifierPopup(null), 3500);
+    }
+
+    if (result.acquiredEffect) {
+      setActiveEffect(result.acquiredEffect);
+
+      const isBuff = ['AntiSnake', 'DoubleRoll', 'StealPoint'].includes(result.acquiredEffect.type);
+      if (isBuff) {
+        playSFX('ladder');
+      } else {
+        playSFX('snake');
+      }
+    } else {
+      setActiveEffect(null);
+    }
+  };
+
   // Fungsi utilitas untuk mengeksekusi hasil permainan ke state utama
   const applyGameResult = (result: ProcessTurnResult) => {
-    setGameState(result.newState);
+    // Cek apakah ada perpindahan karena ular atau tangga
+    if (result.tileEvent && (result.tileEvent.type === 'Snake' || result.tileEvent.type === 'Ladder') && !result.antiSnakeTriggered) {
+      
+      const activePlayerId = gameState.currentTurn;
+      const originalPos = gameState.players.find(p => p.id === activePlayerId)?.position || 1;
+      const movement = calculateMovement(originalPos, result.newState.dice.currentValue);
+      const intermediatePos = movement.newPosition;
 
-    setTimeout(() => {
-      if (result.antiSnakeTriggered) {
-        setShowAntiSnakeToast(true);
-        playSFX('ladder'); // Suara positif saat selamat
-        setTimeout(() => setShowAntiSnakeToast(false), 2500);
-      }
+      // 1. Buat intermediate state: Gerakkan pemain ke petak tempat ular/tangga berada
+      const intermediateState = {
+        ...result.newState,
+        players: result.newState.players.map(p => 
+          p.id === activePlayerId ? { ...p, position: intermediatePos } : p
+        )
+      };
 
-      if (result.tileEvent?.type === 'Quiz' && result.tileEvent.contentId) {
-        setActiveQuestionId(result.tileEvent.contentId);
-      } else {
-        setGameState(prev => ({ ...prev, gameStatus: 'idle' }));
-      }
+      setGameState(intermediateState);
 
-      // Tampilkan Pop-up Modifier Dadu jika ada
-      if (result.diceModifierInfo) {
-        setDiceModifierPopup(result.diceModifierInfo);
-        setTimeout(() => setDiceModifierPopup(null), 3500);
-      }
-
-      if (result.acquiredEffect) {
-        setActiveEffect(result.acquiredEffect);
-
-        const isBuff = ['AntiSnake', 'DoubleRoll', 'StealPoint'].includes(result.acquiredEffect.type);
-        if (isBuff) {
-          playSFX('ladder');
+      // 2. Setelah delay agar animasi pion sampai (700ms), mainkan efek merosot/naik dan set state akhir
+      setTimeout(() => {
+        if (result.tileEvent?.type === 'Snake') {
+          playSFX('snake'); 
         } else {
-          playSFX('snake');
+          playSFX('ladder');
         }
-      } else {
-        setActiveEffect(null);
-      }
-    }, 0);
+        
+        setGameState(result.newState);
+        
+        // Panggil popup efek dll setelah selesai animasi transisi ular/tangga (600ms delay)
+        setTimeout(() => triggerPostEffects(result), 600);
+      }, 700);
+      
+    } else {
+      // Normal movement
+      setGameState(result.newState);
+      setTimeout(() => triggerPostEffects(result), 0);
+    }
   };
 
   // Handler untuk memulai giliran (melempar dadu)
@@ -391,7 +426,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
           </div>
           <div className="flex-none flex justify-center mt-2 relative w-full">
             <button
-              onClick={() => setIsMobileLogOpen(true)}
+              onClick={() => { playSFX('click'); setIsMobileLogOpen(true); }}
               className="absolute left-4 top-1/2 -translate-y-1/2 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-600 shadow-sm border border-slate-200 flex items-center gap-2 text-xs font-semibold transition-colors"
             >
               <span>📝</span> Log
@@ -441,7 +476,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
             <div className="flex justify-between items-center mb-4 px-2">
               <h2 className="font-bold text-lg text-slate-800">Game Log</h2>
               <button
-                onClick={() => setIsMobileLogOpen(false)}
+                onClick={() => { playSFX('click'); setIsMobileLogOpen(false); }}
                 className="p-2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 bg-slate-50 rounded-full transition-colors"
               >
                 ✕

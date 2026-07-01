@@ -19,7 +19,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
   useEffect(() => {
     playBGM('menu');
     return () => stopBGM('menu');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleGameModeChange = (mode: GameMode) => {
@@ -33,6 +33,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
       });
     } else {
       setPlayerNames(prev => {
+        // Jika namanya masih 'Bot (AI)' (belum diubah), kembalikan ke default 'Pemain 2'
         if (prev[1] === 'Bot (AI)') {
           const newNames = [...prev];
           newNames[1] = 'Pemain 2';
@@ -52,10 +53,10 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
   const handleStart = () => {
     playSFX('click');
     const initialPlayers: Player[] = [];
-    
+
     for (let i = 0; i < playerCount; i++) {
       const isBot = gameMode === 'solo' && i > 0; // Di mode solo, pemain ke-2 (index 1) adalah bot
-      
+
       initialPlayers.push({
         id: `p${i + 1}`,
         name: playerNames[i] || (isBot ? 'Bot' : `Pemain ${i + 1}`),
@@ -67,7 +68,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
         isBot,
       });
     }
-    
+
     onStartGame(initialPlayers);
   };
 
@@ -96,21 +97,19 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
             <div className="flex gap-2">
               <button
                 onClick={() => { playSFX('click'); handleGameModeChange('multiplayer'); }}
-                className={`flex-1 py-3 rounded-lg font-bold transition-all duration-200 ${
-                  gameMode === 'multiplayer'
+                className={`flex-1 py-3 rounded-lg font-bold transition-all duration-200 ${gameMode === 'multiplayer'
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                  }`}
               >
                 Multiplayer Local
               </button>
               <button
                 onClick={() => { playSFX('click'); handleGameModeChange('solo'); }}
-                className={`flex-1 py-3 rounded-lg font-bold transition-all duration-200 ${
-                  gameMode === 'solo'
+                className={`flex-1 py-3 rounded-lg font-bold transition-all duration-200 ${gameMode === 'solo'
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                  }`}
               >
                 Solo vs Bot
               </button>
@@ -128,11 +127,10 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                   <button
                     key={num}
                     onClick={() => { playSFX('click'); setPlayerCount(num); }}
-                    className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${
-                      playerCount === num
+                    className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${playerCount === num
                         ? 'bg-blue-600 text-white shadow-md'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
+                      }`}
                   >
                     {num} Pemain
                   </button>
@@ -148,7 +146,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
             </label>
             {Array.from({ length: playerCount }).map((_, index) => {
               const isBot = gameMode === 'solo' && index === 1;
-              
+
               return (
                 <div key={index} className="flex items-center gap-3 bg-slate-50 p-2 rounded-lg border border-slate-200">
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 text-slate-600 font-bold shrink-0">
@@ -160,9 +158,8 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                     onChange={(e) => handleNameChange(index, e.target.value)}
                     disabled={isBot}
                     placeholder={`Nama Pemain ${index + 1}`}
-                    className={`w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isBot ? 'bg-slate-100 text-slate-500 border-slate-200 font-medium' : 'bg-white border-slate-300'
-                    }`}
+                    className={`w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${isBot ? 'bg-slate-100 text-slate-500 border-slate-200 font-medium' : 'bg-white border-slate-300'
+                      }`}
                     maxLength={15}
                   />
                   {isBot && (

@@ -23,7 +23,7 @@ export const Dice: React.FC<DiceProps> = ({ diceState, onRoll, disabled, layout 
           ${isHorizontal ? 'w-10 h-10 text-xl' : 'w-20 h-20 text-4xl'}
           ${diceState.isRolling ? styles.rolling : ''}`}
       >
-        {diceState.isRolling ? '?' : diceState.currentValue}
+        {diceState.currentValue}
       </div>
       <button 
         className={`font-bold cursor-pointer rounded-full text-white transition-colors

@@ -4,7 +4,7 @@ import React from 'react';
 import { useAudio } from '@/contexts/AudioContext';
 
 export function AudioSettings() {
-  const { volume, isMuted, setVolume, toggleMute } = useAudio();
+  const { volume, isMuted, setVolume, toggleMute, playSFX } = useAudio();
 
   return (
     <div className="flex flex-col gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
@@ -13,7 +13,7 @@ export function AudioSettings() {
           <span className="text-lg">🎵</span> Pengaturan Audio
         </label>
         <button
-          onClick={toggleMute}
+          onClick={() => { playSFX('click'); toggleMute(); }}
           className="text-xl hover:scale-110 transition-transform focus:outline-none"
           title={isMuted ? 'Nyalakan Suara' : 'Matikan Suara'}
         >

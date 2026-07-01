@@ -451,8 +451,113 @@
 ## [Phase 14] - Game Design Revision 01
 
 - **Phase**: Phase 14
-- **File yang dibuat atau diubah**: player.ts, gameState.ts, MainMenu.tsx, gameEngine.ts, oard.ts, ResultScreen.tsx.
+- **File yang dibuat atau diubah**: player.ts, gameState.ts, MainMenu.tsx, gameEngine.ts, board.ts, ResultScreen.tsx.
 - **Alasan Perubahan**: Revisi sistem penentuan pemenang (Champion bukan lagi siapa yang mencapai petak 100, tapi skor tertinggi). Petak 100 kini hanya garis finish biasa tanpa syarat MVP. Juga menambahkan penghargaan Fastest Explorer dan History Master, serta meningkatkan frekuensi kuis menjadi ~25 petak dengan sebaran kesulitan progresif.
 - **Dampak Perubahan**: GameEngine dirombak pada pengecekan akhir permainan dan resolusi petak 100. Papan (board.ts) kini memproduksi 25 petak kuis yang disebar ke 4 zona. ResultScreen direkayasa ulang dengan antarmuka yang menampilkan panel penghargaan khusus.
+- **Status**: Completed
+
+## [Phase 14.1] - Gameplay Balancing Update
+
+- **Phase**: Phase 14.1
+- **File yang dibuat atau diubah**:
+  - `src/lib/gameEngine.ts`
+  - `src/data/papan/ladders.ts`
+  - `src/components/papan/Tile.tsx`
+- **Alasan Perubahan**:
+  - Menindaklanjuti hasil audit *Gameplay Review & Balancing*. Diperlukan penyesuaian agar sistem kemenangan berbasis skor tidak bertolak belakang dengan pencapaian mencapai garis akhir (petak 100), mengatur tempo bermain agar tidak terlalu cepat selesai karena tangga yang terlalu panjang, menyesuaikan persentase reward dari efek mencuri poin (*StealPoint*), dan memberikan petunjuk visual kepada pemain terkait *Endgame Zone*.
+- **Dampak Perubahan**:
+  - `gameEngine.ts`: Pemain yang pertama kali mencapai petak 100 kini langsung mendapatkan instan +15 Poin (Fastest Explorer Reward). Hal ini memotivasi pemain untuk berlomba mencapai garis akhir tanpa takut kalah poin. Efek *StealPoint* juga diperkuat dari 3 menjadi 7 poin agar setara dengan bobot kuis tingkat *Medium-Hard*.
+  - `ladders.ts`: Tangga super panjang dari 28 ke 84 dipotong menjadi 28 ke 54. Hal ini memastikan permainan tidak berakhir prematur dan pemain masih memiliki waktu yang cukup untuk memanen poin edukasi sejarah di papan tengah.
+  - `Tile.tsx`: Petak bernomor 91 hingga 99 (Zona Krisis/Farming) kini memiliki indikator visual berupa *border* merah dan *glow* merah di bagian dalam untuk menandakan area genting/pertarungan poin terakhir.
+- **Status**: Completed
+
+## [Phase Q1] - Visualisasi Ular & Tangga
+
+- **Phase**: Phase Q1
+- **File yang dibuat atau diubah**:
+  - `src/components/papan/Board.tsx`
+  - `docs/Management/task.md`
+- **Alasan Perubahan**:
+  - Menindaklanjuti audit UI/UX, jalur ular dan tangga tidak terlihat secara visual di papan, membingungkan pemain.
+- **Dampak Perubahan**:
+  - Menambahkan layer SVG absolut pada papan. Garis SVG digambar menggunakan koordinat dinamis berbasis persentase (dari `getCoordinates`) agar responsif. Ular menggunakan gradient merah putus-putus, dan tangga menggunakan gradient hijau solid.
+- **Status**: Completed
+
+## [Phase Q2] - Peningkatan Estetika Papan
+
+- **Phase**: Phase Q2
+- **File yang dibuat atau diubah**:
+  - `src/components/papan/Tile.tsx`
+  - `src/components/papan/Board.tsx`
+- **Alasan Perubahan**:
+  - Papan sebelumnya terlihat terlalu kaku dengan warna modern (putih/abu-abu). Dibutuhkan sentuhan tema "Sejarah" berupa warna kayu/perkamen dan pergantian teks kaku menjadi ikonografi.
+- **Dampak Perubahan**:
+  - Menyelaraskan seluruh palet papan (`Board.tsx`) dan petak (`Tile.tsx`) menggunakan warna perkamen (`#fdf6e3`), `border` cokelat/kayu, serta mengganti teks tipe petak dengan ikon (📜, ⭐, ⚠️, 👑).
+- **Status**: Completed
+
+## [Phase Q3] - Dice Animation
+
+- **Phase**: Phase Q3
+- **File yang dibuat atau diubah**:
+  - `src/components/dice/Dice.tsx`
+  - `src/components/dice/Dice.module.css`
+- **Alasan Perubahan**:
+  - Animasi dadu sekadar bergetar kiri-kanan secara 2D. Diperlukan interaksi lemparan yang lebih memuaskan secara visual.
+- **Dampak Perubahan**:
+  - Mengubah keyframes menjadi efek lompatan `tumble` (scale, translateY, rotasi 360 derajat) dan memberikan ikon dadu berputar (🎲) selama proses *rolling* via `::after`.
+- **Status**: Completed
+
+## [Phase Q4] - Player Movement Animation
+
+- **Phase**: Phase Q4
+- **File yang dibuat atau diubah**:
+  - `src/components/player/PlayerToken.tsx`
+  - `src/components/papan/Tile.tsx`
+  - `src/components/papan/Board.tsx`
+- **Alasan Perubahan**:
+  - Pion sebelumnya terperangkap di dalam DOM petak masing-masing, sehingga pemain berpindah petak secara teleportasi instan (mengganggu *game feel*).
+- **Dampak Perubahan**:
+  - Melepas `PlayerToken` dari dalam `<Tile>` dan memindahkannya ke dalam *absolute overlay* di `<Board>`. Memposisikan pion dengan properti `left` dan `top` secara kalkulasi persentase, ditambah transisi CSS mulus agar perpindahan petak terlihat seperti meluncur (*sliding*).
+- **Status**: Completed
+
+## [Phase Q5] - Snake & Ladder Transition Animation
+
+- **Phase**: Phase Q5
+- **File yang dibuat atau diubah**:
+  - `src/components/GameLayout.tsx`
+- **Alasan Perubahan**:
+  - Animasi pergerakan saat terkena ular atau tangga terasa prematur, pion langsung berpindah ke ujung tanpa jeda. Hal ini menghilangkan sensasi kejutan.
+- **Dampak Perubahan**:
+  - Menambahkan *interceptor* di dalam `applyGameResult`. Jika pemain mendarat di ular/tangga, state pertama (*intermediate state*) diterapkan untuk membiarkan pemain bergerak ke petak pendaratan. Setelah jeda waktu (`700ms`), baru state akhir diaplikasikan (merosot/naik) dan memunculkan pop-up yang sebelumnya tertunda.
+- **Status**: Completed
+
+## [Phase Q6] - Result Screen Improvement
+
+- **Phase**: Phase Q6
+- **File yang dibuat atau diubah**:
+  - `src/components/ui/ResultScreen.tsx`
+  - `src/components/ui/Confetti.tsx` (Baru)
+- **Alasan Perubahan**:
+  - Tampilan akhir (*Result Screen*) perlu memberikan kesan *closure* yang memuaskan dan merayakan kemenangan pemain secara visual.
+- **Dampak Perubahan**:
+  - Membuat komponen `Confetti` murni menggunakan React & CSS tanpa library eksternal agar proyek tetap ringan dan arsitektur modular terjaga.
+  - Menambahkan animasi *bounce* dan *pulse* pada ikon piala Champion di `ResultScreen` serta menyertakan rintikan konfeti di latar belakang.
+  - Komponen lain di Result Screen seperti metrik *Fastest Explorer* dan *History Master* sudah tertata dengan baik sehingga dipertahankan.
+- **Status**: Completed
+
+## [Phase Q7] - Audio Polish
+
+- **Phase**: Phase Q7
+- **File yang dibuat atau diubah**:
+  - `src/components/ui/ResultScreen.tsx`
+  - `src/components/ui/AudioSettings.tsx`
+  - `src/components/ui/FloatingAudioControl.tsx`
+  - `src/components/ui/DiceModifierModal.tsx`
+  - `src/components/GameLayout.tsx`
+- **Alasan Perubahan**:
+  - Audio (BGM dan SFX) perlu diintegrasikan secara menyeluruh ke seluruh interaksi pengguna yang sebelumnya masih belum memutar suara, untuk memastikan suasana permainan hidup namun terkontrol.
+- **Dampak Perubahan**:
+  - Menambahkan eksekusi *sound effect* (`playSFX('click')`) pada berbagai tombol kritis yang sebelumnya belum merespons dengan audio (misalnya tombol navigasi `ResultScreen`, tombol *Lanjutkan* pada modal penalti, tombol kontrol Audio mengambang, serta tombol menu log).
+  - Sistem BGM antara antarmuka utama (`MainMenu`) dan permainan (`GameLayout`) sudah tervalidasi menggunakan sinkronisasi siklus hidup React (`mount`/`unmount`), menghindari tumpang tindih (*overlap*) BGM secara absolut.
 - **Status**: Completed
 

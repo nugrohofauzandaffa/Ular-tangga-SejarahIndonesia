@@ -162,6 +162,7 @@ export const processTurn = (
   // 3. Check Win
   if (movement.hasReachedEnd) {
     newState.fastestExplorer = playerToUpdate.id;
+    playerToUpdate.score = addScore(playerToUpdate.score, 15).newScore; // Reward +15 poin
     newState.players[activePlayerIndex] = playerToUpdate;
     const champion = [...newState.players].sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
@@ -256,7 +257,7 @@ export const processTurn = (
       switch (acquiredEffect.type) {
         case 'AntiSnake': effectMsg = 'Mendapat kekebalan dari ular berikutnya'; break;
         case 'DoubleRoll': effectMsg = 'Mendapat ekstra giliran melempar dadu'; break;
-        case 'StealPoint': effectMsg = 'Mencuri 3 Poin dari lawan teratas'; break;
+        case 'StealPoint': effectMsg = 'Mencuri 7 Poin dari lawan teratas'; break;
       }
       
       newState.logs.push({
@@ -282,7 +283,7 @@ export const processTurn = (
         
         let stolenAmount = 0;
         if (highestOpponentIndex !== -1 && highestScore > 0) {
-          stolenAmount = Math.min(3, highestScore);
+          stolenAmount = Math.min(7, highestScore);
           newState.players[highestOpponentIndex] = {
             ...newState.players[highestOpponentIndex],
             score: newState.players[highestOpponentIndex].score - stolenAmount
@@ -343,6 +344,7 @@ export const processTurn = (
   // 6. Check Win (Post-Tile Resolution)
   if (playerToUpdate.position === GAME_CONSTANTS.BOARD_SIZE) {
     newState.fastestExplorer = playerToUpdate.id;
+    playerToUpdate.score = addScore(playerToUpdate.score, 15).newScore; // Reward +15 poin
     newState.players[activePlayerIndex] = playerToUpdate;
     const champion = [...newState.players].sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
