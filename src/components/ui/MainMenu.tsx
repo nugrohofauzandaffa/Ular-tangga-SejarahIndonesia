@@ -22,9 +22,9 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Menyesuaikan state ketika mode berubah
-  useEffect(() => {
-    if (gameMode === 'solo') {
+  const handleGameModeChange = (mode: GameMode) => {
+    setGameMode(mode);
+    if (mode === 'solo') {
       setPlayerCount(2);
       setPlayerNames(prev => {
         const newNames = [...prev];
@@ -33,7 +33,6 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
       });
     } else {
       setPlayerNames(prev => {
-        // Jika namanya masih 'Bot (AI)' (belum diubah), kembalikan ke default 'Pemain 2'
         if (prev[1] === 'Bot (AI)') {
           const newNames = [...prev];
           newNames[1] = 'Pemain 2';
@@ -42,7 +41,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
         return prev;
       });
     }
-  }, [gameMode]);
+  };
 
   const handleNameChange = (index: number, newName: string) => {
     const newNames = [...playerNames];
@@ -96,7 +95,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
             </label>
             <div className="flex gap-2">
               <button
-                onClick={() => { playSFX('click'); setGameMode('multiplayer'); }}
+                onClick={() => { playSFX('click'); handleGameModeChange('multiplayer'); }}
                 className={`flex-1 py-3 rounded-lg font-bold transition-all duration-200 ${
                   gameMode === 'multiplayer'
                     ? 'bg-blue-600 text-white shadow-md'
@@ -106,7 +105,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                 Multiplayer Local
               </button>
               <button
-                onClick={() => { playSFX('click'); setGameMode('solo'); }}
+                onClick={() => { playSFX('click'); handleGameModeChange('solo'); }}
                 className={`flex-1 py-3 rounded-lg font-bold transition-all duration-200 ${
                   gameMode === 'solo'
                     ? 'bg-indigo-600 text-white shadow-md'

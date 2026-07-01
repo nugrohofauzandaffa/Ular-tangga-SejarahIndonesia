@@ -447,3 +447,12 @@
   - Membuang tombol *mute* yang terpisah dari *Floating Audio Control*.
   - Memanfaatkan kembali (reusable) komponen `AudioSettings.tsx` di dalam *pop-up floating control*.
 - **Status**: Completed (Tombol berhasil digeser ke area aman di bawah Header (Top-Right), UI terlihat jauh lebih elegan karena tombol Mute disatukan ke dalam pop-up Settings secara DRY menggunakan komponen `<AudioSettings />`).
+
+## [Phase 14] - Game Design Revision 01
+
+- **Phase**: Phase 14
+- **File yang dibuat atau diubah**: player.ts, gameState.ts, MainMenu.tsx, gameEngine.ts, oard.ts, ResultScreen.tsx.
+- **Alasan Perubahan**: Revisi sistem penentuan pemenang (Champion bukan lagi siapa yang mencapai petak 100, tapi skor tertinggi). Petak 100 kini hanya garis finish biasa tanpa syarat MVP. Juga menambahkan penghargaan Fastest Explorer dan History Master, serta meningkatkan frekuensi kuis menjadi ~25 petak dengan sebaran kesulitan progresif.
+- **Dampak Perubahan**: GameEngine dirombak pada pengecekan akhir permainan dan resolusi petak 100. Papan (board.ts) kini memproduksi 25 petak kuis yang disebar ke 4 zona. ResultScreen direkayasa ulang dengan antarmuka yang menampilkan panel penghargaan khusus.
+- **Status**: Completed
+

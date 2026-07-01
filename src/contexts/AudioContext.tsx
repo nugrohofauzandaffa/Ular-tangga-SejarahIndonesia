@@ -64,6 +64,7 @@ export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       let initialVolume = 0.5;
       if (savedVolume !== null) {
         initialVolume = parseFloat(savedVolume);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setVolumeState(initialVolume);
       }
 

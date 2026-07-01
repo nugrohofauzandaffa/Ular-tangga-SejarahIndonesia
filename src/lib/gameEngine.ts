@@ -143,13 +143,9 @@ export const processTurn = (
     isRolling: false,
   };
 
-  // Tentukan MVP
-  const highestScore = Math.max(...newState.players.map(p => p.score));
-  const isMVP = playerToUpdate.score >= highestScore;
-
   // 2. Calculate Movement
   const oldPosition = playerToUpdate.position;
-  const movement = calculateMovement(playerToUpdate.position, diceValue, isMVP);
+  const movement = calculateMovement(playerToUpdate.position, diceValue);
   playerToUpdate.position = movement.newPosition;
 
   // Cek apakah dipantulkan (Bouncing)
@@ -158,16 +154,22 @@ export const processTurn = (
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: Date.now(),
       playerName: playerToUpdate.name,
-      message: 'Gagal masuk garis akhir karena melebihi batas atau belum menjadi MVP! (Terpental)',
+      message: 'Gagal masuk garis akhir karena melebihi batas! (Terpental)',
       type: 'penalty'
     });
   }
 
   // 3. Check Win
   if (movement.hasReachedEnd) {
-    newState.winner = playerToUpdate.id;
-    newState.gameStatus = 'finished';
+    newState.fastestExplorer = playerToUpdate.id;
     newState.players[activePlayerIndex] = playerToUpdate;
+    const champion = [...newState.players].sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (b.correctAnswers !== a.correctAnswers) return b.correctAnswers - a.correctAnswers;
+      return b.position - a.position;
+    })[0];
+    newState.winner = champion.id;
+    newState.gameStatus = 'finished';
     return { newState };
   }
 
@@ -340,23 +342,16 @@ export const processTurn = (
 
   // 6. Check Win (Post-Tile Resolution)
   if (playerToUpdate.position === GAME_CONSTANTS.BOARD_SIZE) {
-    const isMVP = playerToUpdate.score >= Math.max(...newState.players.map(p => p.score));
-    if (isMVP) {
-      newState.winner = playerToUpdate.id;
-      newState.gameStatus = 'finished';
-      newState.players[activePlayerIndex] = playerToUpdate;
-      return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered };
-    } else {
-      // Ditolak dari 100 karena bukan MVP padahal habis naik tangga ke 100 (Sangat jarang, tapi buat jaga-jaga)
-      playerToUpdate.position = 99;
-      newState.logs.push({
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        timestamp: Date.now(),
-        playerName: playerToUpdate.name,
-        message: 'Ditolak dari petak akhir karena poin belum mencapai gelar MVP!',
-        type: 'penalty'
-      });
-    }
+    newState.fastestExplorer = playerToUpdate.id;
+    newState.players[activePlayerIndex] = playerToUpdate;
+    const champion = [...newState.players].sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (b.correctAnswers !== a.correctAnswers) return b.correctAnswers - a.correctAnswers;
+      return b.position - a.position;
+    })[0];
+    newState.winner = champion.id;
+    newState.gameStatus = 'finished';
+    return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered };
   }
 
   // 7. Finalize Turn

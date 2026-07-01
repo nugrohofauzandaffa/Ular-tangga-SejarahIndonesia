@@ -44,6 +44,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
     players: initialPlayers,
     currentTurn: initialPlayers[0].id,
     winner: null,
+    fastestExplorer: null,
     gameStatus: 'idle',
     dice: { currentValue: 1, isRolling: false },
     logs: [],
@@ -53,9 +54,16 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
   const [isMobileLogOpen, setIsMobileLogOpen] = useState(false);
   const [showCrisisModal, setShowCrisisModal] = useState(false);
   const prevCrisisState = React.useRef<boolean>(false);
-  
+
   // State untuk banner giliran
   const [showTurnBanner, setShowTurnBanner] = useState(true);
+
+  // State untuk Pop-up Modifier Dadu
+  const [diceModifierPopup, setDiceModifierPopup] = useState<{
+    original: number;
+    final: number;
+    type: 'DecreasedRoll' | 'AbsoluteRoll';
+  } | null>(null);
 
   // State interceptor untuk efek dadu (DecreasedRoll / AbsoluteRoll)
   const [pendingGameResult, setPendingGameResult] = useState<ProcessTurnResult | null>(null);
@@ -76,7 +84,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
   // Inisialisasi Papan
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCurrentBoard(generateRandomBoard(10, 3, 3));
+    setCurrentBoard(generateRandomBoard());
     setIsMounted(true);
   }, []);
 
@@ -101,6 +109,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
 
   // Pantau perubahan giliran untuk menampilkan Turn Banner
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShowTurnBanner(true);
     const timer = setTimeout(() => {
       setShowTurnBanner(false);
@@ -113,10 +122,11 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
     if (gameState.gameStatus === 'idle' && activePlayer) {
       const hasSilence = activePlayer.activeEffects.some(e => e.type === 'Silence');
       if (hasSilence) {
+        // Tampilkan notifikasi instan dan proses turn
         const timeout = setTimeout(() => {
           setGameState(prev => processTurn(prev, gameContext).newState);
           playSFX('wrong');
-        }, 2000); // Jeda 2 detik agar pemain sempat membaca Turn Banner
+        }, 2000);
         return () => clearTimeout(timeout);
       }
     }
@@ -136,7 +146,13 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
       if (result.tileEvent?.type === 'Quiz' && result.tileEvent.contentId) {
         setActiveQuestionId(result.tileEvent.contentId);
       } else {
-        setActiveQuestionId(null);
+        setGameState(prev => ({ ...prev, gameStatus: 'idle' }));
+      }
+
+      // Tampilkan Pop-up Modifier Dadu jika ada
+      if (result.diceModifierInfo) {
+        setDiceModifierPopup(result.diceModifierInfo);
+        setTimeout(() => setDiceModifierPopup(null), 3500);
       }
 
       if (result.acquiredEffect) {
@@ -159,7 +175,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
     if (gameState.gameStatus !== 'idle') return;
 
     playSFX('dice');
-    
+
     // Kalkulasi pergerakan secara synchronous di belakang layar menggunakan state saat ini
     const result = processTurn(gameState, gameContext);
 
@@ -221,7 +237,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
 
   // Handler restart permainan
   const handlePlayAgain = () => {
-    setCurrentBoard(generateRandomBoard(10, 3, 3));
+    setCurrentBoard(generateRandomBoard());
     const resetPlayers = initialPlayers.map(p => ({
       ...p,
       position: 1,
@@ -234,6 +250,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
       players: resetPlayers,
       currentTurn: resetPlayers[0].id,
       winner: null,
+      fastestExplorer: null,
       gameStatus: 'idle',
       dice: { currentValue: 1, isRolling: false },
       logs: [],
@@ -305,6 +322,25 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
           <div className="bg-white/90 backdrop-blur-sm border-2 border-blue-500 text-blue-800 font-bold px-8 py-3 rounded-full shadow-2xl flex items-center gap-3">
             <span className="text-2xl">{activePlayer?.isBot ? '🤖' : '👤'}</span>
             <span className="text-xl tracking-wide uppercase">Giliran {activePlayer?.name}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Pop-up Modifier Dadu (DecreasedRoll / AbsoluteRoll) */}
+      {diceModifierPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <div className="bg-white/95 backdrop-blur-sm px-8 py-6 rounded-2xl shadow-2xl border-4 border-red-500 flex flex-col items-center animate-in zoom-in duration-300 transform scale-110">
+            <h3 className="text-xl font-extrabold text-red-600 mb-2 uppercase tracking-widest">
+              {diceModifierPopup.type === 'DecreasedRoll' ? 'Kelelahan!' : 'Batas Kecepatan!'}
+            </h3>
+            <div className="flex items-center gap-4 text-4xl font-black">
+              <span className="text-slate-400 line-through">{diceModifierPopup.original}</span>
+              <span className="text-red-500">➔</span>
+              <span className="text-red-600 text-6xl">{diceModifierPopup.final}</span>
+            </div>
+            <p className="mt-2 text-sm font-bold text-slate-600">
+              {diceModifierPopup.type === 'DecreasedRoll' ? 'Hasil dadu dikurangi 2' : 'Hasil dadu dibatasi maksimal 4'}
+            </p>
           </div>
         </div>
       )}

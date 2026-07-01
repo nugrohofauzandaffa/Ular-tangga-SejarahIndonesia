@@ -4,7 +4,7 @@ import { ladders } from '@/data/papan/ladders';
 import { GAME_CONSTANTS } from '@/constants/game';
 import { questions } from '@/data/questions';
 
-export const generateRandomBoard = (quizCount: number = 10, bonusCount: number = 3, penaltyCount: number = 3): Tile[] => {
+export const generateRandomBoard = (bonusCount: number = 4, penaltyCount: number = 4): Tile[] => {
   // 1. Buat papan dasar dengan ular dan tangga
   const baseBoard: Tile[] = Array.from({ length: GAME_CONSTANTS.BOARD_SIZE }, (_, i) => {
     const position = i + 1;
@@ -19,52 +19,66 @@ export const generateRandomBoard = (quizCount: number = 10, bonusCount: number =
     return { position, type };
   });
 
-  // 2. Kumpulkan kandidat posisi (Normal tile, kecuali start dan end)
-  const candidateIndices: number[] = [];
+  // Kumpulkan semua normal tiles berdasarkan zona
+  const zone1: number[] = []; // 2-30
+  const zone2: number[] = []; // 31-70
+  const zone3: number[] = []; // 71-90
+  const zone4: number[] = []; // 91-99
+
   for (let i = 1; i < GAME_CONSTANTS.BOARD_SIZE - 1; i++) {
     if (baseBoard[i].type === 'Normal') {
-      candidateIndices.push(i);
+      const pos = i + 1;
+      if (pos <= 30) zone1.push(i);
+      else if (pos <= 70) zone2.push(i);
+      else if (pos <= 90) zone3.push(i);
+      else zone4.push(i);
     }
   }
 
-  // Acak array menggunakan Fisher-Yates
-  for (let i = candidateIndices.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [candidateIndices[i], candidateIndices[j]] = [candidateIndices[j], candidateIndices[i]];
-  }
+  // Helper untuk mengacak array
+  const shuffle = <T,>(array: T[]) => array.sort(() => Math.random() - 0.5);
 
-  // 3. Ambil posisi acak untuk Kuis
-  let currentIndex = 0;
-  
-  // Shuffle ID soal agar soal yang muncul bervariasi
-  const shuffledQuestions = [...questions].sort(() => Math.random() - 0.5);
-  
-  for (let i = 0; i < quizCount && currentIndex < candidateIndices.length; i++) {
-    const idx = candidateIndices[currentIndex++];
-    baseBoard[idx].type = 'Quiz';
-    baseBoard[idx].contentId = shuffledQuestions[i % shuffledQuestions.length].id;
-  }
+  shuffle(zone1);
+  shuffle(zone2);
+  shuffle(zone3);
+  shuffle(zone4);
 
-  // 4. Ambil posisi acak untuk Bonus
-  for (let i = 0; i < bonusCount && currentIndex < candidateIndices.length; i++) {
-    const idx = candidateIndices[currentIndex++];
-    baseBoard[idx].type = 'Bonus';
-  }
+  // Helper mendapatkan pertanyaan acak berdasarkan list difficulty
+  const getQuestion = (difficulties: string[]) => {
+    const validQuestions = questions.filter(q => difficulties.includes(q.difficulty));
+    return validQuestions[Math.floor(Math.random() * validQuestions.length)];
+  };
 
-  // 5. Ambil posisi acak untuk Penalty
-  for (let i = 0; i < penaltyCount && currentIndex < candidateIndices.length; i++) {
-    const idx = candidateIndices[currentIndex++];
-    baseBoard[idx].type = 'Penalty';
-  }
-
-  // 6. Pastikan ada kuis di zona akhir (91-99) untuk kesempatan farm MVP
-  const lateGameTiles = [92, 95, 98]; // Posisi kuis tetap di akhir permainan
-  lateGameTiles.forEach(pos => {
-    if (baseBoard[pos - 1].type === 'Normal') {
-      baseBoard[pos - 1].type = 'Quiz';
-      baseBoard[pos - 1].contentId = shuffledQuestions[Math.floor(Math.random() * shuffledQuestions.length)].id;
+  // 2. Distribusi Kuis (Total ~25 Kuis)
+  const distributeQuizzes = (zone: number[], count: number, difficulties: string[]) => {
+    for (let i = 0; i < count && i < zone.length; i++) {
+      const idx = zone[i];
+      baseBoard[idx].type = 'Quiz';
+      baseBoard[idx].contentId = getQuestion(difficulties).id;
     }
-  });
+  };
+
+  distributeQuizzes(zone1, 7, ['Easy']);
+  distributeQuizzes(zone2, 10, ['Easy', 'Medium']);
+  distributeQuizzes(zone3, 5, ['Medium', 'Hard']);
+  distributeQuizzes(zone4, 3, ['Hard', 'Extreme']);
+
+  // Kumpulkan sisa Normal tiles untuk Bonus dan Penalty
+  const remainingNormals: number[] = [];
+  for (let i = 1; i < GAME_CONSTANTS.BOARD_SIZE - 1; i++) {
+    if (baseBoard[i].type === 'Normal') remainingNormals.push(i);
+  }
+  shuffle(remainingNormals);
+
+  // 3. Distribusi Bonus
+  for (let i = 0; i < bonusCount && i < remainingNormals.length; i++) {
+    baseBoard[remainingNormals[i]].type = 'Bonus';
+  }
+
+  // 4. Distribusi Penalty
+  for (let i = bonusCount; i < bonusCount + penaltyCount && i < remainingNormals.length; i++) {
+    baseBoard[remainingNormals[i]].type = 'Penalty';
+  }
 
   return baseBoard;
 };

@@ -32,6 +32,7 @@ export interface GameState {
   players: Player[];
   currentTurn: string; // Player ID
   winner: string | null; // Player ID
+  fastestExplorer: string | null;
   gameStatus: GameStatus;
   dice: DiceState;
   logs: GameLog[];

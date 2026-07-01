@@ -7,6 +7,7 @@ export interface PlayerEffect {
   value?: number; // Nilai bantuan/pengurang
 }
 
+
 export interface Player {
   id: string;
   name: string;
