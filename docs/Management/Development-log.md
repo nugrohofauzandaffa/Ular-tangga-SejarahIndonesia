@@ -744,3 +744,17 @@
   - Marquee dipaksa menggunakan arbitrary class Tailwind \orwards\ agar animasi berakhir secara definitif dan disembunyikan.
 - **Status**: Completed
 
+
+## [Phase 16.4] - Perbaikan Logika Trigger Headline
+
+- **Phase**: Phase 16.4
+- **File yang diubah**:
+  - src/components/GameLayout.tsx
+- **Alasan Perubahan**:
+  - Headline sebelumnya memicu setiap kali status game ber-update, menyebabkan log yang sama ditampilkan berulang-ulang.
+  - Headline terlalu banyak menampilkan log sistem sehingga mengganggu konsentrasi.
+- **Dampak Perubahan**:
+  - Headline menggunakan sistem tracking \latestLogId\ sehingga 1 log hanya diiklankan 1 kali.
+  - Headline difilter hanya untuk event 'bonus', 'penalty', dan pesan 'alert phase' fase krisis.
+- **Status**: Completed
+

@@ -64,13 +64,23 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
   
   const [showHeadline, setShowHeadline] = useState(false);
   const [latestLog, setLatestLog] = useState<any>(null);
+  const [latestLogId, setLatestLogId] = useState<string | null>(null);
 
   useEffect(() => {
     if (gameState.logs && gameState.logs.length > 0) {
-      setLatestLog(gameState.logs[gameState.logs.length - 1]);
-      setShowHeadline(true);
+      const newLog = gameState.logs[gameState.logs.length - 1];
+      
+      if (newLog.id !== latestLogId) {
+        setLatestLogId(newLog.id);
+        
+        const isAlertPhase = newLog.message.toLowerCase().includes('seseorang sudah memasuki');
+        if (newLog.type === 'bonus' || newLog.type === 'penalty' || isAlertPhase) {
+          setLatestLog(newLog);
+          setShowHeadline(true);
+        }
+      }
     }
-  }, [gameState.logs]);
+  }, [gameState.logs, latestLogId]);
 
   // State untuk banner giliran
   const [showTurnBanner, setShowTurnBanner] = useState(true);
