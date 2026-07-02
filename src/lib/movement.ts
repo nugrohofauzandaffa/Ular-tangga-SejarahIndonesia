@@ -46,3 +46,30 @@ export function calculateMovement(currentPosition: number, diceValue: number): M
     hasReachedEnd: false,
   };
 }
+
+/**
+ * Calculates the step-by-step path for a player's movement, including bounces.
+ * Useful for hopping animations.
+ */
+export function calculateMovementPath(currentPosition: number, diceValue: number): number[] {
+  const path: number[] = [];
+  let current = currentPosition;
+  const finalSquare = GAME_CONSTANTS.BOARD_SIZE;
+  let isBouncing = false;
+
+  for (let i = 0; i < diceValue; i++) {
+    if (!isBouncing) {
+      if (current < finalSquare) {
+        current += 1;
+      } else {
+        isBouncing = true;
+        current -= 1;
+      }
+    } else {
+      current -= 1;
+    }
+    path.push(current);
+  }
+
+  return path;
+}

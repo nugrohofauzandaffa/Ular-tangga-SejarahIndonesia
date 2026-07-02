@@ -13,7 +13,7 @@ export default function Tile({ tile, players = [] }: TileProps) {
   let bgClass = "bg-[#fdf6e3]";
   let borderClass = "border-[#e0d6b8]";
   let icon = "";
-  let iconClass = "text-xl sm:text-2xl opacity-80";
+  let iconClass = "text-sm sm:text-xl opacity-80";
   
   switch (tile.type) {
     case 'Quiz':
@@ -48,7 +48,7 @@ export default function Tile({ tile, players = [] }: TileProps) {
     bgClass = "bg-yellow-100";
     borderClass = "border-yellow-400";
     icon = "👑"; // Mahkota kemenangan
-    iconClass = "text-2xl sm:text-3xl animate-pulse";
+    iconClass = "text-lg sm:text-2xl animate-pulse";
   }
 
   // Zona krisis (petak akhir 91-99)
@@ -62,7 +62,7 @@ export default function Tile({ tile, players = [] }: TileProps) {
       className={`border relative flex flex-col items-center justify-center p-1 transition-colors duration-300 ${bgClass} ${borderClass}`}
     >
       {/* Nomor Petak */}
-      <span className="absolute top-1 left-1.5 text-[10px] sm:text-xs font-bold text-[#8b7355] z-10 font-serif">
+      <span className="absolute top-1 left-1.5 text-[6px] sm:text-xs font-bold text-[#8b7355] z-10 font-serif">
         {tile.position}
       </span>
       

@@ -59,3 +59,25 @@
 - [x] Phase Q5: Snake & Ladder Transition Animation
 - [x] Phase Q6: Result Screen Improvement
 - [x] Phase Q7: Audio Polish
+- [x] Phase 14.2: Visual & Content Polishing
+- [x] Phase 14.3: Mobile Responsiveness & Anim Fix
+- [x] Phase 14.4: Dynamic Token Sizing & Anim Sync
+- [x] Phase P1: Iterasi Game Feel & Visual Audit (Selesai)
+  - [x] Generate Path (Hop-by-hop) di Movement Module
+  - [x] Orkestrasi Timeline Animasi di GameLayout
+  - [x] Animasi Hop CSS di PlayerToken
+  - [x] Konversi SVG Ular menjadi Path (Kurva Bezier)
+  - [x] Perbaikan SVG Tangga (Visual Keterbacaan)
+  - [x] **Iterasi 1.1 (Game Feel Polishing)**
+    - [x] Ekstraksi Konstanta Animasi ke `game.ts`
+    - [x] Pemisahan Modul Presentasi ke `geometry.ts`
+    - [x] Animasi Ular (Cubic Bezier) & Tangga (Linear) via requestAnimationFrame
+
+- [ ] Phase P2: Animation Architecture & Game Juice (Fase 1 & 2)
+  - [ ] Install framer-motion
+  - [ ] Buat constants/animation.ts (Guidelines & Categories)
+  - [ ] Buat Feedback Pipeline (useGameFeedbackPipeline)
+  - [ ] Buat Particle Manager & Screen Shake context
+  - [ ] Refactor PlayerToken.tsx menjadi <motion.div> (Squash & Stretch)
+  - [ ] Refactor GameLayout.tsx untuk menggunakan orchestrator timeline
+  - [ ] Integrasikan prefers-reduced-motion

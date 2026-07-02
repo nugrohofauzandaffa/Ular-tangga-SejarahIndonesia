@@ -9,13 +9,19 @@ interface MainMenuProps {
 
 type GameMode = 'multiplayer' | 'solo';
 
+const PLAYER_COLORS = [
+  { label: 'Biru',   bg: '#3b82f6', border: '#1d4ed8' },
+  { label: 'Merah',  bg: '#ef4444', border: '#b91c1c' },
+  { label: 'Hijau',  bg: '#10b981', border: '#047857' },
+  { label: 'Kuning', bg: '#f59e0b', border: '#b45309' },
+];
+
 export function MainMenu({ onStartGame }: MainMenuProps) {
   const [gameMode, setGameMode] = useState<GameMode>('multiplayer');
   const [playerCount, setPlayerCount] = useState<number>(2);
   const [playerNames, setPlayerNames] = useState<string[]>(['Pemain 1', 'Pemain 2', 'Pemain 3', 'Pemain 4']);
   const { playSFX, playBGM, stopBGM } = useAudio();
 
-  // Memutar BGM Main Menu saat komponen dimuat
   useEffect(() => {
     playBGM('menu');
     return () => stopBGM('menu');
@@ -27,36 +33,33 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
     if (mode === 'solo') {
       setPlayerCount(2);
       setPlayerNames(prev => {
-        const newNames = [...prev];
-        newNames[1] = 'Bot (AI)';
-        return newNames;
+        const n = [...prev];
+        n[1] = 'Bot (AI)';
+        return n;
       });
     } else {
       setPlayerNames(prev => {
-        // Jika namanya masih 'Bot (AI)' (belum diubah), kembalikan ke default 'Pemain 2'
         if (prev[1] === 'Bot (AI)') {
-          const newNames = [...prev];
-          newNames[1] = 'Pemain 2';
-          return newNames;
+          const n = [...prev];
+          n[1] = 'Pemain 2';
+          return n;
         }
         return prev;
       });
     }
   };
 
-  const handleNameChange = (index: number, newName: string) => {
-    const newNames = [...playerNames];
-    newNames[index] = newName;
-    setPlayerNames(newNames);
+  const handleNameChange = (index: number, value: string) => {
+    const n = [...playerNames];
+    n[index] = value;
+    setPlayerNames(n);
   };
 
   const handleStart = () => {
     playSFX('click');
     const initialPlayers: Player[] = [];
-
     for (let i = 0; i < playerCount; i++) {
-      const isBot = gameMode === 'solo' && i > 0; // Di mode solo, pemain ke-2 (index 1) adalah bot
-
+      const isBot = gameMode === 'solo' && i > 0;
       initialPlayers.push({
         id: `p${i + 1}`,
         name: playerNames[i] || (isBot ? 'Bot' : `Pemain ${i + 1}`),
@@ -68,69 +71,131 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
         isBot,
       });
     }
-
     onStartGame(initialPlayers);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-slate-900 p-4 relative overflow-hidden">
-      {/* Decorative background */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-10 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500 blur-3xl"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500 blur-3xl"></div>
-      </div>
+    <div
+      className="flex flex-col items-center justify-center min-h-screen relative overflow-hidden p-4"
+      style={{ backgroundColor: 'var(--color-cream)', fontFamily: 'var(--font-body)' }}
+    >
+      {/* Batik pattern background */}
+      <div
+        className="absolute inset-0 opacity-[0.06] pointer-events-none"
+        style={{
+          backgroundImage: 'url(/batik-pattern.png)',
+          backgroundSize: '280px 280px',
+          backgroundRepeat: 'repeat',
+        }}
+      />
 
-      <div className="bg-white p-8 rounded-2xl shadow-xl z-10 w-full max-w-md border border-slate-100">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-2">
+      {/* Vignette */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center, transparent 55%, rgba(30,58,95,0.12) 100%)' }}
+      />
+
+      {/* Card Utama */}
+      <div
+        className="relative z-10 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
+        style={{
+          border: '2px solid var(--color-wood)',
+          boxShadow: '0 8px 48px rgba(30,58,95,0.18), 0 2px 0 var(--color-gold)',
+        }}
+      >
+        {/* Card Header */}
+        <div
+          className="px-8 py-6 text-center relative overflow-hidden"
+          style={{ backgroundColor: 'var(--color-navy)' }}
+        >
+          {/* Subtle shine */}
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{
+              background: 'linear-gradient(135deg, rgba(201,168,76,0.3) 0%, transparent 50%)',
+            }}
+          />
+          <p
+            className="text-xs uppercase tracking-[0.2em] mb-1 relative z-10"
+            style={{ color: 'var(--color-gold)', fontFamily: 'var(--font-display)' }}
+          >
+            Persiapkan Ekspedisi
+          </p>
+          <h1
+            className="text-2xl font-black relative z-10"
+            style={{ color: 'var(--color-cream)', fontFamily: 'var(--font-display)' }}
+          >
             Ular Tangga Sejarah
           </h1>
-          <p className="text-slate-500 text-sm">Persiapkan Permainan Anda</p>
+          {/* Gold underline */}
+          <div
+            className="mx-auto mt-3 h-px w-24 relative z-10"
+            style={{ background: 'linear-gradient(to right, transparent, var(--color-gold), transparent)' }}
+          />
         </div>
 
-        <div className="space-y-6">
+        {/* Card Body */}
+        <div
+          className="px-8 py-6 space-y-6"
+          style={{ backgroundColor: 'var(--color-parchment)' }}
+        >
           {/* Mode Permainan */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-3">
+            <label
+              className="block text-xs font-bold uppercase tracking-widest mb-3"
+              style={{ color: 'var(--color-navy)', fontFamily: 'var(--font-display)' }}
+            >
               Mode Permainan
             </label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => { playSFX('click'); handleGameModeChange('multiplayer'); }}
-                className={`flex-1 py-3 rounded-lg font-bold transition-all duration-200 ${gameMode === 'multiplayer'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-              >
-                Multiplayer Local
-              </button>
-              <button
-                onClick={() => { playSFX('click'); handleGameModeChange('solo'); }}
-                className={`flex-1 py-3 rounded-lg font-bold transition-all duration-200 ${gameMode === 'solo'
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-              >
-                Solo vs Bot
-              </button>
+            <div className="grid grid-cols-2 gap-2">
+              {(['multiplayer', 'solo'] as GameMode[]).map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => { playSFX('click'); handleGameModeChange(mode); }}
+                  className="py-3 rounded-lg font-semibold text-sm transition-all duration-200"
+                  style={gameMode === mode ? {
+                    backgroundColor: 'var(--color-navy)',
+                    color: 'var(--color-gold-light)',
+                    border: '2px solid var(--color-gold)',
+                    boxShadow: '0 2px 12px rgba(30,58,95,0.3)',
+                    fontFamily: 'var(--font-display)',
+                  } : {
+                    backgroundColor: 'var(--color-cream)',
+                    color: 'var(--color-navy)',
+                    border: '2px solid var(--color-cream-dark)',
+                    fontFamily: 'var(--font-display)',
+                  }}
+                >
+                  {mode === 'multiplayer' ? '👥 Multiplayer' : '🤖 Solo vs Bot'}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Jumlah Pemain (Hanya Muncul di Mode Multiplayer) */}
+          {/* Jumlah Pemain */}
           {gameMode === 'multiplayer' && (
-            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-              <label className="block text-sm font-semibold text-slate-700 mb-3">
+            <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+              <label
+                className="block text-xs font-bold uppercase tracking-widest mb-3"
+                style={{ color: 'var(--color-navy)', fontFamily: 'var(--font-display)' }}
+              >
                 Jumlah Pemain
               </label>
-              <div className="flex gap-2">
-                {[2, 3, 4].map((num) => (
+              <div className="grid grid-cols-3 gap-2">
+                {[2, 3, 4].map(num => (
                   <button
                     key={num}
                     onClick={() => { playSFX('click'); setPlayerCount(num); }}
-                    className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${playerCount === num
-                        ? 'bg-blue-600 text-white shadow-md'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
+                    className="py-2.5 rounded-lg font-bold text-sm transition-all duration-200"
+                    style={playerCount === num ? {
+                      backgroundColor: 'var(--color-navy)',
+                      color: 'var(--color-gold-light)',
+                      border: '2px solid var(--color-gold)',
+                    } : {
+                      backgroundColor: 'var(--color-cream)',
+                      color: 'var(--color-navy)',
+                      border: '2px solid var(--color-cream-dark)',
+                    }}
                   >
                     {num} Pemain
                   </button>
@@ -139,52 +204,102 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
             </div>
           )}
 
-          {/* Konfigurasi Nama Pemain */}
-          <div className="space-y-3">
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Nama Pemain
+          {/* Nama Pemain */}
+          <div>
+            <label
+              className="block text-xs font-bold uppercase tracking-widest mb-3"
+              style={{ color: 'var(--color-navy)', fontFamily: 'var(--font-display)' }}
+            >
+              Penjelajah
             </label>
-            {Array.from({ length: playerCount }).map((_, index) => {
-              const isBot = gameMode === 'solo' && index === 1;
+            <div className="space-y-2">
+              {Array.from({ length: playerCount }).map((_, i) => {
+                const isBot = gameMode === 'solo' && i > 0;
+                const color = PLAYER_COLORS[i];
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5"
+                    style={{
+                      backgroundColor: 'var(--color-cream)',
+                      border: '1.5px solid var(--color-cream-dark)',
+                    }}
+                  >
+                    {/* Color dot */}
+                    <div
+                      className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center"
+                      style={{
+                        backgroundColor: color.bg,
+                        border: `2px solid ${color.border}`,
+                        boxShadow: `0 2px 6px ${color.bg}60`,
+                      }}
+                    >
+                      <span className="text-[10px] font-black text-white">{i + 1}</span>
+                    </div>
 
-              return (
-                <div key={index} className="flex items-center gap-3 bg-slate-50 p-2 rounded-lg border border-slate-200">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 text-slate-600 font-bold shrink-0">
-                    {index + 1}
+                    <input
+                      type="text"
+                      value={playerNames[i]}
+                      onChange={e => handleNameChange(i, e.target.value)}
+                      disabled={isBot}
+                      placeholder={`Nama Pemain ${i + 1}`}
+                      className="flex-1 text-sm font-medium bg-transparent border-none outline-none min-w-0"
+                      style={{ color: 'var(--color-navy-dark)' }}
+                      maxLength={15}
+                    />
+
+                    {isBot && (
+                      <span
+                        className="text-[10px] font-black uppercase px-2 py-1 rounded shrink-0"
+                        style={{
+                          backgroundColor: 'var(--color-navy)',
+                          color: 'var(--color-gold-light)',
+                        }}
+                      >
+                        BOT
+                      </span>
+                    )}
                   </div>
-                  <input
-                    type="text"
-                    value={playerNames[index]}
-                    onChange={(e) => handleNameChange(index, e.target.value)}
-                    disabled={isBot}
-                    placeholder={`Nama Pemain ${index + 1}`}
-                    className={`w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${isBot ? 'bg-slate-100 text-slate-500 border-slate-200 font-medium' : 'bg-white border-slate-300'
-                      }`}
-                    maxLength={15}
-                  />
-                  {isBot && (
-                    <span className="text-xs font-bold text-indigo-600 px-2 py-1 bg-indigo-100 rounded mr-1 shrink-0">
-                      BOT
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
           {/* Audio Settings */}
           <AudioSettings />
+        </div>
 
-          {/* Tombol Mulai */}
+        {/* Card Footer / CTA */}
+        <div
+          className="px-8 py-5"
+          style={{
+            backgroundColor: 'var(--color-cream-dark)',
+            borderTop: '1px solid var(--color-wood)',
+          }}
+        >
           <button
             onClick={handleStart}
-            className="w-full mt-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full py-3.5 rounded-lg font-bold text-sm uppercase tracking-widest transition-all duration-200 active:scale-[0.98]"
+            style={{
+              fontFamily: 'var(--font-display)',
+              backgroundColor: 'var(--color-navy)',
+              color: 'var(--color-gold-light)',
+              border: '2px solid var(--color-gold)',
+              boxShadow: '0 4px 20px rgba(30,58,95,0.3), inset 0 1px 0 rgba(201,168,76,0.2)',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-navy-dark)';
+              (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-navy)';
+              (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
+            }}
           >
-            Mulai Permainan
+            ✦ Mulai Permainan ✦
           </button>
         </div>
       </div>
     </div>
   );
 }
-

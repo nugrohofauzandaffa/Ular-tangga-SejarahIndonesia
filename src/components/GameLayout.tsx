@@ -21,7 +21,11 @@ import { snakes } from '@/data/papan/snakes';
 import { ladders } from '@/data/papan/ladders';
 import { questions } from '@/data/questions';
 
-import { calculateMovement } from '@/lib/movement';
+import { GAME_CONSTANTS } from '@/constants/game';
+import { getCoordinates, getSnakeCurveParams, getBezierPoint } from '@/utils/geometry';
+import { useGameFeedbackPipeline } from '@/hooks/useGameFeedbackPipeline';
+
+import { calculateMovement, calculateMovementPath } from '@/lib/movement';
 import {
   processTurn,
   submitQuizAnswer,
@@ -40,6 +44,7 @@ export interface GameLayoutProps {
 export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutProps) {
   const [currentBoard, setCurrentBoard] = useState<Tile[]>([]);
   const [isMounted, setIsMounted] = useState(false);
+  const [transitioningPlayers, setTransitioningPlayers] = useState<Record<string, { x: number, y: number }>>({});
 
   const [gameState, setGameState] = useState<GameState>({
     players: initialPlayers,
@@ -55,6 +60,17 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
   const [isMobileLogOpen, setIsMobileLogOpen] = useState(false);
   const [showCrisisModal, setShowCrisisModal] = useState(false);
   const prevCrisisState = React.useRef<boolean>(false);
+  const [autoRollDouble, setAutoRollDouble] = useState(false);
+  
+  const [showHeadline, setShowHeadline] = useState(false);
+  const [latestLog, setLatestLog] = useState<any>(null);
+
+  useEffect(() => {
+    if (gameState.logs && gameState.logs.length > 0) {
+      setLatestLog(gameState.logs[gameState.logs.length - 1]);
+      setShowHeadline(true);
+    }
+  }, [gameState.logs]);
 
   // State untuk banner giliran
   const [showTurnBanner, setShowTurnBanner] = useState(true);
@@ -72,8 +88,10 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
 
   // State untuk toast anti-snake
   const [showAntiSnakeToast, setShowAntiSnakeToast] = useState(false);
+  const [isDesktopLogOpen, setIsDesktopLogOpen] = useState(false);
 
   const { playBGM, stopBGM, playSFX } = useAudio();
+  const { triggerLandingFeedback, triggerScreenShake, prefersReducedMotion } = useGameFeedbackPipeline();
 
   // Memutar BGM saat permainan dimulai
   useEffect(() => {
@@ -104,9 +122,10 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
     if (gameState.isCrisisPhaseActive && !prevCrisisState.current) {
       setShowCrisisModal(true);
       playSFX('ladder'); // Suara notifikasi
+      triggerScreenShake(); // Screen shake effect untuk Game Juice
     }
     prevCrisisState.current = !!gameState.isCrisisPhaseActive;
-  }, [gameState.isCrisisPhaseActive, playSFX]);
+  }, [gameState.isCrisisPhaseActive, playSFX, triggerScreenShake]);
 
   // Pantau perubahan giliran untuk menampilkan Turn Banner
   useEffect(() => {
@@ -121,6 +140,14 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
   // Eksekusi otomatis lompat giliran jika terkena Silence
   useEffect(() => {
     if (gameState.gameStatus === 'idle' && activePlayer) {
+      if (autoRollDouble) {
+        setAutoRollDouble(false);
+        const timer = setTimeout(() => {
+          handleRollDice();
+        }, 1000); // Tunggu 1 detik agar pemain sempat melihat log
+        return () => clearTimeout(timer);
+      }
+
       const hasSilence = activePlayer.activeEffects.some(e => e.type === 'Silence');
       if (hasSilence) {
         // Tampilkan notifikasi instan dan proses turn
@@ -164,39 +191,125 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
     }
   };
 
-  // Fungsi utilitas untuk mengeksekusi hasil permainan ke state utama
-  const applyGameResult = (result: ProcessTurnResult) => {
+  // Orkestrasi langkah animasi hop-by-hop
+  const executeHopAnimation = (result: ProcessTurnResult) => {
+    const activePlayerId = gameState.currentTurn;
+    const originalPos = gameState.players.find(p => p.id === activePlayerId)?.position || 1;
+    const diceValue = result.newState.dice.currentValue;
+    
+    // Generate path
+    const path = calculateMovementPath(originalPos, diceValue);
+    
+    if (path.length === 0) {
+       applyGameResult(result, originalPos);
+       return;
+    }
+
+    let step = 0;
+    const hopNext = () => {
+      if (step < path.length) {
+        // PENTING: capture nilai step saat ini ke konstanta lokal.
+        // setGameState menerima updater function yang dipanggil secara async oleh React.
+        // Tanpa ini, 'step' sudah ter-increment saat updater berjalan → urutan petak acak.
+        const currentStep = step;
+        const isLanding = currentStep === path.length - 1;
+
+        setGameState(prev => {
+          const newPlayers = prev.players.map(p =>
+            p.id === activePlayerId ? { ...p, position: path[currentStep] } : p
+          );
+          return { ...prev, players: newPlayers };
+        });
+
+        playSFX('click');
+        if (isLanding) {
+          triggerLandingFeedback(0, 0, true);
+        }
+
+        step++;
+        setTimeout(hopNext, GAME_CONSTANTS.ANIMATION.HOP_DURATION_MS);
+      } else {
+        // Seluruh langkah selesai — terapkan hasil permainan (ular/tangga/event)
+        setTimeout(() => {
+          applyGameResult(result, path[path.length - 1]);
+        }, GAME_CONSTANTS.ANIMATION.HOP_DELAY_MS);
+      }
+    };
+    
+    hopNext();
+  };
+
+  // Fungsi utilitas untuk mengeksekusi hasil akhir permainan ke state utama
+  const applyGameResult = (result: ProcessTurnResult, landedPos?: number) => {
     // Cek apakah ada perpindahan karena ular atau tangga
-    if (result.tileEvent && (result.tileEvent.type === 'Snake' || result.tileEvent.type === 'Ladder') && !result.antiSnakeTriggered) {
+    if (result.pathEvent && !result.antiSnakeTriggered) {
+      const isSnake = result.pathEvent.type === 'Snake';
+      playSFX(isSnake ? 'snake' : 'ladder');
       
       const activePlayerId = gameState.currentTurn;
-      const originalPos = gameState.players.find(p => p.id === activePlayerId)?.position || 1;
-      const movement = calculateMovement(originalPos, result.newState.dice.currentValue);
-      const intermediatePos = movement.newPosition;
+      // Pion seharusnya sudah berada di petak event karena executeHopAnimation
+      const startPos = landedPos || gameState.players.find(p => p.id === activePlayerId)?.position || 1; 
+      const endPos = result.pathEvent.end || 1;
+      
+      const start = getCoordinates(startPos);
+      const end = getCoordinates(endPos);
+      
+      let snakeParams: ReturnType<typeof getSnakeCurveParams> | null = null;
+      if (isSnake) {
+        snakeParams = getSnakeCurveParams(startPos, endPos);
+      }
 
-      // 1. Buat intermediate state: Gerakkan pemain ke petak tempat ular/tangga berada
-      const intermediateState = {
-        ...result.newState,
-        players: result.newState.players.map(p => 
-          p.id === activePlayerId ? { ...p, position: intermediatePos } : p
-        )
+      // Bypass manual animation for Reduced Motion
+      if (prefersReducedMotion) {
+        setGameState(result.newState);
+        setTimeout(() => triggerPostEffects(result), 100);
+        return;
+      }
+
+      const duration = GAME_CONSTANTS.ANIMATION.SNAKE_LADDER_DURATION_MS;
+      const startTime = performance.now();
+
+      const animate = (time: number) => {
+        const elapsed = time - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function (ease-in-out quadratic)
+        const easeProgress = progress < 0.5 
+          ? 2 * progress * progress 
+          : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+        
+        let x: number, y: number;
+        
+        if (isSnake && snakeParams) {
+          x = getBezierPoint(easeProgress, snakeParams.head.x, snakeParams.cx1, snakeParams.cx2, snakeParams.tail.x);
+          y = getBezierPoint(easeProgress, snakeParams.head.y, snakeParams.cy1, snakeParams.cy2, snakeParams.tail.y);
+        } else {
+          // Tangga bergerak lurus
+          x = start.x + (end.x - start.x) * easeProgress;
+          y = start.y + (end.y - start.y) * easeProgress;
+        }
+
+        setTransitioningPlayers(prev => ({
+          ...prev,
+          [activePlayerId]: { x, y }
+        }));
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          // Animasi Selesai
+          setTransitioningPlayers(prev => {
+            const next = { ...prev };
+            delete next[activePlayerId];
+            return next;
+          });
+          
+          setGameState(result.newState);
+          setTimeout(() => triggerPostEffects(result), GAME_CONSTANTS.ANIMATION.POST_EVENT_DELAY_MS);
+        }
       };
 
-      setGameState(intermediateState);
-
-      // 2. Setelah delay agar animasi pion sampai (700ms), mainkan efek merosot/naik dan set state akhir
-      setTimeout(() => {
-        if (result.tileEvent?.type === 'Snake') {
-          playSFX('snake'); 
-        } else {
-          playSFX('ladder');
-        }
-        
-        setGameState(result.newState);
-        
-        // Panggil popup efek dll setelah selesai animasi transisi ular/tangga (600ms delay)
-        setTimeout(() => triggerPostEffects(result), 600);
-      }, 700);
+      requestAnimationFrame(animate);
       
     } else {
       // Normal movement
@@ -221,23 +334,31 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
       dice: { currentValue: result.newState.dice.currentValue, isRolling: true }
     }));
 
-    // 2. Tunggu animasi selesai, lalu eksekusi logika permainan atau cegat (intercept) jika ada efek modifikasi dadu
+    // 2. Tunggu durasi rolling (400ms), lalu hentikan animasi dadu untuk menampilkan hasilnya
     setTimeout(() => {
-      if (result.diceModifierInfo) {
-        // Intercept: Tahan pergerakan pion, tampilkan modal animasi matematika
-        setPendingGameResult(result);
-        setShowDiceModifierModal(result.diceModifierInfo);
-      } else {
-        // Normal: Terapkan hasil langsung
-        applyGameResult(result);
-      }
-    }, 600);
+      setGameState(prev => ({
+        ...prev,
+        dice: { ...prev.dice, isRolling: false }
+      }));
+
+      // 3. Beri jeda 600ms agar pemain dapat membaca angka dadu, lalu eksekusi pergerakan pion
+      setTimeout(() => {
+        if (result.diceModifierInfo) {
+          // Intercept: Tahan pergerakan pion, tampilkan modal animasi matematika
+          setPendingGameResult(result);
+          setShowDiceModifierModal(result.diceModifierInfo);
+        } else {
+          // Normal: Mulai animasi hop-by-hop
+          executeHopAnimation(result);
+        }
+      }, 600);
+    }, 400);
   };
 
   const handleAcknowledgeDiceModifier = () => {
     setShowDiceModifierModal(null);
     if (pendingGameResult) {
-      applyGameResult(pendingGameResult);
+      executeHopAnimation(pendingGameResult);
       setPendingGameResult(null);
     }
   };
@@ -266,8 +387,15 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
   };
 
   const handleAcknowledgeEffect = () => {
+    const wasPlayer = gameState.currentTurn;
+    const hasDoubleRoll = gameState.players.find(p => p.id === wasPlayer)?.activeEffects.some(e => e.type === 'DoubleRoll');
+
     setGameState(prev => acknowledgeEffect(prev));
     setActiveEffect(null);
+    
+    if (hasDoubleRoll) {
+      setAutoRollDouble(true);
+    }
   };
 
   // Handler restart permainan
@@ -341,6 +469,18 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState.gameStatus, gameState.currentTurn, activePlayer, activeQuestion, showCrisisModal]);
 
+  // State untuk efek screen shake
+  const [isShaking, setIsShaking] = useState(false);
+
+  useEffect(() => {
+    const handleShake = () => {
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500); // Shake duration
+    };
+    window.addEventListener('game:screenshake', handleShake);
+    return () => window.removeEventListener('game:screenshake', handleShake);
+  }, []);
+
   if (!isMounted) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-50 text-slate-500">
@@ -350,16 +490,48 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-slate-50 text-slate-900 relative">
+    <div className={`flex flex-col h-screen overflow-hidden bg-slate-50 text-slate-900 relative ${isShaking ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}>
       {/* Turn Banner Overlay */}
       {showTurnBanner && gameState.gameStatus === 'idle' && (
         <div className="absolute top-[20%] left-1/2 -translate-x-1/2 z-[40] animate-in slide-in-from-top-10 fade-in zoom-in duration-300 pointer-events-none">
-          <div className="bg-white/90 backdrop-blur-sm border-2 border-blue-500 text-blue-800 font-bold px-8 py-3 rounded-full shadow-2xl flex items-center gap-3">
-            <span className="text-2xl">{activePlayer?.isBot ? '🤖' : '👤'}</span>
-            <span className="text-xl tracking-wide uppercase">Giliran {activePlayer?.name}</span>
+          <div className="bg-white/90 backdrop-blur-sm border-2 border-blue-500 text-blue-800 font-bold px-4 py-2 sm:px-8 sm:py-3 rounded-full shadow-2xl flex items-center gap-2 sm:gap-3">
+            <span className="text-xl sm:text-2xl">{activePlayer?.isBot ? '🤖' : '👤'}</span>
+            <span className="text-sm sm:text-xl tracking-wide uppercase">Giliran {activePlayer?.name}</span>
           </div>
         </div>
       )}
+
+      {/* Top Bar Overlay (Log Button & Headline) */}
+      <div className="fixed top-[64px] sm:top-[72px] left-0 right-0 z-[48] pointer-events-none flex justify-between items-start px-2 sm:px-4">
+        {/* Left: Log Button */}
+        <button
+          onClick={() => {
+            playSFX('click');
+            if (window.innerWidth >= 1024) setIsDesktopLogOpen(!isDesktopLogOpen);
+            else setIsMobileLogOpen(true);
+          }}
+          className={`w-10 h-10 sm:w-12 sm:h-12 bg-white text-slate-700 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] flex items-center justify-center text-lg sm:text-xl pointer-events-auto border border-slate-200 transition-transform hover:scale-105 active:scale-95 ${isDesktopLogOpen ? 'lg:hidden' : ''}`}
+        >
+          📝
+        </button>
+
+        {/* Middle: Headline Text */}
+        <div className="flex-1 mx-2 flex justify-center pointer-events-auto overflow-hidden">
+          {latestLog && showHeadline && (
+            <div className="bg-white/95 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.1)] border-2 border-blue-100 rounded-full py-2 flex w-full overflow-hidden animate-in fade-in slide-in-from-top-4 slide-out-to-top-4">
+              <div 
+                className="whitespace-nowrap w-full animate-[marquee_8s_linear_forwards] min-w-full px-4 text-xs sm:text-sm font-bold text-slate-700"
+                onAnimationEnd={() => setShowHeadline(false)}
+              >
+                {latestLog.message}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Settings Placeholder (Occupied by FloatingAudioControl) */}
+        <div className="w-10 sm:w-12 shrink-0" />
+      </div>
 
       {/* Pop-up Modifier Dadu (DecreasedRoll / AbsoluteRoll) */}
       {diceModifierPopup && (
@@ -391,24 +563,60 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
       )}
 
       {/* Header */}
-      <header className="h-16 shrink-0 bg-white shadow-sm flex flex-col items-center justify-center px-4 z-10 relative">
-        <h1 className="text-xl font-bold">Ular Tangga Sejarah Indonesia</h1>
-        <p className="text-xs text-slate-500">Belajar Sejarah Sambil Bermain</p>
+      <header
+        className="h-14 shrink-0 flex items-center justify-center px-4 z-10 relative"
+        style={{
+          backgroundColor: 'var(--color-navy)',
+          borderBottom: '2px solid var(--color-gold)',
+          boxShadow: '0 2px 12px rgba(30,58,95,0.3)',
+        }}
+      >
+        <div className="flex flex-col items-center">
+          <h1
+            className="text-base font-black tracking-wide leading-none"
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--color-gold-light)' }}
+          >
+            Ular Tangga Sejarah
+          </h1>
+          <p className="text-[10px] tracking-widest uppercase mt-0.5" style={{ color: 'rgba(201,168,76,0.6)' }}>
+            Nusantara
+          </p>
+        </div>
       </header>
+
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col lg:flex-row min-h-0 relative z-0">
 
-        {/* Board Container (Center/Top on Mobile, Center/Left on Desktop) */}
-        <section className="h-[60%] lg:h-auto lg:w-[70%] w-full overflow-y-auto p-4 flex flex-col items-center justify-center lg:pb-4">
-          {/* Meneruskan referensi data tiles asli dan players yang dinamis */}
-          <Board tiles={currentBoard} players={gameState.players} />
+        {/* Desktop Game Log Sidebar */}
+        <aside 
+          className={`hidden lg:flex absolute top-0 bottom-0 left-0 z-40 transition-transform duration-300 ${isDesktopLogOpen ? 'translate-x-0' : '-translate-x-full'} w-[25%] xl:w-[28%] bg-[#fdf6e3] border-r border-[#e0d6b8] p-4 flex-col shadow-2xl`}
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-bold text-lg text-slate-800">Game Log</h2>
+            <button
+              onClick={() => { playSFX('click'); setIsDesktopLogOpen(false); }}
+              className="p-2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+          <GameLogBox logs={gameState.logs} className="flex-1 min-h-0 shadow-none bg-transparent" title="" />
+        </aside>
+
+        {/* Board Container (Center) */}
+        <section className="h-[60%] lg:h-auto lg:flex-1 w-full overflow-y-auto p-4 flex flex-col items-center justify-center lg:pb-4 relative">
+          {/* Meneruskan referensi data tiles asli, players, dan state animasi per-frame */}
+          <Board 
+            tiles={currentBoard} 
+            players={gameState.players} 
+            transitioningPlayers={transitioningPlayers} 
+          />
         </section>
 
         {/* Desktop Control Area (Right Side) */}
-        <aside className="hidden lg:flex lg:w-[30%] shrink-0 bg-white border-l border-slate-200 p-6 flex-col gap-6 overflow-y-auto shadow-sm z-10">
+        <aside className="hidden lg:flex lg:w-[25%] xl:w-[28%] shrink-0 bg-white border-l border-slate-200 p-6 flex-col gap-6 overflow-y-auto shadow-sm z-10">
           <HUD activePlayer={activePlayer} players={gameState.players} layout="desktop" />
-          <GameLogBox logs={gameState.logs} className="flex-1 min-h-0" />
           <div className="mt-auto p-4 bg-slate-100 rounded-lg text-center border border-slate-200 min-h-[150px] flex items-center justify-center shrink-0">
             <Dice
               diceState={gameState.dice}
@@ -425,12 +633,6 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
             <HUD activePlayer={activePlayer} players={gameState.players} layout="mobile" />
           </div>
           <div className="flex-none flex justify-center mt-2 relative w-full">
-            <button
-              onClick={() => { playSFX('click'); setIsMobileLogOpen(true); }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-600 shadow-sm border border-slate-200 flex items-center gap-2 text-xs font-semibold transition-colors"
-            >
-              <span>📝</span> Log
-            </button>
             <Dice
               diceState={gameState.dice}
               onRoll={handleRollDice}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAudio } from '@/contexts/AudioContext';
 
 interface CrisisAlertModalProps {
@@ -9,6 +9,16 @@ interface CrisisAlertModalProps {
 
 export const CrisisAlertModal: React.FC<CrisisAlertModalProps> = ({ isOpen, onAcknowledge, isBotTurn }) => {
   const { playSFX } = useAudio();
+  
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        onAcknowledge();
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, onAcknowledge]);
+
   if (!isOpen) return null;
 
   return (
@@ -20,17 +30,9 @@ export const CrisisAlertModal: React.FC<CrisisAlertModalProps> = ({ isOpen, onAc
         </div>
 
         <div className="p-6 text-center">
-          <p className="text-gray-700 text-lg mb-8 leading-relaxed font-semibold">
+          <p className="text-gray-700 text-lg leading-relaxed font-semibold">
             Seseorang sudah memasuki zona akhir permainan.. semua player di zona bawah mendapatkan +2 langkah!
           </p>
-
-          <button
-            onClick={() => { playSFX('click'); onAcknowledge(); }}
-            disabled={isBotTurn}
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isBotTurn ? 'Bot Mengerti...' : 'Lanjutkan'}
-          </button>
         </div>
       </div>
     </div>

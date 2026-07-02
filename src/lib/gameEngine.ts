@@ -24,6 +24,7 @@ export interface ProcessTurnResult {
   acquiredEffect?: PlayerEffect;
   diceModifierInfo?: { type: 'DecreasedRoll' | 'AbsoluteRoll'; original: number; final: number };
   antiSnakeTriggered?: boolean;
+  pathEvent?: { type: 'Snake' | 'Ladder'; start: number; end: number };
 }
 
 const getRandomBuff = (): PlayerEffect => {
@@ -126,8 +127,7 @@ export const processTurn = (
 
   // Efek Fase Krisis
   let crisisBuffApplied = false;
-  if (newState.isCrisisPhaseActive && playerToUpdate.position < 80) {
-    diceValue += 2;
+  if (newState.isCrisisPhaseActive && playerToUpdate.position < 91) {
     crisisBuffApplied = true;
     newState.logs.push({
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -145,7 +145,7 @@ export const processTurn = (
 
   // 2. Calculate Movement
   const oldPosition = playerToUpdate.position;
-  const movement = calculateMovement(playerToUpdate.position, diceValue);
+  const movement = calculateMovement(playerToUpdate.position, diceValue + (crisisBuffApplied ? 2 : 0));
   playerToUpdate.position = movement.newPosition;
 
   // Cek apakah dipantulkan (Bouncing)
@@ -196,6 +196,7 @@ export const processTurn = (
   let acquiredEffect: PlayerEffect | undefined = undefined;
   let shouldAdvanceTurn = true;
   let antiSnakeTriggered = false;
+  let pathEvent: ProcessTurnResult['pathEvent'] = undefined;
 
   // 5. Handle Event
   let keepResolving = true;
@@ -223,6 +224,7 @@ export const processTurn = (
           tileEvent = { type: 'Normal' };
           keepResolving = true;
         } else if (tileEvent.destination !== undefined) {
+          pathEvent = { type: 'Snake', start: playerToUpdate.position, end: tileEvent.destination };
           playerToUpdate.position = tileEvent.destination;
           
           const destTile = context.board.find(t => t.position === playerToUpdate.position);
@@ -238,6 +240,7 @@ export const processTurn = (
 
       case 'Ladder':
         if (tileEvent.destination !== undefined) {
+          pathEvent = { type: 'Ladder', start: playerToUpdate.position, end: tileEvent.destination };
           playerToUpdate.position = tileEvent.destination;
           
           const destTile = context.board.find(t => t.position === playerToUpdate.position);
@@ -353,7 +356,7 @@ export const processTurn = (
     })[0];
     newState.winner = champion.id;
     newState.gameStatus = 'finished';
-    return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered };
+    return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered, pathEvent };
   }
 
   // 7. Finalize Turn
@@ -382,7 +385,7 @@ export const processTurn = (
     newState.isCrisisPhaseActive = false; // Jika semua pemain turun dari 91 akibat ular
   }
 
-  return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered };
+  return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered, pathEvent };
 };
 
 export const submitQuizAnswer = (

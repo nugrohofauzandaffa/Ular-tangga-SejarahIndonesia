@@ -33,7 +33,7 @@
   - Diperlukan untuk mensimulasikan lemparan dadu. Pemecahan menjadi 3 layar (Logic, State/Hook, UI) ditujukan untuk mematuhi aturan arsitektur di mana UI tidak boleh berisi algoritma.
 - **Dampak Perubahan**:
   - Sistem pengacakan angka dadu sekarang dapat diakses secara mandiri tanpa tergantung pada Game Engine utama. State pengacakan (`isRolling`) dapat dibaca UI untuk memutar animasi getar (*shake*).
-- **Status**: Waiting Review
+- **Status**: Completed
 
 ## [Phase 6.2] - Movement Module
 
@@ -44,7 +44,7 @@
   - Diperlukan untuk menghitung perpindahan posisi pemain berdasarkan posisi saat ini dan nilai dadu. Module ini diimplementasikan agar Game Engine dapat mengeksekusi pergerakan pion secara independen, memisahkan logika dari UI sesuai arsitektur.
 - **Dampak Perubahan**:
   - Game Engine sekarang bisa memanggil fungsi `calculateMovement` untuk menentukan ke mana pion harus bergerak, serta mendeteksi apakah pemain telah mencapai garis akhir (menang) atau gagal melangkah karena lemparan dadu melebihi batas petak terakhir.
-- **Status**: Waiting Review
+- **Status**: Completed
 
 ## [Phase 6.3] - Score Module
 
@@ -55,7 +55,7 @@
   - Diperlukan modul sentral untuk memproses penambahan, pengurangan, serta perhitungan ulang skor total pemain berdasarkan jumlah benar atau salah.
 - **Dampak Perubahan**:
   - Modul ini memastikan manipulasi skor terpusat dalam *Business Logic* murni tanpa melibatkan dependensi dari antarmuka pengguna (UI). Game Engine maupun Quiz Module dapat memanfaatkan fungsi-fungsi ini nantinya.
-- **Status**: Waiting Review
+- **Status**: Completed
 
 ## [Phase 6.4] - Quiz Module
 
@@ -103,7 +103,7 @@
   - Diperlukan untuk menyatukan (orkestrasi) seluruh logika bisnis dari sub-modul (Dice, Score, Movement, Quiz, Tile Resolver, Turn Manager) ke dalam satu alur permainan yang utuh berdasarkan cetak biru *pseudocode* yang disepakati. Mengakomodasi kebutuhan jeda antara giliran untuk interaksi antarmuka (UI).
 - **Dampak Perubahan**:
   - Fasad *Game Engine* kini terbentuk. UI tidak perlu lagi memanggil modul logika secara individu. UI hanya perlu memberikan injeksi data statis dan memanggil fungsi `processTurn`, `submitQuizAnswer`, `acknowledgeQuizResult`, atau `acknowledgeFact` yang otomatis mengembalikan state game terbaru (immutable). Dengan selesainya modul ini, **Phase 6 secara keseluruhan telah tuntas**.
-- **Status**: Waiting Review
+- **Status**: Completed
 
 ## [Phase 7.1] - Layout System
 
@@ -115,7 +115,7 @@
   - Diperlukan untuk merancang fondasi struktur layout utama yang memisahkan tata letak komponen antara Desktop dan Mobile sesuai dokumen `UX-Design.md` dan `Architecture.md`.
 - **Dampak Perubahan**:
   - Mempersiapkan area peletakan komponen-komponen React selanjutnya (Board, HUD, Roll Dice) dalam grid atau flex layout yang responsif tanpa perlu khawatir menumpuk, serta menyediakan area sticky bottom panel untuk interaksi Mobile.
-- **Status**: Waiting Review
+- **Status**: Completed
 
 ## [Phase 7.2] - Board Component
 
@@ -127,7 +127,7 @@
   - Diperlukan untuk merender papan permainan 10x10 menggunakan data asli dari `src/data/board.ts` dan mengganti area *placeholder* di dalam `GameLayout`.
 - **Dampak Perubahan**:
   - Papan permainan kini tampil dengan 100 *tile* yang diurutkan dengan pola zig-zag (kiri-ke-kanan, kanan-ke-kiri). Setiap petak sudah memiliki indikator visual dasar terkait posisinya dan tipe petaknya (Quiz, Fact, Bonus, Penalty, dsb). Selain itu, komponen ini juga telah disiapkan untuk area peletakan bidak pemain (Player Token) serta *layer SVG overlay* untuk jalur ular dan tangga yang akan dikembangkan pada fase selanjutnya.
-- **Status**: Waiting Review
+- **Status**: Completed
 
 ## [Bugfix] - Fix Module Import Paths
 
@@ -559,5 +559,188 @@
 - **Dampak Perubahan**:
   - Menambahkan eksekusi *sound effect* (`playSFX('click')`) pada berbagai tombol kritis yang sebelumnya belum merespons dengan audio (misalnya tombol navigasi `ResultScreen`, tombol *Lanjutkan* pada modal penalti, tombol kontrol Audio mengambang, serta tombol menu log).
   - Sistem BGM antara antarmuka utama (`MainMenu`) dan permainan (`GameLayout`) sudah tervalidasi menggunakan sinkronisasi siklus hidup React (`mount`/`unmount`), menghindari tumpang tindih (*overlap*) BGM secara absolut.
+- **Status**: Completed
+
+# #   [ P h a s e   P 1 ]   -   I t e r a s i   G a m e   F e e l   &   V i s u a l   A u d i t 
+ 
+ -   * * P h a s e * * :   P h a s e   P 1 
+ -   * * F i l e   y a n g   d i b u a t   a t a u   d i u b a h * * : 
+     -   \ s r c / l i b / m o v e m e n t . t s \ 
+     -   \ s r c / c o m p o n e n t s / G a m e L a y o u t . t s x \ 
+     -   \ s r c / c o m p o n e n t s / p l a y e r / P l a y e r T o k e n . t s x \ 
+     -   \ s r c / c o m p o n e n t s / p a p a n / B o a r d . t s x \ 
+ -   * * A l a s a n   P e r u b a h a n * * : 
+     -   M e n i n d a k l a n j u t i   a u d i t   p e n g a l a m a n   b e r m a i n   ( G a m e   F e e l )   d a n   b u g   r e n d e r   v i s u a l   U l a r / T a n g g a . 
+     -   P e r g e r a k a n   p i o n   ( * s l i d i n g * )   d i p o t o n g   m e n j a d i   a n i m a s i   l o m p a t   ( * h o p - b y - h o p * )   p e r   p e t a k   u n t u k   m e n i n g k a t k a n   i n t e r a k t i v i t a s . 
+     -   U l a r   l u r u s   v e r t i k a l   s e b e l u m n y a   m e n g a l a m i   b u g   t i d a k   t e r - r e n d e r   p a d a   b r o w s e r   w e b   ( C h r o m e / S a f a r i )   k a r e n a   k e t e r b a t a s a n   \ l i n e a r G r a d i e n t \   d e n g a n   \ o b j e c t B o u n d i n g B o x \ . 
+ -   * * D a m p a k   P e r u b a h a n * * : 
+     -   * * M o v e m e n t   M o d u l e * * :   D i b u a t   f u n g s i   \ c a l c u l a t e M o v e m e n t P a t h \   u n t u k   m e n j a b a r k a n   r u t e   l a n g k a h   s e c a r a   a b s o l u t   d a r i   p o s i s i   a s a l   k e   t u j u a n   ( t e r m a s u k   s a a t   p a n t u l a n / \  o u n c i n g \   d a r i   g a r i s   a k h i r ) . 
+     -   * * G a m e   L a y o u t * * :   M e r o m b a k   o r k e s t r a s i   t i m e l i n e   m e n g g u n a k a n   \ e x e c u t e H o p A n i m a t i o n \ .   P e r g e r a k a n   p i o n   d i t u n d a   s e t i a p   3 5 0 m s   ( d i s e r t a i   S F X   l a n g k a h )   h i n g g a   m e n c a p a i   t u j u a n   d a d u ,   l a l u   d i j e d a   s e j e n a k   s e b e l u m   p i o n   b e r e a k s i   p a d a   e f e k   u a r / t a n g g a . 
+     -   * * P l a y e r   T o k e n * * :   M e n a m b a h k a n   h o o k   \ i s H o p p i n g \   y a n g   m e r e s p o n s   t r a n s i s i   k o o r d i n a t ,   m e n c i p t a k a n   e f e k   l o m p a t a n   ( p a n t u l a n   * s c a l e *   d a n   p e n i n g g i a n   * t r a n s l a t e Y * )   s e h i n g g a   b i d a k   t i d a k   s e k a d a r   b e r g e s e r   t e t a p i   ' m e l a n g k a h ' . 
+     -   * * B o a r d   S V G * * :   \ B o a r d . t s x \   m e r o m b a k   r e n d e r   g a r i s   m e n j a d i   b e r b a s i s   v i e w B o x   m u r n i   ( \     0   1 0 0   1 0 0 \ ) .   U l a r   k i n i   b e r b e n t u k   * B e z i e r   C u r v e *   ( \ < p a t h > \ )   l e n g k a p   d e n g a n   v i s u a l i s a s i   k e p a l a   ( m a t a   d a n   l i d a h )   s e r t a   s i s i k   u l a r .   T a n g g a   d i t a m b a h k a n   d e t a i l   * r u n g s *   ( a n a k   t a n g g a )   d i   a n t a r a   d u a   g a r i s   p e g a n g a n   s e h i n g g a   l e b i h   m e n y e r u p a i   o b j e k   n y a t a   a l i h - a l i h   s e k a d a r   g a r i s   s e m u .   G a r i s   g r a d i e n   j u g a   m e m a n f a a t k a n   k o o r d i n a t   a b s o l u t   \ u s e r S p a c e O n U s e \   d e m i   t e r h i n d a r   d a r i   c a c a t   r e n d e r . 
+ -   * * S t a t u s * * :   C o m p l e t e d 
+ 
+ 
+ # #   [ P h a s e   P 1 . 1 ]   -   G a m e   F e e l   P o l i s h i n g   ( I t e r a s i   A n i m a s i ) 
+ 
+ -   * * P h a s e * * :   P h a s e   P 1 . 1 
+ -   * * F i l e   y a n g   d i b u a t   a t a u   d i u b a h * * : 
+     -   \ s r c / u t i l s / g e o m e t r y . t s \   ( B a r u ) 
+     -   \ s r c / c o n s t a n t s / g a m e . t s \ 
+     -   \ s r c / c o m p o n e n t s / p a p a n / B o a r d . t s x \ 
+     -   \ s r c / c o m p o n e n t s / G a m e L a y o u t . t s x \ 
+     -   \ s r c / c o m p o n e n t s / p l a y e r / P l a y e r T o k e n . t s x \ 
+ -   * * A l a s a n   P e r u b a h a n * * : 
+     -   M e r e v i s i   a r s i t e k t u r   a g a r   k a l k u l a s i   g e o m e t r i   v i s u a l   ( C u b i c   B e z i e r   u l a r ,   k e m i r i n g a n   t a n g g a )   d i p i s a h k a n   d a r i   l a y e r   b i s n i s   \ m o v e m e n t . t s \ . 
+     -   M e n g e k s t r a k s i   a n g k a   \ m a g i c   n u m b e r s \   d u r a s i   t i m e o u t   a n i m a s i   k e   d a l a m   \ G A M E _ C O N S T A N T S \ . 
+     -   M e r o m b a k   a n i m a s i   * s l i d i n g *   s t a t i s   s a a t   m e n a i k i   t a n g g a / m e n u r u n i   u l a r   m e n j a d i   p e n g a n i m a s i a n   a b s o l u t   * f r a m e - b y - f r a m e *   a g a r   p i o n   b e n a r - b e n a r   m e l u n c u r   d i   a t a s   l e n g k u n g a n   b a d a n   u l a r   s e c a r a   r e a l i s t i s . 
+ -   * * D a m p a k   P e r u b a h a n * * : 
+     -   * * A r s i t e k t u r * * :   \ g e o m e t r y . t s \   k i n i   b e r t a n g g u n g   j a w a b   p e n u h   t e r h a d a p   * p r e s e n t a t i o n   l o g i c * .   L a y e r   U I   m e m a n g g i l   f u n g s i   u t i l i t a s   i n i . 
+     -   * * B a l a n c i n g * * :   D u r a s i   a n i m a s i   h o p   d a n   d e l a y   a n t a r   e v e n t   d i k e n d a l i k a n   p e n u h   o l e h   p r o p e r t i   \ A N I M A T I O N \   d i   \ G A M E _ C O N S T A N T S \ . 
+     -   * * G a m e   F e e l * * :   \ e x e c u t e T i l e E v e n t A n i m a t i o n \   m e n g g u n a k a n   \ 
+ e q u e s t A n i m a t i o n F r a m e \   s e l a m a   8 0 0 m s   b e r s a m a   * e a s i n g   f u n c t i o n *   k u a d r a t i k .   H a l   i n i   m e m a k s a   R e a c t   u n t u k   m e n e r j e m a h k a n   p e r h i t u n g a n   B e z i e r   d a n   m e m - * b y p a s s *   C S S   T r a n s i t i o n   ( d i k o n t r o l   v i a   f l a g   \ i s T r a n s i t i o n i n g \   d i   \ P l a y e r T o k e n \ ) .   E f e k   d e s i s a n   u l a r   d a n   k e m e r o s o t a n   t e r a s a   s i n k r o n   s e c a r a   p r e s i s i   d e n g a n   b e n t u k   v i s u a l   u l a r   ( S - C u r v e )   d a n   t a n g g a . 
+ -   * * S t a t u s * * :   C o m p l e t e d 
+ 
+ 
+## [Phase 14.2] - Visual & Content Polishing
+
+- **Phase**: Phase 14.2
+- **File yang dibuat atau diubah**:
+  - src/components/player/PlayerToken.tsx
+  - src/components/dice/Dice.module.css
+  - src/data/questions.ts
+- **Alasan Perubahan**:
+  - Pengguna melaporkan bahwa animasi lemparan dadu kurang *smooth*, presisi animasi ular dan tangga kurang tepat, dan soal kuis perlu ditambah agar variasi bertambah. Pengguna juga meminta untuk menghapus kondisi ular pada petak 56 (sudah terhapus di komit sebelumnya).
+- **Dampak Perubahan**:
+  - *PlayerToken*: Menghilangkan offset saat sedang proses transisi (ular/tangga) sehingga token mengikuti koordinat SVG *board* secara presisi tanpa pergeseran.
+  - *Dice*: Menerapkan transisi rotasi *cubic-bezier* di animasi *roll* sehingga dadu terlihat berputar lebih realistis (memantul secara *smooth*).
+  - *Questions*: Menambahkan 20 pertanyaan sejarah baru (Total 40 soal), sehingga setiap kategori *difficulty* memiliki 10 soal, mengurangi repetisi selama sesi permainan.
+- **Status**: Completed
+
+
+## [Phase 14.3] - Mobile Responsiveness & Anim Fix
+
+- **Phase**: Phase 14.3
+- **File yang dibuat atau diubah**:
+  - src/components/GameLayout.tsx
+  - src/components/papan/Board.tsx
+  - src/components/papan/Tile.tsx
+  - src/components/player/PlayerToken.tsx
+  - src/components/ui/FloatingAudioControl.tsx
+- **Alasan Perubahan**:
+  - Poin 1: Menangani bug posisi animasi Ular/Tangga dan bug _hopping_ saat landing di posisi akhir ular.
+  - Poin 2: Dadu yang menggulung kelamaan menghalangi game flow.
+  - Poin 3-5: Layout Environment, Tombol Audio, dan Pop-up banner sangat over-scaled di device Mobile.
+- **Dampak Perubahan**:
+  - *PlayerToken.tsx*: Menambahkan useRef prevIsTransitioning untuk mencegah trigger animasi Squash & Stretch secara tidak sengaja ketika koordinat pendaratan presisi dan transisi (isTransitioning) berakhir.
+  - *GameLayout.tsx*: Mengurangi durasi rolling dadu menjadi 400ms dan menambahkan jeda 600ms ekstra untuk menampilkan hasil dadu; banner diperkecil secara responsif menggunakan utilitas *sm:px-8*.
+  - *Tile & Board & Audio*: Menyempurnakan ukuran font, stroke svg ular/tangga, dan dimensi elemen pada ukuran base agar ideal untuk versi mobile.
+- **Status**: Completed
+
+
+## [Phase 14.4] - Dynamic Token Sizing & Animation Sync
+
+- **Phase**: Phase 14.4
+- **File yang diubah**:
+  - src/components/GameLayout.tsx
+  - src/components/player/PlayerToken.tsx
+- **Alasan Perubahan**:
+  - Poin 1: Ukuran pion dirasa tidak konsisten kebutuhannya; butuh ukuran kecil saat tumpuk-menumpuk (Start) dan ukuran normal saat sendirian.
+  - Poin 2: Pergerakan hop-by-hop terasa kurang smooth akibat ketidaksesuaian durasi loop dengan CSS transisi.
+- **Dampak Perubahan**:
+  - (Menunggu Implementasi)
+- **Status**: Completed
+
+
+## [Phase 15.0] - Polish & Rantai Event
+
+- **Phase**: Phase 15.0
+- **File yang diubah**:
+  - src/lib/gameEngine.ts
+  - src/components/GameLayout.tsx
+  - src/components/ui/EffectModal.tsx
+  - src/components/ui/CrisisAlertModal.tsx
+- **Alasan Perubahan**:
+  - Menerapkan penundaan buff Double Roll.
+  - Memperluas area Crisis Buff hingga petak 90.
+  - Memindahkan posisi Game Log ke kiri (Desktop) dan via floating button (Mobile).
+  - Membuat pop-up otomatis tertutup tanpa klik.
+  - Memperbaiki animasi ular/tangga yang tertimpa pop-up quiz.
+- **Dampak Perubahan**:
+  - (Menunggu Implementasi)
+- **Status**: Waiting Review
+
+
+- **Status**: Completed
+
+
+## [Phase 16.0] - UI Refinements & Animasi
+
+- **Phase**: Phase 16.0
+- **File yang diubah**:
+  - src/components/ui/EffectModal.tsx
+  - src/components/GameLayout.tsx
+  - src/components/player/PlayerToken.tsx
+  - src/globals.css (untuk animasi marquee)
+- **Alasan Perubahan**:
+  - Laporan bug di mana pop-up masih memiliki tombol lanjutkan.
+  - Posisi layout Top Bar (Mobile) yang kurang presisi.
+  - Kebutuhan memaksimalkan ukuran papan di mode Desktop via collapsible Sidebar Log.
+  - Efek jumping setelah pion menuruni ular.
+  - Permintaan efek animasi Marquee untuk headline.
+- **Dampak Perubahan**:
+  - (Menunggu Implementasi)
+- **Status**: Waiting Review
+
+
+- **Status**: Completed
+
+
+## [Phase 16.1] - Hotfix UI & Animasi
+
+- **Phase**: Phase 16.1
+- **File yang diubah**:
+  - src/components/player/PlayerToken.tsx
+  - src/components/GameLayout.tsx
+  - src/app/globals.css
+- **Alasan Perubahan**:
+  - Memperbaiki pion lain yang terlihat melompat saat merapikan formasi.
+  - Menyembunyikan tombol log saat sidebar log di desktop sedang terbuka.
+  - Memperbaiki CSS marquee yang tidak ter-load sebelumnya.
+- **Dampak Perubahan**:
+  - Formasi pion kini merapat secara presisi dan instan.
+  - UI top bar lebih bersih saat log terbuka di desktop.
+  - Marquee berjalan normal dari ujung kanan.
+- **Status**: Completed
+
+
+## [Phase 16.2] - Fine-tuning Animasi & Marquee
+
+- **Phase**: Phase 16.2
+- **File yang diubah**:
+  - src/components/player/PlayerToken.tsx
+  - src/components/GameLayout.tsx
+  - src/app/globals.css
+- **Alasan Perubahan**:
+  - Pergeseran formasi pion secara instan masih terasa kaku seperti melompat.
+  - Headline perlu menghilang setelah teks selesai meluncur satu kali.
+- **Dampak Perubahan**:
+  - Pergeseran pion kini berjalan mulus (resize + translate serentak).
+  - Headline memicu onAnimationEnd untuk langsung menghilang dengan bersih.
+- **Status**: Completed
+
+
+## [Phase 16.3] - Resolusi Final Animasi & Marquee
+
+- **Phase**: Phase 16.3
+- **File yang diubah**:
+  - src/components/player/PlayerToken.tsx
+  - src/components/GameLayout.tsx
+- **Alasan Perubahan**:
+  - Framer Motion tidak dapat meng-interpolasi nilai calc() CSS secara mulus, menyebabkan offset melompat secara instan.
+  - Teks Marquee masih me-looping tanpa henti.
+- **Dampak Perubahan**:
+  - Offset x dan y diubah murni menjadi numerik agar Framer Motion bisa melakukan tween animasi 0.3s dengan presisi.
+  - Marquee dipaksa menggunakan arbitrary class Tailwind \orwards\ agar animasi berakhir secara definitif dan disembunyikan.
 - **Status**: Completed
 

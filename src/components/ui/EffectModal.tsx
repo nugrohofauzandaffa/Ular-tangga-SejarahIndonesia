@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PlayerEffect } from '@/types/player';
 import { useAudio } from '@/contexts/AudioContext';
 
@@ -13,7 +13,13 @@ export const EffectModal: React.FC<EffectModalProps> = ({ effect, onAcknowledge,
   const isBuff = ['AntiSnake', 'DoubleRoll', 'StealPoint'].includes(effect.type);
   const colorClass = isBuff ? 'bg-green-600' : 'bg-red-600';
   const lightColorClass = isBuff ? 'text-green-100' : 'text-red-100';
-  const buttonColorClass = isBuff ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700';
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onAcknowledge();
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [onAcknowledge]);
 
   const getEffectDetails = () => {
     switch (effect.type) {
@@ -22,7 +28,7 @@ export const EffectModal: React.FC<EffectModalProps> = ({ effect, onAcknowledge,
       case 'DoubleRoll':
         return { icon: '🎲', title: 'Lempar Ganda', desc: 'Kamu mendapat ekstra giliran untuk melempar dadu satu kali lagi.' };
       case 'StealPoint':
-        return { icon: '🥷', title: 'Curi Poin', desc: 'Kamu mendapat +3 Poin, dan mencuri 3 Poin dari lawan dengan skor tertinggi!' };
+        return { icon: '🥷', title: 'Curi Poin', desc: 'Kamu mendapat +7 Poin, dan mencuri 7 Poin dari lawan dengan skor tertinggi!' };
       case 'AbsoluteRoll':
         return { icon: '⛓️', title: 'Batas Dadu', desc: 'Kecepatanmu dibatasi! Dadu maksimal hanya angka 4 selama 2 putaran.' };
       case 'Silence':
@@ -48,17 +54,9 @@ export const EffectModal: React.FC<EffectModalProps> = ({ effect, onAcknowledge,
 
         {/* Content */}
         <div className="p-6 text-center">
-          <p className="text-gray-700 text-lg mb-8 leading-relaxed">
+          <p className="text-gray-700 text-lg leading-relaxed">
             {details.desc}
           </p>
-
-          <button
-            onClick={() => { playSFX('click'); onAcknowledge(); }}
-            disabled={isBotTurn}
-            className={`w-full text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md text-lg disabled:opacity-50 disabled:cursor-not-allowed ${buttonColorClass}`}
-          >
-            {isBotTurn ? 'Bot Membaca Hasil...' : 'Lanjutkan'}
-          </button>
         </div>
       </div>
     </div>
