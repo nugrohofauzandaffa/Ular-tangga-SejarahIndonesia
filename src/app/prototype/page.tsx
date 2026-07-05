@@ -248,8 +248,8 @@ function HeroMedallion() {
     const big = i % 9 === 0;
     const med = i % 3 === 0 && !big;
     const r1  = big ? 226 : med ? 230 : 233;
-    return { x1: 350 + r1 * Math.cos(a), y1: 250 + r1 * Math.sin(a),
-             x2: 350 + 238 * Math.cos(a), y2: 250 + 238 * Math.sin(a),
+    return { x1: +(350 + r1 * Math.cos(a)).toFixed(2), y1: +(250 + r1 * Math.sin(a)).toFixed(2),
+             x2: +(350 + 238 * Math.cos(a)).toFixed(2), y2: +(250 + 238 * Math.sin(a)).toFixed(2),
              sw: big ? "1.4" : med ? "0.8" : "0.5",
              op: big ? 0.38 : med ? 0.25 : 0.15 };
   });
@@ -267,7 +267,8 @@ function HeroMedallion() {
       <path d="M668,242 L682,250 L668,258 L662,250Z" fill="var(--color-gold)" fillOpacity="0.38" />
       {[45, 135, 225, 315].map((deg, i) => {
         const r = ((deg - 90) * Math.PI) / 180;
-        const x = 350 + 300 * Math.cos(r), y = 250 + 212 * Math.sin(r);
+        const x = +(350 + 300 * Math.cos(r)).toFixed(2);
+        const y = +(250 + 212 * Math.sin(r)).toFixed(2);
         return <circle key={i} cx={x} cy={y} r="3.5" fill="var(--color-gold)" fillOpacity="0.28" />;
       })}
       <path d="M60,200 Q200,185 350,192 Q500,199 640,185" stroke="var(--color-gold)" strokeWidth="0.7" strokeOpacity="0.16" fill="none" strokeDasharray="4 4" />
@@ -476,6 +477,7 @@ export default function PrototypePage() {
       {/* Dynamic Light Layers (Cahaya Bergerak) */}
       <motion.div className="absolute inset-0 pointer-events-none z-0" style={{
         background: "linear-gradient(148deg, rgba(255,248,210,0.24) 0%, rgba(201,168,76,0.07) 30%, transparent 55%)",
+        willChange: "opacity"
       }} animate={prefersReducedMotion ? {} : { opacity: [0.7, 1, 0.7] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} />
       <div className="absolute inset-0 pointer-events-none z-0" style={{
         background: "linear-gradient(218deg, rgba(255,248,210,0.18) 0%, rgba(201,168,76,0.05) 28%, transparent 50%)",
@@ -485,26 +487,30 @@ export default function PrototypePage() {
       }} animate={prefersReducedMotion ? {} : { opacity: [0.6, 0.9, 0.6] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }} />
       <motion.div className="absolute inset-0 pointer-events-none z-0" style={{
         background: "radial-gradient(ellipse 55% 40% at 50% 42%, rgba(201,168,76,0.16) 0%, transparent 70%)",
+        willChange: "transform, opacity"
       }} animate={prefersReducedMotion ? {} : { opacity: [0.6, 1, 0.6], scale: [1, 1.05, 1] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
       <div className="absolute inset-0 pointer-events-none z-0" style={{
-        background: "radial-gradient(ellipse at center, transparent 30%, rgba(10,26,46,0.40) 100%)",
+        background: "radial-gradient(ellipse at center, transparent 15%, rgba(10,26,46,0.65) 100%)",
+        boxShadow: "inset 0 0 150px rgba(0,0,0,0.6)"
       }} />
 
       {/* Cinematic Fog & Moving Light Rays */}
-      <motion.div className="absolute inset-0 pointer-events-none z-[1]" style={{ x: bgX, y: bgY }}>
+      <motion.div className="absolute inset-0 pointer-events-none z-[1]" style={{ x: bgX, y: bgY, willChange: "transform" }}>
         <motion.div className="absolute inset-[-50%] opacity-30" style={{
           background: "radial-gradient(ellipse at 30% 60%, rgba(255,248,220,0.12) 0%, transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(201,168,76,0.08) 0%, transparent 60%)",
           filter: "blur(60px)",
+          willChange: "transform"
         }} animate={prefersReducedMotion ? {} : { x: ["0%", "-10%", "0%"], y: ["0%", "5%", "0%"] }} transition={{ duration: 40, repeat: Infinity, ease: "linear" }} />
       </motion.div>
 
       {/* Background Ambient Particles (Debu Bergerak) */}
-      <motion.div className="absolute inset-0 pointer-events-none z-[1]" style={{ x: midX, y: midY }}>
+      <motion.div className="absolute inset-0 pointer-events-none z-[1]" style={{ x: midX, y: midY, willChange: "transform" }}>
         {PARTICLES.map((p, i) => (
           <motion.div key={i}
             className="absolute rounded-sm"
             style={{ left: p.left, top: p.top, width: p.size, height: p.size,
-                     backgroundColor: "var(--color-gold)", opacity: p.op, filter: p.blur ? `blur(${p.blur}px)` : undefined }}
+                     backgroundColor: "var(--color-gold)", opacity: p.op, filter: p.blur ? `blur(${p.blur}px)` : undefined,
+                     willChange: "transform, opacity" }}
             animate={prefersReducedMotion ? {} : { x: [0, p.drift, 0], y: [0, -30, 0], rotate: [0, p.rot, 0], opacity: [p.op, p.op * 1.6, p.op] }}
             transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -539,12 +545,12 @@ export default function PrototypePage() {
         style={{
           width: "min(96vw, 840px)", height: "min(60vw, 560px)",
           top: "50%", left: "50%", transform: "translate(-50%, -50%)",
-          opacity: 0.28, filter: "drop-shadow(0 0 40px rgba(201,168,76,0.12))",
-          x: midX, y: midY
+          opacity: 0.28, filter: "drop-shadow(0 15px 40px rgba(15,36,64,0.4)) drop-shadow(0 0 80px rgba(201,168,76,0.25))",
+          x: midX, y: midY, willChange: "transform"
         }}
         initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 0.28, scale: 1 }} transition={{ delay: 0.1, duration: 1.2, ease: "easeOut" }}
       >
-        <motion.div className="w-full h-full" animate={prefersReducedMotion ? {} : { y: [0, -12, 0] }} transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
+        <motion.div className="w-full h-full" style={{ willChange: "transform" }} animate={prefersReducedMotion ? {} : { y: [0, -12, 0] }} transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>
           <HeroMedallion />
         </motion.div>
       </motion.div>
@@ -557,7 +563,7 @@ export default function PrototypePage() {
       </div>
 
       {/* Main Content */}
-      <div className="z-10 text-center px-4 flex flex-col items-center pb-20 md:pb-20 pt-4 md:pt-0 w-full scale-95 md:scale-100 origin-center">
+      <div className="z-10 text-center px-4 flex flex-col items-center justify-center pb-24 md:pb-32 pt-10 md:pt-4 w-full scale-90 md:scale-95 lg:scale-100 origin-center h-full">
 
         {/* Genre badge */}
         <motion.div
@@ -734,20 +740,24 @@ export default function PrototypePage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={eased(0.66)}>
           <motion.button
-            className="group relative flex items-center gap-3 px-8 py-3.5 rounded font-bold text-sm uppercase tracking-widest overflow-hidden cursor-pointer"
-            style={{
-              fontFamily: "var(--font-display)",
-              background: "linear-gradient(160deg, var(--color-navy-dark) 0%, var(--color-navy) 55%, var(--color-navy-dark) 100%)",
-              color: "var(--color-gold-light)",
-              border: "1px solid var(--color-gold)",
-              boxShadow: "0 6px 20px rgba(10,26,46,0.4), inset 0 1px 1px rgba(255,255,255,0.1)",
-            }}
+            className="relative flex items-center justify-center gap-2 md:gap-3 py-3 md:py-4 px-6 md:px-10 rounded-sm overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-gold)]"
             onHoverStart={() => setHoveringCTA(true)}
             onHoverEnd={() => setHoveringCTA(false)}
-            whileHover={{ scale: 1.05, transition: { type: "spring", stiffness: 400, damping: 15 } }}
-            whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 500, damping: 25 } }}>
+            whileHover={{ scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 15 } }}
+            whileTap={{ scale: 0.96, transition: { type: "spring", stiffness: 500, damping: 25 } }}
+            style={{
+              background: "linear-gradient(180deg, rgba(15,36,64,0.95) 0%, rgba(10,26,46,1) 100%)",
+              border: "1px solid rgba(201,168,76,0.6)",
+              boxShadow: "0 8px 30px rgba(10,26,46,0.6), inset 0 2px 4px rgba(255,255,255,0.15)",
+              color: "var(--color-cream)",
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(12px, 3vw, 16px)",
+              letterSpacing: "0.15em",
+              fontWeight: 800,
+              textTransform: "uppercase"
+            }}>
             {/* Inner Gold Border (Engraved effect) */}
-            <div className="absolute inset-[3px] rounded-sm pointer-events-none" style={{ border: "1px solid rgba(201,168,76,0.3)" }} />
+            <div className="absolute inset-[3px] rounded-sm pointer-events-none" style={{ border: "1px solid rgba(201,168,76,0.3)", boxShadow: "inset 0 0 10px rgba(0,0,0,0.4)" }} />
             
             <motion.span className="absolute inset-0 pointer-events-none"
               style={{ background: "linear-gradient(105deg, transparent 20%, rgba(201,168,76,0.4) 50%, transparent 80%)" }}
@@ -782,7 +792,7 @@ export default function PrototypePage() {
       </div>
 
       {/* Foreground Particles */}
-      <motion.div className="absolute inset-0 pointer-events-none z-[20]" style={{ x: fgX, y: fgY }}>
+      <motion.div className="absolute inset-0 pointer-events-none z-[20]" style={{ x: fgX, y: fgY, willChange: "transform" }}>
         {FG_PARTICLES.map((p, i) => (
           <motion.div key={i}
             className="absolute rounded-sm"
@@ -791,6 +801,7 @@ export default function PrototypePage() {
               backgroundColor: "var(--color-gold)", opacity: p.op,
               boxShadow: `0 0 ${p.size * 3}px rgba(201,168,76,0.5)`,
               filter: p.blur ? `blur(${p.blur}px)` : undefined,
+              willChange: "transform, opacity"
             }}
             animate={prefersReducedMotion ? {} : { x: [0, p.drift, 0], y: [0, -35, 0], rotate: [0, p.rot, 0], opacity: [p.op, p.op * 1.8, p.op] }}
             transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
@@ -799,27 +810,26 @@ export default function PrototypePage() {
       </motion.div>
 
       {/* Feature Cards */}
-      <motion.div className="absolute bottom-2 md:bottom-3 left-0 right-0 z-10 px-4"
+      <motion.div className="absolute bottom-2 md:bottom-4 left-0 right-0 z-10 px-4"
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.85, duration: 0.6, ease: "easeOut" }}>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 max-w-3xl mx-auto">
           {FEATURES.map((f, i) => (
             <motion.div key={i}
-              className="relative flex flex-col items-center py-2 px-1 md:py-2.5 md:px-2 rounded-sm cursor-default overflow-hidden group"
+              className="relative flex flex-col items-center py-1.5 px-1 md:py-2 md:px-1.5 rounded-sm cursor-default overflow-hidden group h-full"
               style={{
                 background: "linear-gradient(180deg, rgba(15,36,64,0.85) 0%, rgba(10,26,46,0.9) 100%)",
                 border: "1px solid rgba(201,168,76,0.4)",
                 borderTop: "1px solid rgba(201,168,76,0.6)",
-                boxShadow: "0 6px 16px rgba(10,26,46,0.4), inset 0 2px 8px rgba(0,0,0,0.4)",
+                boxShadow: "0 4px 12px rgba(10,26,46,0.4), inset 0 2px 8px rgba(0,0,0,0.4)",
               }}
               whileHover={{ 
-                y: -2, 
+                y: -4, 
                 background: "linear-gradient(180deg, rgba(15,36,64,0.95) 0%, rgba(10,26,46,1) 100%)",
-                borderColor: "rgba(201,168,76,0.8)",
-                boxShadow: "0 10px 24px rgba(10,26,46,0.6), 0 0 12px rgba(201,168,76,0.2), inset 0 2px 8px rgba(0,0,0,0.5)",
+                boxShadow: "0 12px 28px rgba(10,26,46,0.6), 0 0 16px rgba(201,168,76,0.25), inset 0 2px 8px rgba(0,0,0,0.5)",
               }}
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 + i * 0.08, duration: 0.45 }}>
+              transition={{ delay: 0.9 + i * 0.08, duration: 0.45, y: { type: "spring", stiffness: 400, damping: 20 } }}
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
               
               {/* Decorative Corner accents inside card (Batik-like dots) */}
               <div className="absolute top-1 left-1 w-1 h-1 rounded-full bg-[rgba(201,168,76,0.4)] group-hover:bg-[rgba(201,168,76,0.8)] transition-colors duration-300" />
@@ -828,23 +838,23 @@ export default function PrototypePage() {
               <div className="absolute bottom-1 right-1 w-1 h-1 rounded-full bg-[rgba(201,168,76,0.4)] group-hover:bg-[rgba(201,168,76,0.8)] transition-colors duration-300" />
 
               {/* Inner detail border */}
-              <div className="absolute inset-[3px] rounded-sm pointer-events-none border border-[rgba(201,168,76,0.1)] group-hover:border-[rgba(201,168,76,0.2)] transition-colors duration-300" />
+              <div className="absolute inset-[2px] rounded-sm pointer-events-none border border-[rgba(201,168,76,0.1)] group-hover:border-[rgba(201,168,76,0.2)] transition-colors duration-300" />
 
               {/* Icon Container */}
-              <motion.div className="mb-1.5 md:mb-2 p-1.5 md:p-2 rounded-full border border-[rgba(201,168,76,0.2)] bg-[rgba(201,168,76,0.05)] group-hover:bg-[rgba(201,168,76,0.15)] group-hover:border-[rgba(201,168,76,0.4)] transition-all duration-300"
+              <motion.div className="mb-1 md:mb-1.5 p-1 md:p-1.5 rounded-full border border-[rgba(201,168,76,0.2)] bg-[rgba(201,168,76,0.05)] group-hover:bg-[rgba(201,168,76,0.15)] group-hover:border-[rgba(201,168,76,0.4)] transition-all duration-300"
                 whileHover={{ scale: 1.1, rotate: 5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
-                <span style={{ color: "var(--color-gold)" }} className="opacity-90 group-hover:opacity-100 group-hover:drop-shadow-[0_0_8px_rgba(201,168,76,0.6)] transition-all duration-300">
+                <span style={{ color: "var(--color-gold)", transform: "scale(0.85)" }} className="inline-block opacity-90 group-hover:opacity-100 group-hover:drop-shadow-[0_0_8px_rgba(201,168,76,0.6)] transition-all duration-300">
                   {f.icon}
                 </span>
               </motion.div>
               
-              <span className="text-[9px] md:text-[11px] font-black tracking-widest mb-0.5 transition-colors duration-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+              <span className="text-[8px] md:text-[10px] font-black tracking-widest mb-0.5 transition-colors duration-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
                 style={{ color: "var(--color-cream)", fontFamily: "var(--font-display)" }}>
                 {f.title}
               </span>
               
-              <span className="text-[8px] md:text-[9px] text-center leading-tight transition-all duration-300"
-                style={{ color: "rgba(255,255,255,0.5)" }}>
+              <span className="text-[7px] md:text-[8px] text-center leading-tight transition-all duration-300"
+                style={{ color: "rgba(255,255,255,0.7)" }}>
                 {f.sub}
               </span>
             </motion.div>

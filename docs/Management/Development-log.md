@@ -1,5 +1,67 @@
 # Development Log
 
+## [Tahap 8] - Main Menu Production Implementation (Milestone 2 Completed)
+
+- **Phase**: Tahap 8 (Production) / Final
+- **File yang dibuat atau diubah**:
+  - `src/components/ui/MainMenu.tsx` (Diganti total)
+- **Alasan Perubahan**:
+  - Implementasi *Final Approval* dari rancangan Prototipe (Tahap 6A).
+- **Dampak Perubahan**:
+  - Komponen `MainMenu` di *Production* kini 100% menggunakan arsitektur *Progressive Disclosure* bergaya *Premium Game Setup Wizard*.
+  - Transisi didukung oleh `framer-motion` untuk *cross-fade* layar, kemunculan formulir yang berurutan (*staggered*), dan modal melayang (*popover*) untuk `AudioSettings`.
+  - Integrasi dengan `ThemeContext` menggunakan nilai dinamis dari `allThemes` secara iteratif.
+  - Proses persiapan pemain dan bot otomatis disambungkan ke mesin utama permainan (`onStartGame`).
+- **Status**: Completed (Milestone 2 Selesai)
+
+
+## [Milestone 2] - Main Menu Redesign (Preparation Screen Prototype)
+
+- **Phase**: Milestone 2 (Tahap 4 - Dummy Prototype)
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype/main-menu/page.tsx`
+  - `implementation_plan.md` (Update)
+  - `task.md` (Update)
+- **Alasan Perubahan**:
+  - Merombak total konsep layar Main Menu menjadi *Preparation Screen* (Meja Ekspedisi) berdasarkan persetujuan *Art Direction* baru pada Project Workflow 2.0. Bertujuan membangun hubungan emosional bahwa pemain sedang mempersiapkan petualangan, bukan sekadar mengisi konfigurasi.
+- **Dampak Perubahan**:
+  - Prototipe Dummy (statis/visual saja) diciptakan di rute `/prototype/main-menu`.
+  - **Hero Area**: Mengambil alih 50% layar desktop (atau bagian atas mobile) yang menampilkan *Hero Art* dan Tipografi bernuansa ekspedisi (Thematic).
+  - **Progressive Disclosure**: Opsi-opsi (Mode, Daftar Pemain, Tema) yang tadinya tertumpuk, kini disusun berurutan sebagai bagian dari satu kesatuan gulungan *Manifes* agar beban kognitif lebih rendah.
+  - **Visual Identity**: Desain mengadopsi material perkamen, *badge* penjelajah untuk kartu nama, serta pratinjau tema statis agar estetika museum/board-game premium terbangun sejak awal.
+- **Status**: Completed (Menunggu Feedback Tahap 5)
+
+
+## [RC v1.0] - Landing Page Final Polish
+
+- **Phase**: Release Candidate Polish (Completed)
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype/page.tsx`
+- **Alasan Perubahan**:
+  - Menuju versi rilis (*Release Candidate*), diperlukan iterasi mikroskopik pada UI tanpa menambah fitur baru. Mengatasi *error* Framer Motion (`rgba is not animatable`) yang memengaruhi stabilitas klien, menyeimbangkan konsistensi, dan melengkapi aksesibilitas *keyboard* serta optimalisasi lapis render.
+- **Dampak Perubahan**:
+  - **Framer Bug Fixed**: Animasi pinggiran fitur (*border color*) saat diarahkan panah tetikus (*hover*) diganti sepenuhnya dengan animasi batas cahaya (*glow inset box-shadow*). Hal ini mengeliminasi error `rgba not animatable` secara total.
+  - **Premium Atmosphere**: Sentuhan cahaya hangat tak kentara di punggung Hero (via *drop-shadow*) dan tepian layar yang kian pekat (*vignette inset shadow* 150px) membuat nuansa ruang lebih memukau dan dalam (*deep*).
+  - **Micro-Interaction & CTA**: Penambahan efek gaya pegas (*spring physics*) yang mulus pada tombol utama (CTA) saat diklik (`scale: 0.96`), disertai bayangan inset kilap di batas tombol.
+  - **Feature Cards Uniformity**: Memastikan semua Kartu Fitur menggunakan `h-full` sehingga tinggi ubin merata sempurna. Animasi pendar (*hover*) kini terasa lebih organik dengan transisi pegas.
+  - **Hydration Mismatch Fixed**: Mengatasi *error* spesifik `A tree hydrated but some attributes... didn't match` pada elemen SVG `<line>` dan `<circle>` dalam komponen `HeroMedallion`. Hal ini dicapai dengan menyelaraskan presisi desimal matematika (membulatkan nilai hasil `Math.cos/sin` via `.toFixed(2)`) sehingga nilai koordinat yang di-*render* oleh Server-Side (Next.js) sejalan dan sama persis dengan komputasi Client-Side (React).
+  - **Performance & A11Y**: *Focus outlines* (Cincin navigasi) bagi pengguna *keyboard* kini terpadu. Lapisan debu, kabut, dan panji *parallax* diberikan akselerator GPU parsial (`willChange: "transform, opacity"`) demi mendongkrak mulusnya pergerakan layar (FPS).
+- **Status**: Completed
+
+## [Sprint 5] - Final Art Direction Review
+
+- **Phase**: Sprint 5 (Completed)
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype/page.tsx`
+- **Alasan Perubahan**:
+  - Melakukan *polish* visual terakhir pada Prototype sebelum dipindahkan ke fase produksi. Merespons keluhan pengguna mengenai tumpang tindih elemen (*overlap*) antara teks atas dengan kotak fitur di bawah pada beberapa ukuran layar desktop.
+- **Dampak Perubahan**:
+  - **Composition**: Menambahkan `padding-bottom` (pb-24 hingga pb-32) dan mengaplikasikan *responsive scale* (scale-90 hingga scale-100) pada wadah utama. Hal ini menyelesaikan bug visual di mana teks "Game Edukasi Sejarah Indonesia" menghilang (terpotong ke atas) saat kartu fitur mendesak tombol "Mulai Petualangan" di bagian bawah layar.
+  - **Visual Hierarchy & Sizing**: Mengurangi dimensi keseluruhan pada Kotak Fitur (padding, font-size, dan ukuran ikon di- *scale down*) sehingga memberikan ruang napas yang lebih baik antara tombol dan menu fitur.
+  - **Contrast & Atmosphere**: Mempergelap bayangan sudut layar (*vignette*) menjadi `rgba(10,26,46,0.50)` agar perhatian mata semakin terkunci ke pusat (*Hero container*). 
+  - **Premium Feel**: Menaikkan kontras teks subtitel kotak fitur demi keterbacaan, serta menerapkan `mixBlendMode: "multiply"` pada teks Aksara air (*watermark*) di belakang judul utama agar terasa terukir langsung pada tekstur kertas.
+- **Status**: Completed
+
 ## [Sprint 4] - Premium UI Language
 
 - **Phase**: Sprint 4 (Completed)
