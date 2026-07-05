@@ -62,6 +62,7 @@
 - [x] Phase 14.2: Visual & Content Polishing
 - [x] Phase 14.3: Mobile Responsiveness & Anim Fix
 - [x] Phase 14.4: Dynamic Token Sizing & Anim Sync
+- [x] Phase 14.5: Feature Polish (Headline, Quiz Zones, DoubleRoll)
 - [x] Phase P1: Iterasi Game Feel & Visual Audit (Selesai)
   - [x] Generate Path (Hop-by-hop) di Movement Module
   - [x] Orkestrasi Timeline Animasi di GameLayout
@@ -81,3 +82,38 @@
   - [ ] Refactor PlayerToken.tsx menjadi <motion.div> (Squash & Stretch)
   - [ ] Refactor GameLayout.tsx untuk menggunakan orchestrator timeline
   - [ ] Integrasikan prefers-reduced-motion
+
+- [x] **Phase Theme: Modular Theme System (Selesai)**
+  - [x] Desain skema tema & konfigurasi pada `src/constants/themes.tsx`
+  - [x] Setup `ThemeContext` & `ThemeProvider` pada `src/contexts/ThemeContext.tsx`
+  - [x] Integrasikan ThemeProvider ke dalam `src/app/layout.tsx`
+  - [x] Atur CSS Custom Properties untuk `jakarta-heritage` di `src/app/globals.css`
+  - [x] Refactor Splash Screen `src/app/page.tsx` dengan pattern dinamis & siluet Batavia SVG
+  - [x] Buat komponen `ThemeSelector.tsx` & pasang di Main Menu `src/components/ui/MainMenu.tsx`
+  - [x] Refactor `Board.tsx` & `Tile.tsx` (desain border Gigi Balang dinamis, gradasi SVG, & ikon kustom Betawi)
+  - [x] Sesuaikan `HUD.tsx` & `ResultScreen.tsx` agar menyerap variabel warna tema aktif
+
+- [x] **Phase Theme v2.0: Jakarta Heritage Visual Identity Revision (Selesai)**
+  - [x] Restorasi audio ke setting baseline statis asli (bgm_main.mp3, click.mp3, ladder.mp3, snake.mp3) sesuai instruksi
+  - [x] Redesign Ular di `Board.tsx` menjadi Naga Betawi (kepala bermahkota, detail rahang, sisik batikan kustom, & ekor kelapa emas)
+  - [x] Redesign Tangga di `Board.tsx` menjadi batang bambu/kayu dengan cylindrical highlight, lashing joints, dan drop shadow filter
+  - [x] Buat kustom SVG Ondel-ondel Putih (Bonus) dan Ondel-ondel Merah (Penalty) di `src/constants/themes.tsx`
+  - [x] Kembalikan ikon Quiz ke naskah scroll klasik universal
+  - [x] Buat kustom SVG Monas Megah di petak 100 dengan radial gold glow dan pedestal bertingkat
+  - [x] Refactor seluruh modal dialog (`QuizModal`, `EffectModal`, `CrisisAlertModal`, `DiceModifierModal`) ke format parchment scroll & wood borders Gigi Balang
+  - [x] Refactor player tokens, HUD panel, dadu 3D, dan Result Screen klasemen agar menyerap visual bertema Betawi/Batavia secara utuh
+
+- [x] **Phase Final Polish: First Impression & UX Audit (Selesai)**
+  - [x] Resolusi visual asset 404 Splash Screen Classic dengan Kawung batik pattern & ClassicHeroMap SVG inline
+  - [x] Tambahkan efek pulse glow pada tombol utama splash screen
+  - [x] Sempurnakan player entry setup cards dan input name form menggunakan parchment styling dengan gold focus rings
+  - [x] Tambahkan efek physical shake pada kontainer dadu saat bergulir
+  - [x] Sempurnakan letupan partikel kustom (confetti dan sparkle) saat dadu mendarat
+  - [x] Implementasikan riak gelombang emas (gold ring ripple) di bawah pion saat mendarat di petak papan
+  - [x] Refaktor modal Quiz, Effect, Crisis, dan Dice Modifier dengan spring transitions elastis Framer Motion
+  - [x] Tingkatkan aksesibilitas mobile dengan area sentuh minimum 44px dan pewarnaan tematik pada FloatingAudioControl & AudioSettings
+
+- [x] **Sprint 1 - Hero Section 2.0 (Selesai)**
+  - [x] Redesign hero container dengan multiple frames & border ukiran
+  - [x] Implementasi 3D bevel text-shadow
+  - [x] Tambah SVG Gunungan Wayang sebagai background ilustrasi

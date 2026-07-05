@@ -25,21 +25,26 @@ export interface ProcessTurnResult {
   diceModifierInfo?: { type: 'DecreasedRoll' | 'AbsoluteRoll'; original: number; final: number };
   antiSnakeTriggered?: boolean;
   pathEvent?: { type: 'Snake' | 'Ladder'; start: number; end: number };
+  movementSteps: number;
+  isAmnesia?: boolean;
 }
 
 const getRandomBuff = (): PlayerEffect => {
-  const buffs: BuffType[] = ['AntiSnake', 'DoubleRoll', 'StealPoint'];
+  const buffs: BuffType[] = ['AntiSnake', 'DoubleRoll', 'StealPoint', 'Cendekiawan', 'MesinWaktu'];
   const type = buffs[Math.floor(Math.random() * buffs.length)];
   return { type, duration: -1 }; // -1 = until used/triggered
 };
 
 export const getRandomDebuff = (): PlayerEffect => {
-  const debuffs: DebuffType[] = ['AbsoluteRoll', 'Silence', 'DecreasedRoll'];
+  const debuffs: DebuffType[] = ['AbsoluteRoll', 'Silence', 'DecreasedRoll', 'AmnesiaSejarah', 'PajakKolonial', 'PhobiaTangga'];
   const type = debuffs[Math.floor(Math.random() * debuffs.length)];
   
   if (type === 'Silence') return { type, duration: -1 }; // -1 = until used
-  if (type === 'AbsoluteRoll') return { type, duration: 1 };
-  if (type === 'DecreasedRoll') return { type, duration: 1 }; // 1 aktif + 1 putaran akuisisi
+  if (type === 'AbsoluteRoll') return { type, duration: 2 }; // 1 aktif + 1 putaran akuisisi
+  if (type === 'DecreasedRoll') return { type, duration: 2 }; // 1 aktif + 1 putaran akuisisi
+  if (type === 'AmnesiaSejarah') return { type, duration: 2 };
+  if (type === 'PajakKolonial') return { type, duration: 3 }; // 2 aktif + 1 putaran akuisisi
+  if (type === 'PhobiaTangga') return { type, duration: 2 };
   return { type, duration: 2 };
 };
 
@@ -83,7 +88,7 @@ export const processTurn = (
     newState.players[activePlayerIndex] = playerToUpdate;
     newState.gameStatus = 'idle';
     newState.dice = { ...newState.dice, isRolling: false };
-    return { newState };
+    return { newState, movementSteps: 0 };
   }
 
   // 1. Roll Dice
@@ -125,6 +130,32 @@ export const processTurn = (
     });
   }
 
+  let isAmnesia = false;
+  const amnesiaIndex = playerToUpdate.activeEffects.findIndex(e => e.type === 'AmnesiaSejarah');
+  if (amnesiaIndex !== -1) {
+    isAmnesia = true;
+    playerToUpdate.activeEffects.splice(amnesiaIndex, 1);
+    newState.logs.push({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+      playerName: playerToUpdate.name,
+      message: 'Amnesia Sejarah! Kamu kebingungan dan melangkah mundur.',
+      type: 'penalty'
+    });
+  }
+
+  const pajakIndex = playerToUpdate.activeEffects.findIndex(e => e.type === 'PajakKolonial');
+  if (pajakIndex !== -1) {
+    playerToUpdate.score = Math.max(0, playerToUpdate.score - diceValue);
+    newState.logs.push({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+      playerName: playerToUpdate.name,
+      message: `Pajak Kolonial aktif! Kehilangan ${diceValue} poin karena melangkah.`,
+      type: 'penalty'
+    });
+  }
+
   // Efek Fase Krisis
   let crisisBuffApplied = false;
   if (newState.isCrisisPhaseActive && playerToUpdate.position < 91) {
@@ -145,7 +176,12 @@ export const processTurn = (
 
   // 2. Calculate Movement
   const oldPosition = playerToUpdate.position;
-  const movement = calculateMovement(playerToUpdate.position, diceValue + (crisisBuffApplied ? 2 : 0));
+  let movementSteps = diceValue + (crisisBuffApplied ? 2 : 0);
+  if (isAmnesia) {
+    movementSteps = -movementSteps; // Arah mundur
+  }
+  
+  const movement = calculateMovement(playerToUpdate.position, movementSteps);
   playerToUpdate.position = movement.newPosition;
 
   // Cek apakah dipantulkan (Bouncing)
@@ -171,7 +207,7 @@ export const processTurn = (
     })[0];
     newState.winner = champion.id;
     newState.gameStatus = 'finished';
-    return { newState };
+    return { newState, movementSteps };
   }
 
   // Jika pemain tidak bergerak (karena melebihi petak 100), jangan memicu ulang efek petak saat ini.
@@ -183,7 +219,7 @@ export const processTurn = (
     }).filter(e => e.duration !== 0);
     newState.currentTurn = advanceTurn(newState.players, newState.currentTurn);
     newState.players[activePlayerIndex] = playerToUpdate;
-    return { newState };
+    return { newState, movementSteps };
   }
 
   // 4. Resolve Tile
@@ -238,7 +274,23 @@ export const processTurn = (
         break;
       }
 
-      case 'Ladder':
+      case 'Ladder': {
+        const phobiaIndex = playerToUpdate.activeEffects.findIndex(e => e.type === 'PhobiaTangga');
+        if (phobiaIndex !== -1) {
+          playerToUpdate.activeEffects.splice(phobiaIndex, 1);
+          newState.logs.push({
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            timestamp: Date.now(),
+            playerName: playerToUpdate.name,
+            message: 'Phobia Tangga! Kamu menolak untuk naik tangga.',
+            type: 'system'
+          });
+          tileEvent = { type: 'Normal' };
+          newState.gameStatus = 'idle';
+          keepResolving = false;
+          break;
+        }
+
         if (tileEvent.destination !== undefined) {
           pathEvent = { type: 'Ladder', start: playerToUpdate.position, end: tileEvent.destination };
           playerToUpdate.position = tileEvent.destination;
@@ -252,15 +304,37 @@ export const processTurn = (
           }
         }
         break;
+      }
 
     case 'Bonus': {
+      // [PATCH v1.1 - Double Roll] Proteksi Anti-Loop
+      if (playerToUpdate.disableBonusForThisTurn) {
+        newState.logs.push({
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          timestamp: Date.now(),
+          playerName: playerToUpdate.name,
+          message: 'Terlalu cepat! Petak bonus tidak memicu efek di giliran ganda.',
+          type: 'system'
+        });
+        tileEvent = { type: 'Normal' };
+        newState.gameStatus = 'idle';
+        keepResolving = false;
+        break;
+      }
+
       acquiredEffect = getRandomBuff();
       
       let effectMsg = '';
       switch (acquiredEffect.type) {
         case 'AntiSnake': effectMsg = 'Mendapat kekebalan dari ular berikutnya'; break;
-        case 'DoubleRoll': effectMsg = 'Mendapat ekstra giliran melempar dadu'; break;
-        case 'StealPoint': effectMsg = 'Mencuri 7 Poin dari lawan teratas'; break;
+        case 'DoubleRoll': 
+          effectMsg = 'Mendapat ekstra giliran melempar dadu'; 
+          // [PATCH v1.1 - Double Roll] Aktifkan extra turn
+          playerToUpdate.hasExtraTurn = true;
+          break;
+        case 'StealPoint': effectMsg = 'Mencuri poin dari lawan'; break;
+        case 'Cendekiawan': effectMsg = 'Poin kuis berikutnya akan dilipatgandakan (x2)'; break;
+        case 'MesinWaktu': effectMsg = 'Teleportasi 5 langkah ke depan secara instan!'; break;
       }
       
       newState.logs.push({
@@ -272,39 +346,64 @@ export const processTurn = (
       });
 
       if (acquiredEffect.type === 'StealPoint') {
-        // Steal from highest
-        let highestOpponentIndex = -1;
-        let highestScore = -1;
-        for (let i = 0; i < newState.players.length; i++) {
-          if (newState.players[i].id !== playerToUpdate.id) {
-            if (newState.players[i].score > highestScore) {
-              highestScore = newState.players[i].score;
-              highestOpponentIndex = i;
-            }
-          }
-        }
-        
-        let stolenAmount = 0;
-        if (highestOpponentIndex !== -1 && highestScore > 0) {
-          stolenAmount = Math.min(7, highestScore);
-          newState.players[highestOpponentIndex] = {
-            ...newState.players[highestOpponentIndex],
-            score: newState.players[highestOpponentIndex].score - stolenAmount
-          };
-        }
-        
-        if (stolenAmount > 0) {
-          playerToUpdate.score = addScore(playerToUpdate.score, stolenAmount).newScore;
-          
-          // Delayed log explicitly for the victim
+        // Cek Peringkat Saat Ini (Anti-Snowball)
+        const sortedPlayers = [...newState.players].sort((a, b) => b.score - a.score);
+        const isRankOne = sortedPlayers[0].id === playerToUpdate.id && sortedPlayers.length > 1 && sortedPlayers[0].score > sortedPlayers[1].score;
+
+        if (isRankOne) {
+          // Bonus Konsistensi (Anti-Snowball)
+          playerToUpdate.score = addScore(playerToUpdate.score, 3).newScore;
           newState.logs.push({
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-            timestamp: Date.now() + 1, // Add 1ms to ensure it renders after the main log
-            playerName: newState.players[highestOpponentIndex].name,
-            message: `⚠️ AWAS! ${stolenAmount} Poinmu dicuri oleh ${playerToUpdate.name}!`,
-            type: 'penalty'
+            timestamp: Date.now() + 1,
+            playerName: playerToUpdate.name,
+            message: 'Bonus Konsistensi! Sebagai pemimpin, kamu mendapat +3 Poin dari sistem.',
+            type: 'bonus'
           });
+        } else {
+          // Steal from highest
+          let highestOpponentIndex = -1;
+          let highestScore = -1;
+          for (let i = 0; i < newState.players.length; i++) {
+            if (newState.players[i].id !== playerToUpdate.id) {
+              if (newState.players[i].score > highestScore) {
+                highestScore = newState.players[i].score;
+                highestOpponentIndex = i;
+              }
+            }
+          }
+          
+          let stolenAmount = 0;
+          if (highestOpponentIndex !== -1 && highestScore > 0) {
+            stolenAmount = Math.min(7, highestScore);
+            newState.players[highestOpponentIndex] = {
+              ...newState.players[highestOpponentIndex],
+              score: newState.players[highestOpponentIndex].score - stolenAmount
+            };
+          }
+          
+          if (stolenAmount > 0) {
+            playerToUpdate.score = addScore(playerToUpdate.score, stolenAmount).newScore;
+            
+            // Delayed log explicitly for the victim
+            newState.logs.push({
+              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+              timestamp: Date.now() + 1,
+              playerName: newState.players[highestOpponentIndex].name,
+              message: `⚠️ AWAS! ${stolenAmount} Poinmu dicuri oleh ${playerToUpdate.name}!`,
+              type: 'penalty'
+            });
+          }
         }
+      } else if (acquiredEffect.type === 'MesinWaktu') {
+        // Instant teleport +5
+        const newPos = Math.min(GAME_CONSTANTS.BOARD_SIZE, playerToUpdate.position + 5);
+        playerToUpdate.position = newPos;
+        // Tidak memicu tile resolution dari tile yang baru (berhenti di tempat)
+        newState.gameStatus = 'showing_effect';
+        shouldAdvanceTurn = false;
+        keepResolving = false;
+        break;
       } else {
         playerToUpdate.activeEffects.push(acquiredEffect);
       }
@@ -325,6 +424,9 @@ export const processTurn = (
         case 'AbsoluteRoll': effectMsg = 'Lemparan dadu maksimal bernilai 4 di giliran berikutnya'; break;
         case 'Silence': effectMsg = 'Akan kehilangan 1 giliran berikutnya'; break;
         case 'DecreasedRoll': effectMsg = 'Lemparan dadu berikutnya akan dikurangi 2'; break;
+        case 'AmnesiaSejarah': effectMsg = 'Akan berjalan mundur di giliran berikutnya'; break;
+        case 'PajakKolonial': effectMsg = 'Akan dikenakan denda poin sesuai angka dadu selama 2 giliran'; break;
+        case 'PhobiaTangga': effectMsg = 'Tidak bisa menggunakan tangga di giliran berikutnya'; break;
       }
       
       newState.logs.push({
@@ -356,7 +458,7 @@ export const processTurn = (
     })[0];
     newState.winner = champion.id;
     newState.gameStatus = 'finished';
-    return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered, pathEvent };
+    return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered, pathEvent, movementSteps, isAmnesia };
   }
 
   // 7. Finalize Turn
@@ -385,7 +487,7 @@ export const processTurn = (
     newState.isCrisisPhaseActive = false; // Jika semua pemain turun dari 91 akibat ular
   }
 
-  return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered, pathEvent };
+  return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered, pathEvent, movementSteps, isAmnesia };
 };
 
 export const submitQuizAnswer = (
@@ -405,6 +507,13 @@ export const submitQuizAnswer = (
   if (!question) throw new Error('Question not found');
 
   const result = validateAnswer(question, answer);
+  
+  const cendekiawanIndex = playerToUpdate.activeEffects.findIndex(e => e.type === 'Cendekiawan');
+  const hasCendekiawan = cendekiawanIndex !== -1;
+  if (hasCendekiawan) {
+    playerToUpdate.activeEffects.splice(cendekiawanIndex, 1);
+  }
+
   if (result.isCorrect) {
     playerToUpdate.correctAnswers += 1;
     let reward = 0;
@@ -413,6 +522,16 @@ export const submitQuizAnswer = (
       case 'Medium': reward = 5; break;
       case 'Hard': reward = 10; break;
       case 'Extreme': reward = 15; break;
+    }
+    if (hasCendekiawan) {
+      reward *= 2;
+      newState.logs.push({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: Date.now(),
+        playerName: playerToUpdate.name,
+        message: `Cendekiawan aktif! Poin kuis dilipatgandakan menjadi +${reward}`,
+        type: 'bonus'
+      });
     }
     playerToUpdate.score = addScore(playerToUpdate.score, reward).newScore;
   } else {
@@ -423,6 +542,15 @@ export const submitQuizAnswer = (
       case 'Medium': penalty = 2; break;
       case 'Hard': penalty = 3; break;
       case 'Extreme': penalty = 5; break;
+    }
+    if (hasCendekiawan) {
+      newState.logs.push({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: Date.now(),
+        playerName: playerToUpdate.name,
+        message: `Cendekiawan hangus karena salah menjawab!`,
+        type: 'system'
+      });
     }
     playerToUpdate.score = reduceScore(playerToUpdate.score, penalty).newScore;
   }
@@ -463,13 +591,11 @@ export const acknowledgeEffect = (state: GameState): GameState => {
   
   if (activePlayerIndex !== -1) {
     const playerToUpdate = { ...newState.players[activePlayerIndex] };
-    
-    // Periksa DoubleRoll (dapat jalan lagi tanpa potong durasi buff lain)
+    // [PATCH v1.1 - Double Roll]
+    // Hapus efek DoubleRoll agar tidak terus-terusan muncul di modal
     const doubleRollIndex = playerToUpdate.activeEffects.findIndex(e => e.type === 'DoubleRoll');
     if (doubleRollIndex !== -1) {
       playerToUpdate.activeEffects.splice(doubleRollIndex, 1);
-      newState.players[activePlayerIndex] = playerToUpdate;
-      newState.gameStatus = 'idle';
       
       // Tambahkan log khusus untuk menegaskan giliran tambahan
       newState.logs.push({
@@ -480,9 +606,10 @@ export const acknowledgeEffect = (state: GameState): GameState => {
         type: 'bonus'
       });
       
-      return newState;
+      newState.players[activePlayerIndex] = playerToUpdate;
     }
   }
   
+  // Panggil tickDurationAndAdvanceTurn. advanceTurn akan mencegat perpindahan giliran karena hasExtraTurn = true.
   return tickDurationAndAdvanceTurn(newState);
 };

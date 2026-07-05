@@ -13,7 +13,7 @@ import { CrisisAlertModal } from './ui/CrisisAlertModal';
 import { useAudio } from '@/contexts/AudioContext';
 
 import { Player, PlayerEffect } from '@/types/player';
-import { GameState } from '@/types/gameState';
+import { GameState, GameLog } from '@/types/gameState';
 import { Tile } from '@/types/board';
 
 import { generateRandomBoard } from '@/data/papan/board';
@@ -25,7 +25,7 @@ import { GAME_CONSTANTS } from '@/constants/game';
 import { getCoordinates, getSnakeCurveParams, getBezierPoint } from '@/utils/geometry';
 import { useGameFeedbackPipeline } from '@/hooks/useGameFeedbackPipeline';
 
-import { calculateMovement, calculateMovementPath } from '@/lib/movement';
+import { calculateMovementPath } from '@/lib/movement';
 import {
   processTurn,
   submitQuizAnswer,
@@ -63,7 +63,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
   const [autoRollDouble, setAutoRollDouble] = useState(false);
   
   const [showHeadline, setShowHeadline] = useState(false);
-  const [latestLog, setLatestLog] = useState<any>(null);
+  const [latestLog, setLatestLog] = useState<GameLog | null>(null);
   const [latestLogId, setLatestLogId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -71,13 +71,15 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
       const newLog = gameState.logs[gameState.logs.length - 1];
       
       if (newLog.id !== latestLogId) {
-        setLatestLogId(newLog.id);
-        
-        const isAlertPhase = newLog.message.toLowerCase().includes('seseorang sudah memasuki');
-        if (newLog.type === 'bonus' || newLog.type === 'penalty' || isAlertPhase) {
-          setLatestLog(newLog);
-          setShowHeadline(true);
-        }
+        Promise.resolve().then(() => {
+          setLatestLogId(newLog.id);
+          
+          const isAlertPhase = newLog.message.toLowerCase().includes('seseorang sudah memasuki');
+          if (newLog.type === 'bonus' || newLog.type === 'penalty' || isAlertPhase) {
+            setLatestLog(newLog);
+            setShowHeadline(true);
+          }
+        });
       }
     }
   }, [gameState.logs, latestLogId]);
@@ -137,6 +139,9 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
     prevCrisisState.current = !!gameState.isCrisisPhaseActive;
   }, [gameState.isCrisisPhaseActive, playSFX, triggerScreenShake]);
 
+  // Ref untuk mengunci eksekusi dadu agar tidak terjadi race condition (terutama saat bot & autoRoll)
+  const isRollingRef = React.useRef(false);
+
   // Pantau perubahan giliran untuk menampilkan Turn Banner
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -151,7 +156,8 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
   useEffect(() => {
     if (gameState.gameStatus === 'idle' && activePlayer) {
       if (autoRollDouble) {
-        setAutoRollDouble(false);
+        // Gunakan microtask agar tidak memblokir render sinkron React
+        Promise.resolve().then(() => setAutoRollDouble(false));
         const timer = setTimeout(() => {
           handleRollDice();
         }, 1000); // Tunggu 1 detik agar pemain sempat melihat log
@@ -168,7 +174,20 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
         return () => clearTimeout(timeout);
       }
     }
-  }, [gameState.gameStatus, gameState.currentTurn, activePlayer, gameContext, playSFX]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState.gameStatus, gameState.currentTurn, activePlayer, gameContext, playSFX, autoRollDouble]);
+
+  // Eksekusi otomatis efek DoubleRoll tanpa perlu diklik player
+  useEffect(() => {
+    if (activeEffect?.type === 'DoubleRoll') {
+      const timer = setTimeout(() => {
+        setGameState(prev => acknowledgeEffect(prev));
+        setActiveEffect(null);
+        setAutoRollDouble(true);
+      }, 1500); // Muncul 1.5 detik lalu otomatis roll dadu lagi
+      return () => clearTimeout(timer);
+    }
+  }, [activeEffect]);
 
   const triggerPostEffects = (result: ProcessTurnResult) => {
     if (result.antiSnakeTriggered) {
@@ -205,10 +224,10 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
   const executeHopAnimation = (result: ProcessTurnResult) => {
     const activePlayerId = gameState.currentTurn;
     const originalPos = gameState.players.find(p => p.id === activePlayerId)?.position || 1;
-    const diceValue = result.newState.dice.currentValue;
+    const movementSteps = result.movementSteps;
     
     // Generate path
-    const path = calculateMovementPath(originalPos, diceValue);
+    const path = calculateMovementPath(originalPos, movementSteps);
     
     if (path.length === 0) {
        applyGameResult(result, originalPos);
@@ -329,8 +348,12 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
   };
 
   // Handler untuk memulai giliran (melempar dadu)
-  const handleRollDice = () => {
-    if (gameState.gameStatus !== 'idle') return;
+  function handleRollDice() {
+    // Cegah eksekusi ganda jika sedang rolling atau status tidak idle
+    if (gameState.gameStatus !== 'idle' || isRollingRef.current) return;
+    
+    // Kunci eksekusi
+    isRollingRef.current = true;
 
     playSFX('dice');
 
@@ -491,20 +514,30 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
     return () => window.removeEventListener('game:screenshake', handleShake);
   }, []);
 
+  // Lepas kunci rolling saat status kembali idle
+  useEffect(() => {
+    if (gameState.gameStatus === 'idle') {
+      isRollingRef.current = false;
+    }
+  }, [gameState.gameStatus]);
+
   if (!isMounted) {
     return (
-      <div className="flex items-center justify-center h-screen bg-slate-50 text-slate-500">
+      <div className="flex items-center justify-center h-screen text-slate-500" style={{ backgroundColor: 'var(--color-cream)', color: 'var(--color-navy)' }}>
         Memuat Permainan...
       </div>
     );
   }
 
   return (
-    <div className={`flex flex-col h-screen overflow-hidden bg-slate-50 text-slate-900 relative ${isShaking ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}>
+    <div className={`flex flex-col h-screen overflow-hidden relative transition-colors duration-300 ${isShaking ? 'animate-[shake_0.5s_ease-in-out]' : ''}`} style={{ backgroundColor: 'var(--color-cream)', color: 'var(--color-navy-dark)' }}>
       {/* Turn Banner Overlay */}
       {showTurnBanner && gameState.gameStatus === 'idle' && (
         <div className="absolute top-[20%] left-1/2 -translate-x-1/2 z-[40] animate-in slide-in-from-top-10 fade-in zoom-in duration-300 pointer-events-none">
-          <div className="bg-white/90 backdrop-blur-sm border-2 border-blue-500 text-blue-800 font-bold px-4 py-2 sm:px-8 sm:py-3 rounded-full shadow-2xl flex items-center gap-2 sm:gap-3">
+          <div 
+            className="backdrop-blur-sm border-2 font-bold px-4 py-2 sm:px-8 sm:py-3 rounded-full shadow-2xl flex items-center gap-2 sm:gap-3 transition-all duration-300"
+            style={{ backgroundColor: 'var(--color-parchment)', borderColor: 'var(--color-gold)', color: 'var(--color-navy-dark)' }}
+          >
             <span className="text-xl sm:text-2xl">{activePlayer?.isBot ? '🤖' : '👤'}</span>
             <span className="text-sm sm:text-xl tracking-wide uppercase">Giliran {activePlayer?.name}</span>
           </div>
@@ -526,7 +559,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
         </button>
 
         {/* Middle: Headline Text */}
-        <div className="flex-1 mx-2 flex justify-center pointer-events-auto overflow-hidden">
+        <div className="flex-1 lg:flex-none lg:w-[45%] xl:w-[40%] mx-2 flex justify-center pointer-events-auto overflow-hidden lg:absolute lg:left-1/2 lg:-translate-x-1/2">
           {latestLog && showHeadline && (
             <div className="bg-white/95 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.1)] border-2 border-blue-100 rounded-full py-2 flex w-full overflow-hidden animate-in fade-in slide-in-from-top-4 slide-out-to-top-4">
               <div 
@@ -600,7 +633,8 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
 
         {/* Desktop Game Log Sidebar */}
         <aside 
-          className={`hidden lg:flex absolute top-0 bottom-0 left-0 z-40 transition-transform duration-300 ${isDesktopLogOpen ? 'translate-x-0' : '-translate-x-full'} w-[25%] xl:w-[28%] bg-[#fdf6e3] border-r border-[#e0d6b8] p-4 flex-col shadow-2xl`}
+          className={`hidden lg:flex absolute top-0 bottom-0 left-0 z-40 transition-transform duration-300 ${isDesktopLogOpen ? 'translate-x-0' : '-translate-x-full'} w-[25%] xl:w-[28%] p-4 flex-col shadow-2xl border-r`}
+          style={{ backgroundColor: 'var(--color-parchment)', borderColor: 'var(--color-cream-dark)' }}
         >
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-bold text-lg text-slate-800">Game Log</h2>
@@ -615,17 +649,21 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
         </aside>
 
         {/* Board Container (Center) */}
-        <section className="h-[60%] lg:h-auto lg:flex-1 w-full overflow-y-auto p-4 flex flex-col items-center justify-center lg:pb-4 relative">
+        <section className="h-[60%] lg:h-auto lg:flex-1 w-full overflow-y-auto p-4 flex flex-col items-center justify-center lg:pb-4 relative z-0">
           {/* Meneruskan referensi data tiles asli, players, dan state animasi per-frame */}
           <Board 
             tiles={currentBoard} 
             players={gameState.players} 
             transitioningPlayers={transitioningPlayers} 
+            animationStyle="arc"
           />
         </section>
 
         {/* Desktop Control Area (Right Side) */}
-        <aside className="hidden lg:flex lg:w-[25%] xl:w-[28%] shrink-0 bg-white border-l border-slate-200 p-6 flex-col gap-6 overflow-y-auto shadow-sm z-10">
+        <aside 
+          className="hidden lg:flex lg:w-[25%] xl:w-[28%] shrink-0 border-l p-6 flex-col gap-6 overflow-y-auto shadow-sm z-10 transition-colors duration-300"
+          style={{ backgroundColor: 'var(--color-parchment)', borderColor: 'var(--color-cream-dark)' }}
+        >
           <HUD activePlayer={activePlayer} players={gameState.players} layout="desktop" />
           <div className="mt-auto p-4 bg-slate-100 rounded-lg text-center border border-slate-200 min-h-[150px] flex items-center justify-center shrink-0">
             <Dice
@@ -638,7 +676,10 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
         </aside>
 
         {/* Mobile Bottom Panel (Takes remaining vertical space on small screens) */}
-        <div className="lg:hidden h-[40%] w-full bg-white border-t border-slate-200 p-4 pb-safe flex flex-col gap-4 items-center justify-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 overflow-y-auto relative">
+        <div 
+          className="lg:hidden h-[40%] w-full border-t p-4 pb-safe flex flex-col gap-4 items-center justify-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 overflow-y-auto relative transition-colors duration-300"
+          style={{ backgroundColor: 'var(--color-parchment)', borderColor: 'var(--color-cream-dark)' }}
+        >
           <div className="w-full">
             <HUD activePlayer={activePlayer} players={gameState.players} layout="mobile" />
           </div>
@@ -684,12 +725,16 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
       {/* Mobile Log Modal */}
       {isMobileLogOpen && (
         <div className="fixed inset-0 z-[60] bg-black/50 flex flex-col justify-end lg:hidden">
-          <div className="bg-white rounded-t-2xl h-[70vh] flex flex-col p-4 shadow-xl">
+          <div 
+            className="rounded-t-2xl h-[70vh] flex flex-col p-4 shadow-xl border-t-2"
+            style={{ backgroundColor: 'var(--color-parchment)', borderColor: 'var(--color-gold)' }}
+          >
             <div className="flex justify-between items-center mb-4 px-2">
-              <h2 className="font-bold text-lg text-slate-800">Game Log</h2>
+              <h2 className="font-bold text-lg" style={{ color: 'var(--color-navy-dark)', fontFamily: 'var(--font-display)' }}>Game Log</h2>
               <button
                 onClick={() => { playSFX('click'); setIsMobileLogOpen(false); }}
-                className="p-2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 bg-slate-50 rounded-full transition-colors"
+                className="p-2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors animate-in"
+                style={{ backgroundColor: 'var(--color-cream)' }}
               >
                 ✕
               </button>

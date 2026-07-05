@@ -7,14 +7,14 @@ export function AudioSettings() {
   const { volume, isMuted, setVolume, toggleMute, playSFX } = useAudio();
 
   return (
-    <div className="flex flex-col gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+    <div className="flex flex-col gap-3 p-4 bg-[var(--color-parchment)] rounded-xl border-2 border-[var(--color-wood-light)] shadow-lg">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-          <span className="text-lg">🎵</span> Pengaturan Audio
+        <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--color-navy-dark)', fontFamily: 'var(--font-display)' }}>
+          <span className="text-base">🎵</span> Pengaturan Audio
         </label>
         <button
           onClick={() => { playSFX('click'); toggleMute(); }}
-          className="text-xl hover:scale-110 transition-transform focus:outline-none"
+          className="text-xl hover:scale-110 transition-transform focus:outline-none cursor-pointer"
           title={isMuted ? 'Nyalakan Suara' : 'Matikan Suara'}
         >
           {isMuted ? '🔇' : '🔊'}
@@ -28,7 +28,7 @@ export function AudioSettings() {
         value={isMuted ? 0 : volume}
         onChange={(e) => setVolume(parseFloat(e.target.value))}
         disabled={isMuted}
-        className="w-full accent-blue-600 disabled:opacity-50 cursor-pointer"
+        className="w-full accent-[var(--color-navy)] disabled:opacity-50 cursor-pointer"
       />
     </div>
   );

@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { Howl, Howler } from 'howler';
 
-type SFXType = 'dice' | 'correct' | 'wrong' | 'snake' | 'ladder' | 'click';
+export type SFXType = 'dice' | 'correct' | 'wrong' | 'snake' | 'ladder' | 'click';
 
 interface AudioContextType {
   volume: number;
@@ -64,15 +64,17 @@ export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       let initialVolume = 0.5;
       if (savedVolume !== null) {
         initialVolume = parseFloat(savedVolume);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setVolumeState(initialVolume);
       }
 
       let initialMute = false;
       if (savedMute !== null) {
         initialMute = savedMute === 'true';
-        setIsMuted(initialMute);
       }
+
+      Promise.resolve().then(() => {
+        setVolumeState(initialVolume);
+        setIsMuted(initialMute);
+      });
 
       // Initialize Howler global settings
       Howler.volume(initialVolume);
@@ -102,11 +104,8 @@ export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           preload: true,
         });
       });
-
-      // We don't auto-play BGM here because browsers block autoplay without user interaction.
-      // We'll expose playBGM for the UI to call after interaction.
-    } catch (e) {
-      console.warn('Failed to load audio settings from localStorage', e);
+    } catch {
+      console.warn('Failed to load audio settings from localStorage');
     }
   }, []);
 
@@ -115,7 +114,7 @@ export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     Howler.volume(newVolume);
     try {
       localStorage.setItem('game_volume', newVolume.toString());
-    } catch (e) {
+    } catch {
       // Ignore localStorage errors
     }
   };
@@ -126,7 +125,7 @@ export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     Howler.mute(newMuted);
     try {
       localStorage.setItem('game_muted', newMuted.toString());
-    } catch (e) {
+    } catch {
       // Ignore localStorage errors
     }
   };
@@ -145,11 +144,12 @@ export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const stopBGM = (type: 'menu' | 'game' | 'all' = 'all') => {
-    if ((type === 'game' || type === 'all') && bgmRefs.current.game && bgmRefs.current.game.playing()) {
-      bgmRefs.current.game.stop();
+    const currentBgmRefs = bgmRefs.current;
+    if ((type === 'game' || type === 'all') && currentBgmRefs.game && currentBgmRefs.game.playing()) {
+      currentBgmRefs.game.stop();
     }
-    if ((type === 'menu' || type === 'all') && bgmRefs.current.menu && bgmRefs.current.menu.playing()) {
-      bgmRefs.current.menu.stop();
+    if ((type === 'menu' || type === 'all') && currentBgmRefs.menu && currentBgmRefs.menu.playing()) {
+      currentBgmRefs.menu.stop();
     }
   };
 

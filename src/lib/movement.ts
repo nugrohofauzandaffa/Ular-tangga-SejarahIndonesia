@@ -33,6 +33,13 @@ export function calculateMovement(currentPosition: number, diceValue: number): M
     };
   }
 
+  if (targetPosition < 1) {
+    return {
+      newPosition: 1,
+      hasReachedEnd: false,
+    };
+  }
+
   if (targetPosition === finalSquare) {
     return {
       newPosition: targetPosition,
@@ -57,16 +64,25 @@ export function calculateMovementPath(currentPosition: number, diceValue: number
   const finalSquare = GAME_CONSTANTS.BOARD_SIZE;
   let isBouncing = false;
 
-  for (let i = 0; i < diceValue; i++) {
-    if (!isBouncing) {
-      if (current < finalSquare) {
-        current += 1;
-      } else {
-        isBouncing = true;
+  const isBackward = diceValue < 0;
+  const steps = Math.abs(diceValue);
+
+  for (let i = 0; i < steps; i++) {
+    if (isBackward) {
+      if (current > 1) {
         current -= 1;
       }
     } else {
-      current -= 1;
+      if (!isBouncing) {
+        if (current < finalSquare) {
+          current += 1;
+        } else {
+          isBouncing = true;
+          current -= 1;
+        }
+      } else {
+        current -= 1;
+      }
     }
     path.push(current);
   }

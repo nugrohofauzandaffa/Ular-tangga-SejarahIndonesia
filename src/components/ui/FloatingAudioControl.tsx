@@ -12,8 +12,8 @@ export function FloatingAudioControl() {
     <div className="fixed top-[64px] sm:top-[72px] right-2 sm:right-4 z-50 flex flex-col items-end gap-2 pointer-events-auto">
       <button
         onClick={() => { playSFX('click'); setIsOpen(!isOpen); }}
-        className={`w-10 h-10 sm:w-12 sm:h-12 text-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] flex items-center justify-center text-lg sm:text-xl transition-all duration-300 focus:outline-none ${
-          isOpen ? 'bg-slate-700 hover:bg-slate-800 rotate-90' : 'bg-blue-600 hover:bg-blue-700'
+        className={`w-11 h-11 sm:w-12 sm:h-12 text-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] flex items-center justify-center text-lg sm:text-xl transition-all duration-300 focus:outline-none border-2 border-[var(--color-gold)] cursor-pointer ${
+          isOpen ? 'bg-[var(--color-wood)] hover:bg-[var(--color-wood-light)] rotate-90' : 'bg-[var(--color-navy)] hover:bg-[var(--color-navy-dark)]'
         }`}
         title="Pengaturan Suara"
       >

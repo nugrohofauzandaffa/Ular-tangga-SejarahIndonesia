@@ -33,6 +33,16 @@ export const advanceTurn = (
     throw new Error(`Pemain dengan ID ${currentTurnId} tidak ditemukan.`);
   }
 
+  // [PATCH v1.1 - Double Roll]
+  const currentPlayer = players[currentIndex];
+  if (currentPlayer.hasExtraTurn) {
+    currentPlayer.hasExtraTurn = false;
+    currentPlayer.disableBonusForThisTurn = true;
+    return currentTurnId;
+  }
+  
+  currentPlayer.disableBonusForThisTurn = false;
+
   // Menggunakan modulo untuk kembali ke pemain pertama setelah pemain terakhir
   const nextIndex = (currentIndex + 1) % players.length;
   const nextPlayer = players[nextIndex];

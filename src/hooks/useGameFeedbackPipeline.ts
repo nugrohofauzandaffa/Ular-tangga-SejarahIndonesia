@@ -1,12 +1,12 @@
 import { useAudio } from '@/contexts/AudioContext';
-import { useParticles } from '@/components/effects/ParticleManager';
+
 import { useReducedMotion } from 'framer-motion';
 import { useCallback } from 'react';
 
 // Defines the unified orchestrator for Game Juice and feedback.
 export const useGameFeedbackPipeline = () => {
   const { playSFX } = useAudio();
-  const { spawnParticle } = useParticles();
+
   const prefersReducedMotion = useReducedMotion();
 
   /**

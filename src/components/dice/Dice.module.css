@@ -89,10 +89,24 @@
 }
 
 .rollButton:disabled {
-  background-color: #9ca3af;
-  color: #e5e7eb;
-  border-color: #d1d5db;
+  background-color: var(--color-cream-dark);
+  color: var(--color-navy-light);
+  border-color: var(--color-cream-dark);
+  opacity: 0.5;
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
 }
+
+@keyframes diceContainerShake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-2px, 1px) rotate(-1.5deg); }
+  40% { transform: translate(1px, -1px) rotate(1deg); }
+  60% { transform: translate(-1px, 2px) rotate(-1deg); }
+  80% { transform: translate(2px, 1px) rotate(1.5deg); }
+}
+
+.shake {
+  animation: diceContainerShake 0.15s infinite;
+}
+

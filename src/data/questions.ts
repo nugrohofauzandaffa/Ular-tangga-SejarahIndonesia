@@ -234,12 +234,12 @@ export const questions: Question[] = [
   // Medium (5 New)
   {
     id: 'q26',
-    category: 'Sejarah Kemerdekaan',
+    category: 'Organisasi Keagamaan',
     difficulty: 'Medium',
-    question: 'Di kota manakah bom atom dijatuhkan oleh sekutu yang memicu menyerahnya Jepang?',
-    options: ['Hiroshima dan Nagasaki', 'Tokyo dan Kyoto', 'Osaka dan Kobe', 'Yokohama dan Nagoya'],
-    correctAnswer: 'Hiroshima dan Nagasaki',
-    explanation: 'Pengeboman Hiroshima (6 Agustus 1945) dan Nagasaki (9 Agustus 1945) memaksa Jepang menyerah kepada Sekutu.'
+    question: 'Siapakah ulama besar pendiri organisasi keagamaan Nahdlatul Ulama (NU) pada tahun 1926?',
+    options: ["K.H. Hasyim Asy'ari", 'K.H.Ahmad Dahlan', 'H.A.Salim', 'H.O.S.Tjokroaminoto'],
+    correctAnswer: "K.H. Hasyim Asy'ari",
+    explanation: "K.H. Hasyim Asy'ari adalah pahlawan nasional sekaligus pendiri Nahdlatul Ulama(NU) di Surabaya pada 31 Januari 1926."
   },
   {
     id: 'q27',
@@ -368,5 +368,96 @@ export const questions: Question[] = [
     options: ['Australia, Belgia, Amerika Serikat', 'Inggris, India, Australia', 'Amerika Serikat, Inggris, Belanda', 'Prancis, Belgia, Amerika Serikat'],
     correctAnswer: 'Australia, Belgia, Amerika Serikat',
     explanation: 'KTN dibentuk oleh PBB; Australia dipilih oleh Indonesia, Belgia oleh Belanda, dan AS disepakati sebagai pihak netral.'
+  },
+  // Tambahan 10 soal baru (4 Easy, 3 Medium, 3 Hard)
+  {
+    id: 'q41',
+    category: 'Sejarah Kemerdekaan',
+    difficulty: 'Easy',
+    question: 'Siapakah Wakil Presiden pertama Republik Indonesia?',
+    options: ['Mohammad Hatta', 'Sultan Hamengkubuwono IX', 'Adam Malik', 'Jusuf Kalla'],
+    correctAnswer: 'Mohammad Hatta',
+    explanation: 'Mohammad Hatta mendampingi Ir. Soekarno sebagai Wakil Presiden pertama sejak 17 Agustus 1945.'
+  },
+  {
+    id: 'q42',
+    category: 'Sejarah Kemerdekaan',
+    difficulty: 'Easy',
+    question: 'Siapa nama pahlawan nasional yang menciptakan lagu kebangsaan Indonesia Raya?',
+    options: ['W.R. Supratman', 'Ismail Marzuki', 'Ibu Sud', 'C. Simanjuntak'],
+    correctAnswer: 'W.R. Supratman',
+    explanation: 'Wage Rudolf Supratman menciptakan lagu Indonesia Raya yang pertama kali dikumandangkan pada momen Sumpah Pemuda 1928.'
+  },
+  {
+    id: 'q43',
+    category: 'Kerajaan Nusantara',
+    difficulty: 'Easy',
+    question: 'Candi Borobudur dibangun pada masa pemerintahan wangsa atau dinasti apa?',
+    options: ['Syailendra', 'Sanjaya', 'Isyana', 'Warmadewa'],
+    correctAnswer: 'Syailendra',
+    explanation: 'Candi Borobudur dibangun pada abad ke-8 dan ke-9 Masehi oleh Dinasti Syailendra di Jawa Tengah.'
+  },
+  {
+    id: 'q44',
+    category: 'Pahlawan Nasional',
+    difficulty: 'Easy',
+    question: 'Pahlawan nasional Kapitan Pattimura berasal dari daerah mana?',
+    options: ['Maluku', 'Aceh', 'Jawa Tengah', 'Sumatera Barat'],
+    correctAnswer: 'Maluku',
+    explanation: 'Kapitan Pattimura (Thomas Matulessy) adalah pahlawan yang memimpin perlawanan rakyat Maluku melawan Belanda pada tahun 1817.'
+  },
+  {
+    id: 'q45',
+    category: 'Zaman Penjajahan',
+    difficulty: 'Medium',
+    question: 'Perang Diponegoro (Perang Jawa) berlangsung pada kurun waktu...',
+    options: ['1825 - 1830', '1800 - 1805', '1901 - 1908', '1873 - 1904'],
+    correctAnswer: '1825 - 1830',
+    explanation: 'Perang Diponegoro dipimpin oleh Pangeran Diponegoro melawan pemerintah Hindia Belanda dan berlangsung selama 5 tahun.'
+  },
+  {
+    id: 'q46',
+    category: 'Pahlawan Nasional',
+    difficulty: 'Medium',
+    question: 'Siapakah tokoh yang memimpin perlawanan rakyat Aceh melawan Belanda dengan taktik gerilya?',
+    options: ['Teuku Umar', 'Tuanku Imam Bonjol', 'Sultan Hasanuddin', 'Pangeran Antasari'],
+    correctAnswer: 'Teuku Umar',
+    explanation: 'Teuku Umar memimpin perlawanan di Aceh dengan taktik bergerilya, bahkan sempat pura-pura menyerah kepada Belanda untuk merebut persenjataan.'
+  },
+  {
+    id: 'q47',
+    category: 'Zaman Penjajahan',
+    difficulty: 'Medium',
+    question: 'Siapakah pelaut Belanda yang memimpin armada pertama dan mendarat di Banten pada tahun 1596?',
+    options: ['Cornelis de Houtman', 'J.P. Coen', 'Abel Tasman', 'Pieter Both'],
+    correctAnswer: 'Cornelis de Houtman',
+    explanation: 'Cornelis de Houtman adalah kapten armada Belanda pertama yang sukses mencapai Nusantara (di pelabuhan Banten) untuk mencari rempah-rempah.'
+  },
+  {
+    id: 'q48',
+    category: 'Pahlawan Nasional',
+    difficulty: 'Hard',
+    question: 'Pahlawan dari Bali yang gugur bersama pasukannya dalam pertempuran sengit "Puputan Margarana" melawan Belanda adalah...',
+    options: ['I Gusti Ngurah Rai', 'Untung Surapati', 'Pangeran Antasari', 'Kyai Mojo'],
+    correctAnswer: 'I Gusti Ngurah Rai',
+    explanation: 'Letkol I Gusti Ngurah Rai memimpin perlawanan heroik habis-habisan (puputan) di Margarana, Bali pada 20 November 1946.'
+  },
+  {
+    id: 'q49',
+    category: 'Pendudukan Jepang',
+    difficulty: 'Hard',
+    question: 'Organisasi semi-militer bentukan Jepang yang beranggotakan pemuda Indonesia berusia 14-22 tahun dinamakan...',
+    options: ['Seinendan', 'Keibodan', 'PETA', 'Fujinkai'],
+    correctAnswer: 'Seinendan',
+    explanation: 'Seinendan dibentuk Jepang untuk mendidik dan melatih pemuda agar dapat mempertahankan tanah air, meski tujuan aslinya demi kepentingan perang Jepang.'
+  },
+  {
+    id: 'q50',
+    category: 'Zaman Kolonial',
+    difficulty: 'Hard',
+    question: 'Jalan Raya Pos sepanjang 1.000 km dari Anyer (Banten) hingga Panarukan (Jawa Timur) dibangun pada masa pemerintahan Gubernur Jenderal...',
+    options: ['Herman Willem Daendels', 'Jan Pieterszoon Coen', 'Thomas Stamford Raffles', 'Johannes van den Bosch'],
+    correctAnswer: 'Herman Willem Daendels',
+    explanation: 'Daendels memerintahkan pembangunan De Grote Postweg (Jalan Raya Pos) untuk mempermudah pertahanan militer dan komunikasi di Pulau Jawa.'
   }
 ];

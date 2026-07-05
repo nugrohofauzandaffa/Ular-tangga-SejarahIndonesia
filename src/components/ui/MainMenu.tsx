@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Player } from '@/types/player';
 import { AudioSettings } from './AudioSettings';
 import { useAudio } from '@/contexts/AudioContext';
+import { ThemeSelector } from './ThemeSelector';
+import { useTheme } from '@/contexts/ThemeContext';
+
 
 interface MainMenuProps {
   onStartGame: (players: Player[]) => void;
@@ -21,6 +24,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
   const [playerCount, setPlayerCount] = useState<number>(2);
   const [playerNames, setPlayerNames] = useState<string[]>(['Pemain 1', 'Pemain 2', 'Pemain 3', 'Pemain 4']);
   const { playSFX, playBGM, stopBGM } = useAudio();
+  const { currentTheme } = useTheme();
 
   useEffect(() => {
     playBGM('menu');
@@ -79,13 +83,14 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
       className="flex flex-col items-center justify-center min-h-screen relative overflow-hidden p-4"
       style={{ backgroundColor: 'var(--color-cream)', fontFamily: 'var(--font-body)' }}
     >
-      {/* Batik pattern background */}
+      {/* Dynamic pattern background */}
       <div
-        className="absolute inset-0 opacity-[0.06] pointer-events-none"
+        className="absolute inset-0 pointer-events-none transition-all duration-300"
         style={{
-          backgroundImage: 'url(/batik-pattern.png)',
-          backgroundSize: '280px 280px',
+          backgroundImage: currentTheme.bgPattern,
+          backgroundSize: currentTheme.id === 'jakarta-heritage' ? '60px 60px' : '280px 280px',
           backgroundRepeat: 'repeat',
+          opacity: currentTheme.bgOpacity,
         }}
       />
 
@@ -97,17 +102,20 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
 
       {/* Card Utama */}
       <div
-        className="relative z-10 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
+        className="relative z-10 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl transition-all duration-300"
         style={{
           border: '2px solid var(--color-wood)',
           boxShadow: '0 8px 48px rgba(30,58,95,0.18), 0 2px 0 var(--color-gold)',
         }}
       >
-        {/* Card Header */}
+        {/* Card Header with optional Gigi Balang trim */}
         <div
-          className="px-8 py-6 text-center relative overflow-hidden"
+          className={`px-8 py-6 text-center relative overflow-hidden transition-all duration-300 ${
+            currentTheme.id === 'jakarta-heritage' ? 'gigi-balang-top pt-8' : ''
+          }`}
           style={{ backgroundColor: 'var(--color-navy)' }}
         >
+
           {/* Subtle shine */}
           <div
             className="absolute inset-0 opacity-10"
@@ -152,12 +160,12 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                 <button
                   key={mode}
                   onClick={() => { playSFX('click'); handleGameModeChange(mode); }}
-                  className="py-3 rounded-lg font-semibold text-sm transition-all duration-200"
+                  className="py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer hover:scale-[1.02] hover:shadow-md active:scale-95"
                   style={gameMode === mode ? {
                     backgroundColor: 'var(--color-navy)',
                     color: 'var(--color-gold-light)',
                     border: '2px solid var(--color-gold)',
-                    boxShadow: '0 2px 12px rgba(30,58,95,0.3)',
+                    boxShadow: '0 4px 12px rgba(30,58,95,0.25)',
                     fontFamily: 'var(--font-display)',
                   } : {
                     backgroundColor: 'var(--color-cream)',
@@ -186,11 +194,12 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                   <button
                     key={num}
                     onClick={() => { playSFX('click'); setPlayerCount(num); }}
-                    className="py-2.5 rounded-lg font-bold text-sm transition-all duration-200"
+                    className="py-2.5 rounded-lg font-bold text-sm transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-95"
                     style={playerCount === num ? {
                       backgroundColor: 'var(--color-navy)',
                       color: 'var(--color-gold-light)',
                       border: '2px solid var(--color-gold)',
+                      boxShadow: '0 4px 10px rgba(30,58,95,0.2)',
                     } : {
                       backgroundColor: 'var(--color-cream)',
                       color: 'var(--color-navy)',
@@ -219,10 +228,10 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 border-2 transition-all duration-300 focus-within:border-[var(--color-gold)] focus-within:shadow-md"
                     style={{
                       backgroundColor: 'var(--color-cream)',
-                      border: '1.5px solid var(--color-cream-dark)',
+                      borderColor: 'var(--color-cream-dark)',
                     }}
                   >
                     {/* Color dot */}
@@ -243,7 +252,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                       onChange={e => handleNameChange(i, e.target.value)}
                       disabled={isBot}
                       placeholder={`Nama Pemain ${i + 1}`}
-                      className="flex-1 text-sm font-medium bg-transparent border-none outline-none min-w-0"
+                      className="flex-1 text-sm font-semibold bg-transparent border-none outline-none min-w-0 placeholder:italic placeholder:opacity-50"
                       style={{ color: 'var(--color-navy-dark)' }}
                       maxLength={15}
                     />
@@ -265,9 +274,13 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
             </div>
           </div>
 
+          {/* Theme Selector */}
+          <ThemeSelector />
+
           {/* Audio Settings */}
           <AudioSettings />
         </div>
+
 
         {/* Card Footer / CTA */}
         <div

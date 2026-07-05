@@ -20,18 +20,16 @@ export const generateRandomBoard = (bonusCount: number = 4, penaltyCount: number
   });
 
   // Kumpulkan semua normal tiles berdasarkan zona
-  const zone1: number[] = []; // 2-30
-  const zone2: number[] = []; // 31-70
-  const zone3: number[] = []; // 71-90
-  const zone4: number[] = []; // 91-99
+  const zone1: number[] = []; // 2-20
+  const zone2: number[] = []; // 21-70
+  const zone3: number[] = []; // 71-99
 
   for (let i = 1; i < GAME_CONSTANTS.BOARD_SIZE - 1; i++) {
     if (baseBoard[i].type === 'Normal') {
       const pos = i + 1;
-      if (pos <= 30) zone1.push(i);
+      if (pos <= 20) zone1.push(i);
       else if (pos <= 70) zone2.push(i);
-      else if (pos <= 90) zone3.push(i);
-      else zone4.push(i);
+      else zone3.push(i);
     }
   }
 
@@ -41,27 +39,38 @@ export const generateRandomBoard = (bonusCount: number = 4, penaltyCount: number
   shuffle(zone1);
   shuffle(zone2);
   shuffle(zone3);
-  shuffle(zone4);
 
-  // Helper mendapatkan pertanyaan acak berdasarkan list difficulty
+  // Helper mendapatkan pertanyaan acak berdasarkan list difficulty (Tanpa duplikasi)
+  let availableQuestions = [...questions];
   const getQuestion = (difficulties: string[]) => {
-    const validQuestions = questions.filter(q => difficulties.includes(q.difficulty));
-    return validQuestions[Math.floor(Math.random() * validQuestions.length)];
+    const validQuestions = availableQuestions.filter(q => difficulties.includes(q.difficulty));
+    if (validQuestions.length === 0) return null;
+    
+    const randomIndex = Math.floor(Math.random() * validQuestions.length);
+    const selectedQuestion = validQuestions[randomIndex];
+    
+    // Hapus soal yang terpilih agar tidak muncul lagi
+    availableQuestions = availableQuestions.filter(q => q.id !== selectedQuestion.id);
+    return selectedQuestion;
   };
 
-  // 2. Distribusi Kuis (Total ~25 Kuis)
+  // 2. Distribusi Kuis (Total 35 Kuis)
   const distributeQuizzes = (zone: number[], count: number, difficulties: string[]) => {
-    for (let i = 0; i < count && i < zone.length; i++) {
-      const idx = zone[i];
-      baseBoard[idx].type = 'Quiz';
-      baseBoard[idx].contentId = getQuestion(difficulties).id;
+    let placed = 0;
+    for (let i = 0; i < zone.length && placed < count; i++) {
+      const question = getQuestion(difficulties);
+      if (question) {
+        const idx = zone[i];
+        baseBoard[idx].type = 'Quiz';
+        baseBoard[idx].contentId = question.id;
+        placed++;
+      }
     }
   };
 
-  distributeQuizzes(zone1, 7, ['Easy']);
-  distributeQuizzes(zone2, 10, ['Easy', 'Medium']);
-  distributeQuizzes(zone3, 5, ['Medium', 'Hard']);
-  distributeQuizzes(zone4, 3, ['Hard', 'Extreme']);
+  distributeQuizzes(zone1, 10, ['Easy']);
+  distributeQuizzes(zone2, 15, ['Medium', 'Hard']);
+  distributeQuizzes(zone3, 10, ['Extreme']);
 
   // Kumpulkan sisa Normal tiles untuk Bonus dan Penalty
   const remainingNormals: number[] = [];

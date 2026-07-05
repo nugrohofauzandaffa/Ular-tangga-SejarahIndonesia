@@ -1,7 +1,6 @@
 import { Ladder } from '@/types/board';
 
 export const ladders: Ladder[] = [
-  { start: 1, end: 38 },
   { start: 4, end: 14 },
   { start: 9, end: 31 },
   { start: 21, end: 42 },

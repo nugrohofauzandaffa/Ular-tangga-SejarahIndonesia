@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { DiceState } from '@/types/gameState';
 import styles from './Dice.module.css';
+import { useParticles } from '@/components/effects/ParticleManager';
 
 interface DiceProps {
   diceState: DiceState;
@@ -95,6 +96,34 @@ export const Dice: React.FC<DiceProps> = ({
   const size = isHorizontal ? 48 : 80;
   const half = size / 2;
 
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const { spawnParticle } = useParticles();
+  const wasRolling = useRef(diceState.isRolling);
+
+  useEffect(() => {
+    if (wasRolling.current && !diceState.isRolling && sceneRef.current) {
+      // Landed! Sparkle and confetti burst
+      const rect = sceneRef.current.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+
+      // Burst particles
+      for (let i = 0; i < 8; i++) {
+        const offsetAngle = (i / 8) * Math.PI * 2;
+        const offsetX = Math.cos(offsetAngle) * 15;
+        const offsetY = Math.sin(offsetAngle) * 15;
+        spawnParticle('sparkle', x + offsetX, y + offsetY);
+      }
+      for (let i = 0; i < 6; i++) {
+        const offsetAngle = (i / 6) * Math.PI * 2 + 0.5;
+        const offsetX = Math.cos(offsetAngle) * 20;
+        const offsetY = Math.sin(offsetAngle) * 20;
+        spawnParticle('confetti', x + offsetX, y + offsetY);
+      }
+    }
+    wasRolling.current = diceState.isRolling;
+  }, [diceState.isRolling, spawnParticle]);
+
   // Transform target berdasarkan nilai dadu saat ini
   const targetTransform = FACE_ROTATIONS[diceState.currentValue] || 'rotateY(0deg)';
 
@@ -110,7 +139,8 @@ export const Dice: React.FC<DiceProps> = ({
     >
       {/* Dice 3D Scene */}
       <div
-        className={styles.scene}
+        ref={sceneRef}
+        className={`${styles.scene} ${diceState.isRolling ? styles.shake : ''}`}
         style={{ width: size, height: size }}
       >
         <div

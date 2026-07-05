@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 interface ConfettiPiece {
   id: number;
@@ -12,11 +12,10 @@ interface ConfettiPiece {
 }
 
 export const Confetti: React.FC = () => {
-  const [pieces, setPieces] = useState<ConfettiPiece[]>([]);
-
-  useEffect(() => {
-    const colors = ['#fde047', '#3b82f6', '#ef4444', '#10b981', '#a855f7', '#f97316'];
+  const [pieces] = useState<ConfettiPiece[]>(() => {
     const newPieces: ConfettiPiece[] = [];
+    // Pilih warna tema kebangsaan/sejarah
+    const colors = ['#ef4444', '#facc15', '#ffffff', '#c2410c', '#b91c1c'];
     
     // Buat 100 kepingan konfeti
     for (let i = 0; i < 100; i++) {
@@ -31,9 +30,8 @@ export const Confetti: React.FC = () => {
         delay: Math.random() * 3, // delay mulainya
       });
     }
-    
-    setPieces(newPieces);
-  }, []);
+    return newPieces;
+  });
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[150] overflow-hidden">

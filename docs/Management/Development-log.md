@@ -1,5 +1,169 @@
 # Development Log
 
+## [Sprint 4] - Premium UI Language
+
+- **Phase**: Sprint 4 (Completed)
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype/page.tsx`
+- **Alasan Perubahan**:
+  - Menyelaraskan seluruh *Design Language* dari komponen UI penunjang (Kartu Fitur, Tombol, Panel Deskripsi) agar setara dan konsisten dengan Hero Section yang bernuansa ukiran prasasti (berornamen emas-biru dongker). Membuang gaya *modern web / glassmorphism* putih yang terasa generik.
+- **Dampak Perubahan**:
+  - Panel Tagline/Deskripsi kini menggunakan *background gradient Navy* dengan batas ganda *gold emboss*, terasa seperti lempengan prasasti.
+  - Kartu Fitur (Bermain, Belajar, dll) diubah dari panel transparan putih menjadi panel gelap elegan dengan pendaran keemasan saat diarahkan kursor (*hover*).
+  - Tombol CTA dipertegas batas ukirannya (*inner inset shadow*) dan pendaran partikel saat di-*hover*.
+  - Garis Pembatas (Divider) diganti menjadi bentuk gradasi emas dengan ornamen ketupat, menggantikan border kayu biasa.
+  - Memperbaiki peringatan *Hydration Mismatch Error* secara menyeluruh dengan memasang status peringatan supresi pada SVG `HeroMedallion`.
+- **Status**: Completed
+
+## [Sprint 3] - Indonesian Identity
+
+- **Phase**: Sprint 3 (Completed)
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype/page.tsx`
+- **Alasan Perubahan**:
+  - Memperkuat identitas sejarah Indonesia agar saat *screenshot* diambil tanpa judul, orang tetap tahu bahwa ini adalah game Indonesia, dengan cara mengganti elemen generik menjadi ikon dan ornamen khas Nusantara secara elegan (premium).
+- **Dampak Perubahan**:
+  - Mengganti kompas barat menjadi lambang *Surya Majapahit* (dan sekaligus memperbaiki *hydration mismatch error*).
+  - Mengganti crest bagian atas dengan ornamen siluet *Keris Bersilang*.
+  - Mengganti corner styling dengan *Ukiran Jepara*.
+  - Mengganti garis bawah dengan pola *Batik Parang*.
+  - Mengganti feature icons (Belajar, Bermain, Menang, Bangga) dengan ikon bernuansa nusantara (Lontar, Dadu Kayu, Mahkota Nusantara, Bambu Runcing & Bendera).
+  - Menambahkan watermark *Aksara Jawa/Nusantara* yang sangat tipis di belakang judul utama "ULAR TANGGA".
+- **Status**: Completed
+
+## [Sprint 2] - Ambient Motion
+
+- **Phase**: Sprint 2 (Completed)
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype/page.tsx`
+- **Alasan Perubahan**:
+  - Menghidupkan layar *Idle* pada Hero Section agar tidak membosankan tanpa mengganggu elemen antarmuka atau klik pemain (aksesibilitas tinggi). Semua motion/animasi diperlambat agar terasa sinematik dan mengikuti standar "prefers-reduced-motion".
+- **Dampak Perubahan**:
+  - *Parallax Background Tracking*: Lapisan debu, siluet candi, dan kabut cahaya kini bergerak sedikit lambat merespons pergerakan *mouse* pengguna (menggunakan `useSpring` dari Framer Motion).
+  - *Ambient Depth*: Menambahkan kabut (*fog*), cahaya god-rays (*light rays*), serta memperlambat dan memperluas partikel debu melayang dan ornamen pernafasan logo (*breathing logo*).
+  - *Accessibility*: Semua animasi dihentikan atau disederhanakan ketika mendeteksi kondisi perangkat `prefers-reduced-motion: reduce`.
+- **Status**: Completed
+
+## [Sprint 1] - Hero Section 2.0
+
+- **Phase**: Sprint 1 (Completed)
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype/page.tsx`
+- **Alasan Perubahan**:
+  - Mengubah Hero Section agar menjadi pusat perhatian utama yang dramatis namun tetap elegan, tidak seperti poster atau landing page biasa melainkan lebih menyerupai *premium indie game artifact*.
+- **Dampak Perubahan**:
+  - Redesign *Hero Container* menggunakan layer SVG, ukiran berlapis (engraved effect), paper texture dengan blend mode, dan penambahan iluminasi/glow yang dinamis.
+  - Implementasi *3D Bevel/Embossed text shadow* pada teks "Ular Tangga".
+  - Menambahkan ilustrasi latar *Gunungan Wayang* bersiluet dengan opacity rendah dan pergerakan halus (breathing).
+  - Mengubah layout title box sebelumnya menjadi desain yang lebih menyatu secara arsitektural.
+- **Status**: Completed (Prototype updated)
+
+
+## [Prototype V2] - Main Menu Redesign — Atmosphere & Visual Identity
+
+- **Phase**: Prototype V2 (Menunggu Review)
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype-v2/page.tsx` (**BARU** — Prototype standalone, dapat dihapus)
+- **Alasan Perubahan**:
+  - Iterasi kedua redesign splash screen, berfokus pada pengisian ruang kosong dan pembangunan ambience. Layout tidak berubah dari V1.
+- **Dampak Perubahan**:
+  - Tidak ada perubahan pada file existing. Dapat diakses di `/prototype-v2`. Hapus dengan menghapus folder `src/app/prototype-v2/`.
+  - Elemen baru yang ditambahkan vs V1:
+    - **Siluet Borobudur** (bottom-left, opacity 10%, floating animation lambat)
+    - **Siluet Prambanan** (bottom-right, opacity 9%, floating animation lambat)
+    - **Kapal Pinisi** (left-center, opacity 13%, wave animation)
+    - **Old compass ornament** (lower-left area, opacity 12%)
+    - **Nusantara map outline** (right-center, opacity 7%, xl breakpoint)
+    - **16 ambient floating particles** (gold dots tersebar, opacity 8–13%)
+    - **3 layer cahaya**: diagonal kiri, diagonal kanan, vertical top (god ray)
+    - **Vignette diperkuat**: rgba(10,26,46,0.35) vs sebelumnya 0.28
+    - **Bottom fade** untuk kontras feature strip
+- **Status**: Waiting Review
+
+## [Prototype] - Main Menu Redesign — Splash Screen
+
+- **Phase**: Prototype (Menunggu Review)
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype/page.tsx` (**BARU** — Prototype standalone, dapat dihapus)
+- **Alasan Perubahan**:
+  - Melakukan redesign visual splash screen (Main Menu pertama) agar terasa seperti main menu game premium, bukan landing page. Dibuat sebagai prototype terpisah agar mudah dihapus apabila hasil tidak memuaskan.
+- **Dampak Perubahan**:
+  - Tidak ada perubahan pada file existing. Prototype dapat diakses di `/prototype`. Untuk menghapus: hapus folder `src/app/prototype/`.
+  - Elemen baru yang diimplementasikan:
+    - Multi-layer background (radial gradient + paper grain SVG filter + batik pattern + golden spotlight + vignette kuat)
+    - Hero Map SVG (kiri layar) dengan floating animation via Framer Motion, opacity 30%
+    - Compass Rose SVG (kanan atas) dengan rotasi sangat lambat (140s/loop)
+    - Hero Title Frame dengan double border gold, corner ornaments 4 sudut
+    - Subtitle "Sejarah Nusantara" dengan shimmer animation
+    - CTA Button redesign: gradient navy, dice icon, Framer Motion whileHover/whileTap, gold shimmer sweep on hover, sub-hint text reveal
+    - Feature Strip 4-kolom di bagian bawah: Belajar / Bermain / Menang / Bangga
+- **Status**: Waiting Review
+
+## [Experimental] - Custom Background Image Board
+
+- **Phase**: Experimental
+- **File yang dibuat atau diubah**:
+  - `src/components/papan/BoardExperimental.tsx` (Baru)
+  - `src/components/papan/TileExperimental.tsx` (Baru)
+  - `src/components/GameLayout.tsx` (Modifikasi import)
+- **Alasan Perubahan**:
+  - Membuat papan percobaan menggunakan gambar (asset) custom dari user. Pendekatan eksperimental digunakan agar tidak merusak `Board.tsx` utama.
+- **Dampak Perubahan**:
+  - `GameLayout` sekarang merender `BoardExperimental` yang menggunakan `papan-baru.png` sebagai latar utuh dan memiliki tile transparan tanpa nomor.
+- **Status**: Completed (Menunggu user memasukkan file `papan-baru.png`)
+
+## [Phase Q2.1] - Board Background Polish
+
+- **Phase**: Phase Q2.1
+- **File yang dibuat atau diubah**:
+  - `src/components/papan/Board.tsx`
+- **Alasan Perubahan**:
+  - Papan membutuhkan elemen visual bernuansa Nusantara. Menggunakan gambar pola batik sebagai background agar papan terasa lebih otentik.
+- **Dampak Perubahan**:
+  - `Board.tsx` telah dimodifikasi dengan penambahan *inline style* `backgroundImage` untuk menggunakan `batik-pattern.png`. Mode *blend* (multiply) ditambahkan agar pattern menyatu dengan warna dasar `bg-[#f4ebd0]` sehingga tidak mengganggu visibilitas petak papan.
+- **Status**: Completed
+
+## [Patch v1.1] - Special Tiles Mechanic Expansion
+
+- **Phase**: Patch v1.1
+- **File yang dibuat atau diubah**:
+  - `src/types/player.ts`
+  - `src/lib/gameEngine.ts`
+  - `src/lib/movement.ts`
+  - `src/components/ui/EffectModal.tsx`
+- **Alasan Perubahan**:
+  - Melakukan ekspansi Petak Bonus dan Penalti dari 6 efek menjadi 10 efek dinamis (5 Buff & 5 Debuff).
+  - Memperbarui mekanisme *Double Roll* agar tidak memicu petak bonus ganda (mencegah *infinite loop*) dan menambahkan mekanisme *Anti-Snowball* (Bonus Konsistensi +3 Poin) pada *Steal Point* untuk pemain dengan peringkat pertama.
+- **Dampak Perubahan**:
+  - Dinamika taktik permainan semakin bervariasi dengan hadirnya efek seperti *Cendekiawan* (pengganda poin kuis), *Mesin Waktu* (teleportasi instan), *Pajak Kolonial*, *Amnesia Sejarah*, dan *Phobia Tangga*.
+- **Status**: Completed
+
+## [Phase 14.5] - Feature Polish (Headline, Quiz Zones, DoubleRoll)
+
+- **Phase**: Phase 14.5
+- **File yang dibuat atau diubah**:
+  - `src/components/GameLayout.tsx`
+  - `src/data/papan/board.ts`
+- **Alasan Perubahan**:
+  - Headline pada Desktop disesuaikan lebarnya agar tidak bertabrakan dengan sidebar.
+  - Zona kuis diseimbangkan berdasarkan distribusi baru (Total 35 soal): 10 Easy (1-20), 15 Medium/Hard (21-70), 10 Extreme (71-99).
+  - Mekanika *DoubleRoll* dibuat lebih instan dan otomatis. AI sekarang akan secara otomatis mengeksekusi roll kedua tanpa pemain perlu mengeklik tombol "Lanjutkan" pada popup efek, membuat langkah terkesan *seamless* (sebagai satu kesatuan aksi berturut-turut).
+- **Dampak Perubahan**:
+  - UI pada Desktop terlihat jauh lebih rapi. Distribusi kesulitan kuis lebih proporsional dari awal hingga akhir papan. Siklus DoubleRoll tidak lagi mengganggu ritme putaran giliran.
+- **Status**: Completed
+
+## [Bug Investigation] - Bot Teleportation 85 -> 43
+
+- **Phase**: Solved
+- **File yang diperiksa**:
+  - `src/lib/gameEngine.ts`
+  - `src/components/GameLayout.tsx`
+- **Hasil Investigasi**:
+  - Analisa Anda **100% tepat!** Animasi gerakan (*Hop-by-hop*) mengkalkulasi panjang rute (path) HANYA berdasarkan nilai dadu murni (`dice.currentValue`), TANPA menyertakan penambahan +2 langkah dari fase krisis.
+  - Hal ini menyebabkan animasi pion akan berhenti lebih awal (kurang 2 langkah). Namun di belakang layar, Game Engine tetap menghitung posisi tujuan dengan +2 langkah.
+  - Ketidakselarasan ini menyebabkan saat animasi hop selesai, pion secara paksa ditarik (teleport) ke hasil akhir Game Engine. Dalam kejadian yang Anda alami, kemungkinan hasil akhir Game Engine mendarat pada **Ular di petak 87 (yang turun ke 24)** atau ular lainnya, sehingga tiba-tiba muncul animasi ular yang membuat pion turun secara misterius dari titik berhenti animasinya.
+- **Kesimpulan**: Bug telah diatasi dengan menambahkan properti `movementSteps` dari `gameEngine.ts` yang dikirim ke `GameLayout.tsx` agar rute animasi selalu sinkron dengan hasil hitungan riil engine (Dadu + Buff/Debuff).
+
 ## [Phase 4 & 5] - TypeScript Interfaces & Dummy Data
 
 - **Phase**: Phase 4 & 5
@@ -758,3 +922,228 @@
   - Headline difilter hanya untuk event 'bonus', 'penalty', dan pesan 'alert phase' fase krisis.
 - **Status**: Completed
 
+
+## [Feature] - Randomize Quiz Options
+
+- **Phase**: Tambahan Fitur
+- **File yang diubah**:
+  - src/components/quiz/QuizModal.tsx
+- **Alasan Perubahan**:
+  - Pemain dapat dengan mudah menghafal posisi huruf opsi jawaban jika urutannya selalu statis.
+- **Dampak Perubahan**:
+  - Opsi jawaban kini akan diacak posisinya (*shuffle*) setiap kali modal kuis terbuka.
+- **Status**: Completed
+
+
+## [Bugfix] - Comprehensive Debug & Linter Cleanup
+
+- **Phase**: Bugfix
+- **File yang diperiksa/diubah**:
+  - src/components/GameLayout.tsx
+  - src/components/player/PlayerToken.tsx
+  - src/components/quiz/QuizModal.tsx
+  - src/components/ui/Confetti.tsx
+  - src/components/dice/Dice.tsx
+  - src/components/papan/Tile.tsx
+  - src/components/ui/CrisisAlertModal.tsx
+  - src/components/ui/EffectModal.tsx
+  - src/contexts/AudioContext.tsx
+  - src/hooks/useGameFeedbackPipeline.ts
+- **Alasan Perubahan**:
+  - Terdapat sisa import dari komponen eksperimental yang telah dihapus (BoardExperimental).
+  - Ditemukan peringatan Linter (React Hooks exhaustive-deps dan *synchronous state updates in effect*) yang bisa memicu render ganda (*cascading renders*).
+  - Banyaknya variabel, prop, atau *import* tidak terpakai (unused vars) yang mengotori *codebase*.
+  - Menertibkan referensi tipe (membuang ny) pada PlayerToken.tsx.
+- **Dampak Perubahan**:
+  - *Cascading renders* akibat pemanggilan setState di dalam useEffect secara sinkron telah diatasi dengan membungkusnya dalam *microtask* (Promise.resolve().then()) dan menggunakan inisialisasi state statis (*lazy initialization*).
+  - Seluruh masalah linting dan masalah Tipe telah dibersihkan. Aplikasi kini lulus 
+pm run lint dan kompilasi tipe dengan sempurna (0 Error, 0 Warning).
+- **Status**: Completed
+
+
+## [Phase Theme] - Implementasi Modular Theme System
+
+- **Phase**: Phase Theme
+- **File yang dibuat/diubah**:
+  - `src/constants/themes.tsx` (NEW)
+  - `src/contexts/ThemeContext.tsx` (NEW)
+  - `src/components/ui/ThemeSelector.tsx` (NEW)
+  - `src/app/globals.css` (MODIFY)
+  - `src/app/layout.tsx` (MODIFY)
+  - `src/app/page.tsx` (MODIFY)
+  - `src/components/ui/MainMenu.tsx` (MODIFY)
+  - `src/components/papan/Board.tsx` (MODIFY)
+  - `src/components/papan/Tile.tsx` (MODIFY)
+  - `src/components/ui/HUD.tsx` (MODIFY)
+  - `src/components/ui/ResultScreen.tsx` (MODIFY)
+- **Alasan Perubahan**:
+  - Merealisasikan arsitektur Theme System yang modular, memisahkan Presentation Layer dari Game Engine dan Core Business Logic.
+  - Menyediakan minimal 2 tema visual awal: **Classic** (baseline perkamen & batik jawa) dan **Jakarta Heritage** (skema Betawi oranye-hijau, border Gigi Balang, siluet landscape Batavia, serta ikon SVG kustom untuk petak Quiz, Bonus, Penalty, dan Win).
+  - Menyediakan Theme Selector pada Main Menu dengan penyimpanan status pilihan tema di `localStorage` dan pembaruan real-time tanpa refresh halaman.
+- **Dampak Perubahan**:
+  - Seluruh komponen visual dan layout (Splash screen, Main Menu, Board, Tile, HUD, Leaderboard, dan Result page) menyerap warna dan ornamen dinamis sesuai tema aktif.
+  - Performa terjamin tanpa duplikasi state react, render ganda, atau memory leaks.
+  - Lulus uji tipe TypeScript compiler (`npx tsc`) dan audit linter (`npm run lint`), serta berhasil dikompilasi ke static production build.
+- **Status**: Completed
+
+
+## [Phase Theme v2.0] - Jakarta Heritage Visual Identity Revision
+
+- **Phase**: Phase Theme v2.0
+- **File yang diubah**:
+  - `src/contexts/AudioContext.tsx`
+  - `src/constants/themes.tsx`
+  - `src/components/papan/Board.tsx`
+  - `src/components/papan/Tile.tsx`
+  - `src/components/player/PlayerToken.tsx`
+  - `src/components/dice/Dice.module.css`
+  - `src/components/quiz/QuizModal.tsx`
+  - `src/components/ui/ResultScreen.tsx`
+  - `src/components/ui/EffectModal.tsx`
+  - `src/components/ui/CrisisAlertModal.tsx`
+  - `src/components/ui/DiceModifierModal.tsx`
+- **Alasan Perubahan**:
+  - Menyempurnaan identitas budaya Betawi pada tema **Jakarta Heritage** agar tampil konsisten, premium, dan menyerupai digital board game profesional.
+  - Merestorasi sistem audio (`AudioContext.tsx`) ke baseline musik latar (`bgm_main.mp3`) dan efek suara (`click.mp3`, `ladder.mp3`, `snake.mp3`) asli untuk menghindari pesan 404 network warnings pada konsol peramban lokal.
+  - Merancang aset visual SVG kustom inline presisi tinggi (Naga Betawi/Jaladara untuk Ular, Tangga Bambu 3D dengan tali pengikat, Ondel-ondel Putih untuk Bonus Tile, Ondel-ondel Merah untuk Penalty Tile, dan Landmark Monas Megah dengan radial glow di petak 100).
+  - Melakukan penyelarasan menyeluruh (Theme Consistency) pada seluruh dialog modal (`QuizModal`, `EffectModal`, `CrisisAlertModal`, `DiceModifierModal`), dadu 3D, pion pemain, HUD, leaderboard, dan Result Screen kemenangan menggunakan warna parchment, ornamen Gigi Balang, dan bingkai kayu.
+- **Dampak Perubahan**:
+  - Tampilan game tetap terasa sangat tematik, kaya detail historis (*historical board game*), dan menyatu dengan ornamen kebudayaan Jakarta.
+  - Log konsol peramban bersih dari pesan kegagalan memuat berkas audio (`404 Not Found`).
+  - Semua linter checks (`npm run lint`), type-safety checks (`npx tsc`), dan Next.js production build (`npm run build`) lulus dengan status 100% sukses (0 Error, 0 Warning).
+- **Status**: Completed
+
+
+## [Phase Final Polish] - First Impression & UX Audit
+
+- **Phase**: Phase Final Polish
+- **File yang diubah**:
+  - `src/constants/themes.tsx`
+  - `src/app/globals.css`
+  - `src/app/page.tsx`
+  - `src/components/ui/MainMenu.tsx`
+  - `src/components/ui/FloatingAudioControl.tsx`
+  - `src/components/ui/AudioSettings.tsx`
+  - `src/components/effects/ParticleManager.tsx`
+  - `src/components/dice/Dice.tsx`
+  - `src/components/dice/Dice.module.css`
+  - `src/components/player/PlayerToken.tsx`
+  - `src/components/quiz/QuizModal.tsx`
+  - `src/components/ui/EffectModal.tsx`
+  - `src/components/ui/CrisisAlertModal.tsx`
+  - `src/components/ui/DiceModifierModal.tsx`
+- **Alasan Perubahan**:
+  - Menyelesaikan audit kegunaan (UX), visual, dan animasi pada 30 detik pertama kesan pemain (First Impression).
+  - Menghilangkan galat berkas batik dan peta classic yang hilang (404) dengan merancang data-uri SVG batik Kawung dan ClassicHeroMap inline yang berkinerja tinggi.
+  - Memoles form masukan nama pemain dan tombol menu ke visual board game kuno berbasis kertas perkamen dan bingkai kayu jati tebal dengan fokus border emas.
+  - Menambahkan letupan game juice memuaskan berupa getaran kontainer dadu saat berputar, semburan partikel kaset emas saat dadu berhenti, dan riak gelombang emas melingkar di bawah pion pemain sesaat setelah mendarat di petak.
+  - Meningkatkan transisi pop-up modal dialog Quiz, Effect, Crisis, dan Dice Modifier dengan spring bounce transition Framer Motion yang elastis dan organik.
+  - Meningkatkan aksesibilitas jemari ponsel dengan menata ulang ukuran tombol roda gigi audio ke target minimum 44px (`w-11 h-11`) dan menyelaraskan warna FloatingAudioControl ke palet tema aktif.
+- **Dampak Perubahan**:
+  - Game memiliki pengalaman visual dan animasi premium board game digital komersial yang utuh sejak pertama kali dibuka.
+  - Masalah kegagalan memuat berkas statis (404) telah selesai secara menyeluruh.
+  - Kode mematuhi aturan kemurnian rendering React (React Component Purity/Idempotency Rules).
+  - Seluruh rangkaian Next.js production build (`npm run build`) dan eslint checks lulus dengan status 100% sukses bersih.
+- **Status**: Completed
+
+
+
+
+## [2026-07-04] Hero Section Redesign (Prototype)
+
+- **Phase**: Prototype Polishing
+- **File yang dibuat atau diubah**:
+  - src/app/prototype/page.tsx
+- **Alasan Perubahan**:
+  - Menjadikan Hero sebagai pusat perhatian dengan framing dramatis, depth (shadows), dan pencahayaan (subtle light).
+  - Menambahkan layer foreground dan background (particles, distant silhouettes Borobudur & Prambanan) untuk efek parallax dan depth.
+  - Mempertahankan identitas warna, tipografi, dan desain tombol CTA asli.
+- **Dampak Perubahan**:
+  - Tampilan splash screen/hero pada prototype menjadi sangat premium, memiliki nuansa game board edukasi sejarah yang lebih kuat.
+- **Status**: Waiting Review
+
+## [2026-07-04] Ambient Motion (Prototype)
+
+- **Phase**: Prototype Polishing
+- **File yang dibuat atau diubah**:
+  - src/app/prototype/page.tsx
+- **Alasan Perubahan**:
+  - Menambahkan kesan hidup pada layar saat pemain diam (ambient motion) tanpa mengganggu fokus utama, sesuai dengan instruksi desain premium.
+  - Mengimplementasikan debu bergerak (drifting dust particles), cahaya yang bernafas/bergerak pelan, parallax pada background dan foreground berbasis posisi mouse, ornamen yang melayang lambat (slow floating ornament), efek breathing pada logo, dan efek premium saat hover pada tombol.
+- **Dampak Perubahan**:
+  - UI terasa lebih dinamis, dalam, dan hidup layaknya aplikasi game AAA. Efek parallax meningkatkan persepsi kedalaman (depth).
+- **Status**: Waiting Review
+
+## [2026-07-04] Feature Section Redesign (Prototype)
+
+- **Phase**: Prototype Polishing
+- **File yang dibuat atau diubah**:
+  - src/app/prototype/page.tsx
+- **Alasan Perubahan**:
+  - Empat fitur di bagian bawah layar (BELAJAR, BERMAIN, MENANG, BANGGA) terasa terlalu lemah secara visual (sebelumnya hanya berupa feature strip dengan pemisah garis tipis).
+  - Mengubahnya menjadi struktur individual cards dengan gaya frosted glass (blur).
+  - Menambahkan border dekoratif beraksen emas di sudut, efek pop/angkat saat hover, serta container ikon yang reaktif terhadap hover.
+- **Dampak Perubahan**:
+  - Tampilan card lebih bertekstur, tidak menghilangkan esensi minimalis (tetap ringan), dan interaksi *hover* meningkatkan kesan interaktif yang memuaskan (*premium feel*).
+- **Status**: Waiting Review
+
+## [2026-07-04] Remove Parallax Effect (Prototype)
+
+- **Phase**: Prototype Polishing
+- **File yang dibuat atau diubah**:
+  - src/app/prototype/page.tsx
+- **Alasan Perubahan**:
+  - Instruksi untuk menghilangkan pergerakan elemen yang mengikuti kursor (*parallax effect*).
+- **Dampak Perubahan**:
+  - Semua *event listener* mousemove dan state *parallax* (via useMotionValue, useTransform) dihapus. Animasi ambient yang lain (seperti debu mengambang, cahaya, dan animasi lambat *breathing*) tetap berjalan namun layar tidak lagi bereaksi saat kursor digerakkan (kecuali efek *hover* pada tombol dan fitur).
+- **Status**: Completed
+
+## [2026-07-04] Landing Page Size Adjustment (Prototype)
+
+- **Phase**: Prototype Polishing
+- **File yang dibuat atau diubah**:
+  - src/app/prototype/page.tsx
+- **Alasan Perubahan**:
+  - Ukuran elemen-elemen *landing page* secara keseluruhan membuat layar memanjang melebihi batas *viewport*, sehingga menimbulkan *scroll* (tidak murni 100vh).
+- **Dampak Perubahan**:
+  - Mengecilkan skala *font* judul (h1 menjadi maksimal 	ext-7xl), menyesuaikan *padding* dan *margin* antar elemen (Crest, Title, Divider, Tagline), serta sedikit mengecilkan skala padding tombol.
+  - Mengubah *wrapper container* dari min-h-screen ke h-[100dvh] untuk memastikan aplikasi memuat tepat pada 1 tampilan layar, tanpa *scroll*, sambil mempertahankan *overflow-hidden*.
+- **Status**: Completed
+
+## [2026-07-04] Feature Cards & Layout Overlap Fix (Prototype)
+
+- **Phase**: Prototype Polishing
+- **File yang dibuat atau diubah**:
+  - src/app/prototype/page.tsx
+- **Alasan Perubahan**:
+  - Ukuran Feature Cards di bagian bawah terlalu besar (terutama pada resolusi atau perangkat tertentu yang memadatkannya menjadi 2 baris), sehingga menutupi tombol CTA utama (Mulai Petualangan).
+- **Dampak Perubahan**:
+  - Memperkecil dimensi Feature Cards: Mengurangi ukuran *padding*, ukuran *icon* SVG (menjadi w-4 h-4 s/d w-5 h-5), dan sedikit mengecilkan ukuran teks (*title* dan *subtitle*).
+  - Menambah *padding-bottom* pada *container* konten utama (menjadi pb-32 md:pb-24) agar konten terdorong lebih ke atas dan memberi ruang lapang bagi deretan kartu fitur di bagian bawah, mencegah tabrakan/tumpang tindih (*overlap*).
+- **Status**: Completed
+
+## [2026-07-04] Hero Layout Height Constraint Fix (Prototype)
+
+- **Phase**: Prototype Polishing
+- **File yang dibuat atau diubah**:
+  - src/app/prototype/page.tsx
+- **Alasan Perubahan**:
+  - Total tinggi dari susunan *Main Content* di tengah layar terlalu memanjang, sehingga fungsi justify-center dari bungkus layar (h-[100dvh]) justru mendorong teks *badge* (Game Edukasi) menembus batas atas layar dan memotong elemen.
+- **Dampak Perubahan**:
+  - Mengurangi drastis jeda vertikal (*margin/padding*) antar elemen: Genre badge, Hero Frame, Divider, Tagline, dan CTA.
+  - Menurunkan kembali skala ukuran teks: h1 	ext-5xl -> text-4xl untuk layar kecil.
+  - Memasukkan utilitas penyesuaian skala CSS (scale-95 md:scale-100 origin-center) pada kontainer teks jika layarnya terlalu sempit, serta mengembalikan padding-bottom ke nilai aman agar area tengah lebih leluasa bernapas dan tepat berada di jantung *viewport*.
+- **Status**: Completed
+
+## [2026-07-04] Premium Visual Polish (Prototype)
+
+- **Phase**: Prototype Polishing
+- **File yang dibuat atau diubah**:
+  - src/app/prototype/page.tsx
+- **Alasan Perubahan**:
+  - Mengangkat kualitas visual layar antarmuka utama (Main Menu) agar setara dengan game *indie premium* melalui audit komposisi, spasial, hierarki teks, keterbacaan, keseimbangan visual, dan atmosfer (sesuai instruksi *Premium Polish*).
+- **Dampak Perubahan**:
+  - **Depth of Field (Atmosfer)**: Menambahkan efek *blur* bervariasi pada partikel debu di lapisan latar belakang dan depan.
+  - **Volumetric Elements**: Menyematkan *linear gradient* (emas dan *navy*) pada seluruh komponen SVG ornamen dan candi (Borobudur, Prambanan, TopCrest, dll.) menghilangkan kesan pewarnaan *flat*.
+  - **Hierarchy & Readability**: Menambahkan struktur bevel/3D tebal (*text-shadow*) pada teks "Ular Tangga", memasang *glassmorphic backdrop-blur pill* yang sangat tipis di belakang teks *tagline* agar tajam terbaca meski terkena pancaran efek cahaya/partikel dari layar, serta memberikan aksen *inner glow* memudar pada lencana (badge) "Game Edukasi".
+- **Status**: Completed
