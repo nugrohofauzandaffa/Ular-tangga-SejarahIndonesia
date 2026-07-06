@@ -20,10 +20,6 @@ export const metadata: Metadata = {
   description: "Game edukasi sejarah",
 };
 
-export const viewport: import("next").Viewport = {
-  width: 390,
-  userScalable: false,
-};
 
 export default function RootLayout({
   children,

@@ -1,3 +1,17 @@
+## [2026-07-06] Fitur: Optimalisasi Tata Letak Tombol & Klasemen Mode Mobile
+
+- **Phase**: UI & UX Refinement
+- **File yang dibuat atau diubah**:
+  - `src/components/GameLayout.tsx`
+  - `src/components/ui/HUD.tsx`
+  - `src/components/ui/FloatingAudioControl.tsx`
+- **Alasan Perubahan**:
+  - Di perangkat seluler (*mobile*), tombol *Game Log* (catatan permainan) dan *Settings* (pengaturan suara) melayang (menggunakan `position: fixed`) tepat di atas papan permainan. Hal ini sangat mengganggu karena menutupi petak papan bagian atas. Selain itu, daftar klasemen sementara terpotong apabila jumlah pemain banyak karena ketiadaan fitur *scroll*.
+- **Dampak Perubahan**:
+  - **Relokasi Tombol**: Tombol *Game Log* (📝) dan *Audio Settings* (⚙️) kini dipindahkan sepenuhnya ke dalam *Header* navigasi paling atas di sisi kiri dan kanan. Tidak ada lagi elemen mengambang yang menutupi papan.
+  - **Leaderboard Scroll**: Menambahkan properti `overflow-y-auto` dan membatasi tinggi maksimum (max-height `60vh`) pada modal daftar klasemen di perangkat seluler agar pengguna bisa menggulir (scroll) sisa nama pemain tanpa terpotong.
+- **Status**: Completed
+
 ## [2026-07-06] Bugfix: Menyamakan Skala Tampilan Mobile (iPhone 12 Pro Standard)
 
 - **Phase**: UI & UX Refinement
@@ -7,7 +21,7 @@
   - Pengguna melaporkan bahwa tampilan game pada perangkat seluler Android (seperti Realme C51s) terlihat berbeda dibandingkan dengan tampilan standar iPhone 12 Pro, menyebabkan proporsi elemen layout menjadi tidak konsisten.
 - **Dampak Perubahan**:
   - Menambahkan konfigurasi `viewport` pada Next.js (`layout.tsx`) dengan menetapkan `width: 390` dan `userScalable: false`. Hal ini memaksa *browser* di semua *smartphone* (apapun merek atau resolusinya) untuk mensimulasikan layar dengan lebar logis 390px (standar iPhone 12 Pro) lalu melakukan proses *zoom-to-fit* secara otomatis. Hasilnya, pengalaman visual UI (padding, margin, dan posisi SVG) terkunci sempurna dan konsisten.
-- **Status**: Completed
+- **Status**: Reverted (Dibatalkan karena tampilan menjadi tidak proporsional di beberapa perangkat)
 
 ## [2026-07-06] Dokumentasi: Penulisan Ulang README.md
 

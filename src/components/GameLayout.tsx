@@ -613,22 +613,10 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
         </div>
       )}
 
-      {/* Top Bar Overlay (Log Button & Headline) */}
-      <div className="fixed top-[64px] sm:top-[72px] left-0 right-0 z-[48] pointer-events-none flex justify-between items-start px-2 sm:px-4">
-        {/* Left: Log Button */}
-        <button
-          onClick={() => {
-            playSFX('click');
-            if (window.innerWidth >= 1024) setIsDesktopLogOpen(!isDesktopLogOpen);
-            else setIsMobileLogOpen(true);
-          }}
-          className={`w-10 h-10 sm:w-12 sm:h-12 bg-[var(--color-parchment)] text-[var(--color-navy)] rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] flex items-center justify-center text-lg sm:text-xl pointer-events-auto border border-[var(--color-wood)]/30 transition-transform hover:scale-105 active:scale-95 ${isDesktopLogOpen ? 'lg:hidden' : ''}`}
-        >
-          📝
-        </button>
-
+      {/* Top Bar Overlay (Headline) */}
+      <div className="fixed top-[64px] sm:top-[72px] left-0 right-0 z-[48] pointer-events-none flex justify-center items-start px-2 sm:px-4">
         {/* Middle: Headline Text */}
-        <div className="flex-1 lg:flex-none lg:w-[45%] xl:w-[40%] mx-2 flex justify-center pointer-events-auto overflow-hidden lg:absolute lg:left-1/2 lg:-translate-x-1/2">
+        <div className="flex-1 lg:flex-none lg:w-[45%] xl:w-[40%] mx-2 flex justify-center pointer-events-auto overflow-hidden">
           {latestLog && showHeadline && (
             <div className="bg-[var(--color-parchment)]/95 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.1)] border-2 border-[var(--color-wood)]/30 rounded-full py-2 flex w-full overflow-hidden animate-in fade-in slide-in-from-top-4 slide-out-to-top-4">
               <div 
@@ -640,9 +628,6 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
             </div>
           )}
         </div>
-
-        {/* Right: Settings Placeholder (Occupied by FloatingAudioControl) */}
-        <div className="w-10 sm:w-12 shrink-0" />
       </div>
 
       {/* Pop-up Modifier Dadu (DecreasedRoll / AbsoluteRoll) */}
@@ -676,24 +661,40 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
 
       {/* Header */}
       <header
-        className="h-14 shrink-0 flex items-center justify-center px-4 z-10 relative"
+        className="h-16 sm:h-20 shrink-0 flex items-center justify-between px-2 sm:px-4 z-50 relative"
         style={{
           backgroundColor: 'var(--color-navy)',
           borderBottom: '2px solid var(--color-gold)',
           boxShadow: '0 2px 12px rgba(30,58,95,0.3)',
         }}
       >
-        <div className="flex flex-col items-center">
+        {/* Left: Log Button */}
+        <button
+          onClick={() => {
+            playSFX('click');
+            if (window.innerWidth >= 1024) setIsDesktopLogOpen(!isDesktopLogOpen);
+            else setIsMobileLogOpen(true);
+          }}
+          className={`w-10 h-10 sm:w-12 sm:h-12 bg-[var(--color-parchment)] text-[var(--color-navy)] rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] flex items-center justify-center text-lg sm:text-xl pointer-events-auto border-2 border-[var(--color-gold)] transition-transform hover:scale-105 active:scale-95 ${isDesktopLogOpen ? 'lg:hidden' : ''}`}
+          title="Game Log"
+        >
+          📝
+        </button>
+
+        <div className="flex flex-col items-center flex-1">
           <h1
-            className="text-base font-black tracking-wide leading-none"
+            className="text-[13px] sm:text-base font-black tracking-wide leading-none text-center"
             style={{ fontFamily: 'var(--font-display)', color: 'var(--color-gold-light)' }}
           >
             Ular Tangga Sejarah
           </h1>
-          <p className="text-[10px] tracking-widest uppercase mt-0.5" style={{ color: 'rgba(201,168,76,0.6)' }}>
+          <p className="text-[9px] sm:text-[10px] tracking-widest uppercase mt-0.5" style={{ color: 'rgba(201,168,76,0.6)' }}>
             Nusantara
           </p>
         </div>
+
+        {/* Right: Settings Control */}
+        <FloatingAudioControl />
       </header>
 
 
@@ -833,8 +834,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
         isBotTurn={activePlayer?.isBot}
       />
 
-      {/* Floating Audio Control */}
-      <FloatingAudioControl />
+
     </div>
   );
 }

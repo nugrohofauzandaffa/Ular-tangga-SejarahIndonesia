@@ -201,7 +201,7 @@ export const HUD: React.FC<HUDProps> = ({ activePlayer, players = [], gameStatus
                     ✕
                   </button>
                 </div>
-                <div className="p-2" style={{ backgroundColor: isJakarta ? 'transparent' : 'var(--color-cream)/30' }}>
+                <div className="p-2 overflow-y-auto max-h-[60vh]" style={{ backgroundColor: isJakarta ? 'transparent' : 'var(--color-cream)/30' }}>
                   {renderLeaderboardList()}
                 </div>
               </motion.div>
