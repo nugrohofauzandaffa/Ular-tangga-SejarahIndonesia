@@ -407,7 +407,7 @@ export const processTurn = (
       } else {
         // [EXPERIMENT: Stacking System] Cek kategori intensitas
         if (['AntiSnake', 'Cendekiawan'].includes(acquiredEffect.type)) {
-          const existingIdx = playerToUpdate.activeEffects.findIndex(e => e.type === acquiredEffect.type);
+          const existingIdx = playerToUpdate.activeEffects.findIndex(e => e.type === acquiredEffect?.type);
           if (existingIdx !== -1) {
             // Intensitas: Refresh durasi (Batas max stack 1)
             playerToUpdate.activeEffects[existingIdx].duration = acquiredEffect.duration;
@@ -431,7 +431,7 @@ export const processTurn = (
       const intensityDebuffs = ['AmnesiaSejarah', 'PhobiaTangga'];
       const durationDebuffs = ['AbsoluteRoll', 'DecreasedRoll', 'Silence', 'PajakKolonial'];
 
-      const existingIdx = playerToUpdate.activeEffects.findIndex(e => e.type === acquiredEffect.type);
+      const existingIdx = playerToUpdate.activeEffects.findIndex(e => e.type === acquiredEffect?.type);
       
       if (existingIdx !== -1) {
         if (intensityDebuffs.includes(acquiredEffect.type as string)) {

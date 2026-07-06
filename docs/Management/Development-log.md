@@ -1482,3 +1482,10 @@ pm run lint dan kompilasi tipe dengan sempurna (0 Error, 0 Warning).
   - **Volumetric Elements**: Menyematkan *linear gradient* (emas dan *navy*) pada seluruh komponen SVG ornamen dan candi (Borobudur, Prambanan, TopCrest, dll.) menghilangkan kesan pewarnaan *flat*.
   - **Hierarchy & Readability**: Menambahkan struktur bevel/3D tebal (*text-shadow*) pada teks "Ular Tangga", memasang *glassmorphic backdrop-blur pill* yang sangat tipis di belakang teks *tagline* agar tajam terbaca meski terkena pancaran efek cahaya/partikel dari layar, serta memberikan aksen *inner glow* memudar pada lencana (badge) "Game Edukasi".
 - **Status**: Completed
+
+### Fix TypeScript Error
+- **Phase**: Bugfix
+- **File yang diubah**: \src/lib/gameEngine.ts\
+- **Alasan**: Memperbaiki error TypeScript \'acquiredEffect' is possibly 'undefined'\ di dalam callback fungsi \indIndex\.
+- **Dampak**: Menghilangkan error TS saat proses kompilasi.
+- **Status**: Completed
