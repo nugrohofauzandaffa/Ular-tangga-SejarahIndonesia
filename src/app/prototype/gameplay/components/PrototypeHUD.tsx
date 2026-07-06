@@ -178,14 +178,14 @@ export const PrototypeHUD: React.FC<HUDProps> = ({ activePlayer, players = [], g
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-                className={isJakarta ? "bg-[#fdf6e3] rounded-2xl shadow-2xl border-[6px] w-full max-w-sm overflow-hidden" : "bg-[var(--color-parchment)] rounded-2xl shadow-2xl border-4 w-full max-w-sm overflow-hidden"}
+                className={isJakarta ? "bg-[#fdf6e3] rounded-2xl shadow-2xl border-[6px] w-full max-w-sm overflow-hidden flex flex-col max-h-[85vh]" : "bg-[var(--color-parchment)] rounded-2xl shadow-2xl border-4 w-full max-w-sm overflow-hidden flex flex-col max-h-[85vh]"}
                 style={{ 
                   borderColor: 'var(--color-wood)',
                   backgroundImage: isJakarta ? 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23d97706\' fill-opacity=\'0.03\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")' : undefined
                 }}
               >
                 <div 
-                  className={`px-4 py-4 border-b flex justify-between items-center ${isJakarta ? 'bg-[#78350f] gigi-balang-bottom pb-6' : 'bg-[var(--color-navy)]'}`}
+                  className={`px-4 py-4 border-b flex justify-between items-center shrink-0 ${isJakarta ? 'bg-[#78350f] gigi-balang-bottom pb-6' : 'bg-[var(--color-navy)]'}`}
                   style={{ borderColor: 'var(--color-gold)' }}
                 >
                   <h3 
@@ -201,8 +201,17 @@ export const PrototypeHUD: React.FC<HUDProps> = ({ activePlayer, players = [], g
                     ✕
                   </button>
                 </div>
-                <div className="p-2" style={{ backgroundColor: isJakarta ? 'transparent' : 'var(--color-cream)/30' }}>
+                <div className="p-2 overflow-y-auto flex-1 custom-scrollbar" style={{ backgroundColor: isJakarta ? 'transparent' : 'var(--color-cream)/30' }}>
                   {renderLeaderboardList()}
+                </div>
+                <div className="p-3 border-t shrink-0 flex justify-center" style={{ borderColor: 'var(--color-gold-light)', backgroundColor: isJakarta ? '#fdf6e3' : 'var(--color-parchment)' }}>
+                  <button 
+                    onClick={() => setShowMobileLeaderboard(false)}
+                    className="w-full py-2.5 rounded-lg font-bold text-white shadow-sm active:scale-95 transition-transform"
+                    style={{ backgroundColor: 'var(--color-navy)' }}
+                  >
+                    Tutup Klasemen
+                  </button>
                 </div>
               </motion.div>
             </div>

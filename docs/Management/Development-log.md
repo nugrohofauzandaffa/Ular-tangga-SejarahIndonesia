@@ -1,3 +1,29 @@
+## [2026-07-06] Bugfix: Tombol Tutup Klasemen Mobile Tersembunyi
+
+- **Phase**: UI & UX Refinement
+- **File yang dibuat atau diubah**:
+  - `src/components/ui/HUD.tsx`
+  - `src/app/prototype/gameplay/components/PrototypeHUD.tsx`
+- **Alasan Perubahan**:
+  - Pada beberapa layar perangkat seluler (terutama yang pendek atau mode landscape), tombol close (`✕`) di bagian atas modal klasemen sementara bisa terpotong atau tersembunyi keluar layar karena tinggi modal melebihi tinggi layar. Selain itu, ikon silang yang kecil membuat pemain kebingungan mencari cara untuk menutupnya.
+- **Dampak Perubahan**:
+  - Membatasi tinggi maksimal keseluruhan modal menjadi `max-h-[85vh]` dan mengubah strukturnya menjadi `flex-col` agar konten di dalamnya (daftar pemain) dapat melakukan scroll (`overflow-y-auto flex-1`) tanpa merusak proporsi modal.
+  - Menambahkan bagian *Footer* baru di dasar modal yang berisi tombol "Tutup Klasemen" berukuran besar dan lebar penuh, sehingga pemain dapat menutup klasemen dengan sangat mudah tanpa harus mencari tombol kecil di sudut atas layar.
+- **Status**: Completed
+
+## [2026-07-06] Bugfix: Hapus Duplikasi Pop-up Modifier Dadu (Kelelahan & Batas Kecepatan)
+
+- **Phase**: Bug Fix
+- **File yang dibuat atau diubah**:
+  - `src/components/GameLayout.tsx`
+  - `src/app/prototype/gameplay/components/PrototypeGameLayout.tsx`
+- **Alasan Perubahan**:
+  - Terdapat duplikasi notifikasi ketika pemain terkena efek modifikasi dadu (seperti "Kelelahan" atau "Batas Kecepatan"). Sistem menampilkan modal cegatan (intercept modal) sesaat sebelum pion melompat, namun setelah lompatan selesai, sistem kembali memunculkan popup (toast melayang) untuk efek yang sama. Hal ini terjadi karena sisa kode (*legacy*) dari versi sebelumnya belum dibersihkan.
+- **Dampak Perubahan**:
+  - Menghapus state `diceModifierPopup` dan elemen UI yang memunculkan toast melayang tersebut.
+  - Notifikasi kini secara eksklusif hanya mengandalkan `<DiceModifierModal>` yang muncul sesaat sebelum pergerakan pion, sehingga alur informasi menjadi tunggal, rapi, dan tidak berulang di setiap giliran.
+- **Status**: Completed
+
 ## [2026-07-06] Bugfix: Modal Kuis Terpotong di Mobile
 
 - **Phase**: UI & UX Refinement

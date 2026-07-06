@@ -225,17 +225,17 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
         
         {/* Papan Peringkat (Ranking) */}
         <div 
-          className="p-4 flex-1 flex flex-col transition-all duration-300 overflow-hidden"
+          className="p-2 sm:p-4 flex-1 flex flex-col transition-all duration-300 overflow-hidden"
           style={{ backgroundColor: 'var(--color-cream)/10' }}
         >
           <h3 
-            className="text-xs sm:text-sm font-bold uppercase tracking-widest mb-3 px-2 text-center shrink-0"
+            className="text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-2 px-2 text-center shrink-0"
             style={{ color: 'var(--color-navy-light)', fontFamily: 'var(--font-display)' }}
           >
             Klasemen Akhir
           </h3>
           
-          <div className="flex flex-col gap-2 overflow-y-auto hide-scrollbar pr-1 pb-2">
+          <div className="flex flex-col gap-1.5 overflow-y-auto hide-scrollbar pr-1 pb-1">
             {sortedPlayers.map((player, index) => {
               const isChampion = player.id === champion?.id;
               
@@ -257,31 +257,31 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
               return (
                 <div 
                   key={player.id}
-                  className={`flex items-center p-2.5 sm:p-3 rounded-xl border-2 transition-all ${rowBgStyle}`}
+                  className={`flex items-center p-1.5 sm:p-2.5 rounded-xl border-2 transition-all ${rowBgStyle}`}
                 >
-                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm mr-3 shrink-0 shadow-sm ${medalClass}`}>
+                  <div className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold text-[10px] sm:text-xs mr-2 sm:mr-3 shrink-0 shadow-sm ${medalClass}`}>
                     #{index + 1}
                   </div>
                   
-                  <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex-1 flex flex-row items-center justify-between gap-2">
                     <div className="flex flex-col">
                       <span 
-                        className="font-bold text-lg"
+                        className="font-bold text-sm sm:text-base leading-tight"
                         style={{ color: 'var(--color-navy-dark)', fontFamily: 'var(--font-body)' }}
                       >
                         {player.name}
                         {isChampion && (
                           <span 
-                            className="ml-2 text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider"
+                            className="ml-1.5 text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider"
                             style={{ backgroundColor: 'var(--color-cream-dark)/40', borderColor: 'var(--color-gold)', color: 'var(--color-gold-dark)' }}
                           >
                             Juara
                           </span>
                         )}
                       </span>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 font-medium mt-0.5">
-                        <span className="flex items-center gap-1"><span className="text-emerald-600">✓</span> {player.correctAnswers} Benar</span>
-                        <span className="flex items-center gap-1"><span className="text-rose-600">✗</span> {player.wrongAnswers} Salah</span>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px] sm:text-[11px] text-slate-500 font-medium mt-0.5">
+                        <span className="flex items-center gap-0.5"><span className="text-emerald-600">✓</span> {player.correctAnswers} Benar</span>
+                        <span className="flex items-center gap-0.5"><span className="text-rose-600">✗</span> {player.wrongAnswers} Salah</span>
                         {player.correctAnswers + player.wrongAnswers > 0 && (
                           <span className="text-orange-600 font-bold">🎯 {Math.round((player.correctAnswers / (player.correctAnswers + player.wrongAnswers)) * 100)}%</span>
                         )}
@@ -289,10 +289,10 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                       </div>
                     </div>
                     
-                    <div className="flex items-end sm:items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">Skor</span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">Skor</span>
                       <span 
-                        className="text-3xl font-black"
+                        className="text-xl sm:text-2xl font-black"
                         style={{ color: isChampion ? 'var(--color-gold-dark)' : 'var(--color-navy-light)' }}
                       >
                         {player.score}

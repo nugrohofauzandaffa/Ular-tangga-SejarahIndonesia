@@ -479,6 +479,16 @@ export const processTurn = (
   if (playerToUpdate.position === GAME_CONSTANTS.BOARD_SIZE) {
     newState.fastestExplorer = playerToUpdate.id;
     playerToUpdate.score = addScore(playerToUpdate.score, 100).newScore; // Grand Finish Bonus +100 Poin
+    
+    // [ADD] Log aktivitas untuk membuktikan suntikan poin bekerja
+    newState.logs.push({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+      playerName: playerToUpdate.name,
+      message: `🏁 ${playerToUpdate.name} mencapai petak akhir! Mendapatkan Grand Finish Bonus +100 Poin.`,
+      type: 'system'
+    });
+
     newState.players[activePlayerIndex] = playerToUpdate;
     const champion = [...newState.players].sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;

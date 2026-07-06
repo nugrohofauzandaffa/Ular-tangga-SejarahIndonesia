@@ -97,12 +97,7 @@ export default function PrototypeGameLayout({ initialPlayers, onMainMenu }: Game
   // State untuk banner giliran
   const [showTurnBanner, setShowTurnBanner] = useState(true);
 
-  // State untuk Pop-up Modifier Dadu
-  const [diceModifierPopup, setDiceModifierPopup] = useState<{
-    original: number;
-    final: number;
-    type: 'DecreasedRoll' | 'AbsoluteRoll';
-  } | null>(null);
+  // State untuk Pop-up Modifier Dadu (Telah dihapus, menggunakan DiceModifierModal)
 
   // State interceptor untuk efek dadu (DecreasedRoll / AbsoluteRoll)
   const [pendingGameResult, setPendingGameResult] = useState<ProcessTurnResult | null>(null);
@@ -212,11 +207,7 @@ export default function PrototypeGameLayout({ initialPlayers, onMainMenu }: Game
       setActiveQuestionId(result.tileEvent.contentId);
     }
 
-    // Tampilkan Pop-up Modifier Dadu jika ada
-    if (result.diceModifierInfo) {
-      setDiceModifierPopup(result.diceModifierInfo);
-      setTimeout(() => setDiceModifierPopup(null), 3500);
-    }
+    // (Pop-up Modifier Dadu kini ditangani oleh DiceModifierModal sebelum animasi jalan)
 
     if (result.acquiredEffect) {
       setActiveEffect(result.acquiredEffect);
@@ -650,24 +641,7 @@ export default function PrototypeGameLayout({ initialPlayers, onMainMenu }: Game
         <div className="w-10 sm:w-12 shrink-0" />
       </div>
 
-      {/* Pop-up Modifier Dadu (DecreasedRoll / AbsoluteRoll) */}
-      {diceModifierPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-          <div className="bg-white/95 backdrop-blur-sm px-8 py-6 rounded-2xl shadow-2xl border-4 border-red-500 flex flex-col items-center animate-in zoom-in duration-300 transform scale-110">
-            <h3 className="text-xl font-extrabold text-red-600 mb-2 uppercase tracking-widest">
-              {diceModifierPopup.type === 'DecreasedRoll' ? 'Kelelahan!' : 'Batas Kecepatan!'}
-            </h3>
-            <div className="flex items-center gap-4 text-4xl font-black">
-              <span className="text-slate-400 line-through">{diceModifierPopup.original}</span>
-              <span className="text-red-500">➔</span>
-              <span className="text-red-600 text-6xl">{diceModifierPopup.final}</span>
-            </div>
-            <p className="mt-2 text-sm font-bold text-slate-600">
-              {diceModifierPopup.type === 'DecreasedRoll' ? 'Hasil dadu dikurangi 2' : 'Hasil dadu dibatasi maksimal 4'}
-            </p>
-          </div>
-        </div>
-      )}
+
 
       {/* AntiSnake Toast Overlay */}
       {showAntiSnakeToast && (
