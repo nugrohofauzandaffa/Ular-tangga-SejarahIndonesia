@@ -74,6 +74,9 @@ Pastikan Anda memiliki [Node.js](https://nodejs.org/) terpasang di komputer/lapt
    ```
 5. Buka peramban (browser) dan akses alamat: [http://localhost:3000](http://localhost:3000)
 
+Atau anda bisa mengaksesnya melalui link berikut ini!
+https://ular-tangga-sejarahindonesia.netlify.app/
+
 _**Catatan Error Next.js:** Jika Anda mendapatkan pesan error `Blocked cross-origin resource HMR` secara berulang saat menjalankan server dev, silakan mematikan server dengan menekan `Ctrl+C` di terminal, lalu ulangi perintah `npm run dev`._
 
 ---
