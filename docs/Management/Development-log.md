@@ -1,3 +1,14 @@
+## [2026-07-06] Bugfix: Menyamakan Skala Tampilan Mobile (iPhone 12 Pro Standard)
+
+- **Phase**: UI & UX Refinement
+- **File yang dibuat atau diubah**:
+  - `src/app/layout.tsx`
+- **Alasan Perubahan**:
+  - Pengguna melaporkan bahwa tampilan game pada perangkat seluler Android (seperti Realme C51s) terlihat berbeda dibandingkan dengan tampilan standar iPhone 12 Pro, menyebabkan proporsi elemen layout menjadi tidak konsisten.
+- **Dampak Perubahan**:
+  - Menambahkan konfigurasi `viewport` pada Next.js (`layout.tsx`) dengan menetapkan `width: 390` dan `userScalable: false`. Hal ini memaksa *browser* di semua *smartphone* (apapun merek atau resolusinya) untuk mensimulasikan layar dengan lebar logis 390px (standar iPhone 12 Pro) lalu melakukan proses *zoom-to-fit* secara otomatis. Hasilnya, pengalaman visual UI (padding, margin, dan posisi SVG) terkunci sempurna dan konsisten.
+- **Status**: Completed
+
 ## [2026-07-06] Dokumentasi: Penulisan Ulang README.md
 
 - **Phase**: Documentation
