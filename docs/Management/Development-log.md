@@ -1,3 +1,16 @@
+## [2026-07-06] Bugfix: Modal Kuis Terpotong di Mobile
+
+- **Phase**: UI & UX Refinement
+- **File yang dibuat atau diubah**:
+  - `src/components/quiz/QuizModal.tsx`
+- **Alasan Perubahan**:
+  - Pada layar perangkat seluler (mobile), pop up kuis ukurannya seringkali terlalu panjang, terutama pada soal dengan deskripsi atau trivia panjang. Akibatnya, pemain tidak bisa menekan tombol konfirmasi atau melihat trivia karena area bawah modal terpotong dan tidak dapat digulir (scroll).
+- **Dampak Perubahan**:
+  - Membatasi tinggi maksimum wadah modal menggunakan `max-h-[95vh] sm:max-h-[90vh]`.
+  - Menerapkan `shrink-0` pada header dan footer kuis agar ukurannya tidak tertekan.
+  - Menambahkan utilitas `overflow-y-auto` dan `flex-1` pada bagian konten utama (pertanyaan & jawaban) sehingga secara otomatis mendukung proses *scrolling* bila konten melebihi batas layar, sementara elemen navigasi (tombol) selalu berada di dasar dengan aman.
+- **Status**: Completed
+
 ## [2026-07-06] Fitur: Optimalisasi Tata Letak Tombol & Klasemen Mode Mobile
 
 - **Phase**: UI & UX Refinement

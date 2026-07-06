@@ -106,11 +106,11 @@ export const QuizModal: React.FC<QuizModalProps> = ({ question, isOpen, onSubmit
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-        className="w-full max-w-lg bg-[var(--color-parchment)] rounded-2xl shadow-2xl flex flex-col overflow-hidden border-4 border-[var(--color-wood)]"
+        className="w-full max-w-lg max-h-[95vh] sm:max-h-[90vh] bg-[var(--color-parchment)] rounded-2xl shadow-2xl flex flex-col overflow-hidden border-4 border-[var(--color-wood)]"
       >
         
         {/* Header Kuis */}
-        <div className={`bg-[var(--color-navy)] text-[var(--color-cream)] p-5 flex justify-between items-center border-b border-[var(--color-gold)] relative ${isJakarta ? 'pt-7' : ''}`}>
+        <div className={`bg-[var(--color-navy)] text-[var(--color-cream)] p-5 flex justify-between items-center border-b border-[var(--color-gold)] relative shrink-0 ${isJakarta ? 'pt-7' : ''}`}>
           {isJakarta && (
             <div className="absolute top-0 left-0 right-0 h-[10px] bg-repeat-x bg-[url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'10\' viewBox=\'0 0 16 10\'%3E%3Cpolygon points=\'0,0 8,8 16,0\' fill=\'%2378350f\'/%3E%3C/svg%3E')] z-10" />
           )}
@@ -120,7 +120,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({ question, isOpen, onSubmit
           </span>
         </div>
         
-        <div className="p-6">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 custom-scrollbar">
           {/* Pertanyaan */}
           <p className="text-lg font-bold text-[var(--color-navy-dark)] mb-6 leading-relaxed">
             {question.question}
@@ -175,7 +175,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({ question, isOpen, onSubmit
         </div>
 
         {/* Footer / Aksi */}
-        <div className="bg-[var(--color-cream)]/35 p-4 border-t border-[var(--color-cream-dark)]/30 flex justify-end">
+        <div className="bg-[var(--color-cream)]/35 p-4 border-t border-[var(--color-cream-dark)]/30 flex justify-end shrink-0">
           {!result ? (
             <button
               onClick={handleSubmit}
