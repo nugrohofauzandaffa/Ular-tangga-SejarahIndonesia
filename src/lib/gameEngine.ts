@@ -74,7 +74,7 @@ export const processTurn = (
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: Date.now(),
       playerName: playerToUpdate.name,
-      message: 'Kehilangan giliran karena efek Silence',
+      message: `💀 ${playerToUpdate.name} terkena efek Silence! Kehilangan giliran.`,
       type: 'system'
     });
     
@@ -106,7 +106,7 @@ export const processTurn = (
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: Date.now(),
       playerName: playerToUpdate.name,
-      message: `Efek Batas Dadu aktif! Lemparan ${originalDice} dibatasi maksimal 4 langkah.`,
+      message: `💀 ${playerToUpdate.name} terkena efek Batas Dadu! Lemparan ${originalDice} dibatasi maksimal 4 langkah.`,
       type: 'penalty'
     });
   }
@@ -125,7 +125,7 @@ export const processTurn = (
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: Date.now(),
       playerName: playerToUpdate.name,
-      message: `Efek Kelelahan aktif! Dadu awal ${originalDice} dikurangi 2 menjadi ${diceValue} langkah.`,
+      message: `💀 ${playerToUpdate.name} terkena efek Kelelahan! Dadu awal ${originalDice} dikurangi 2 menjadi ${diceValue} langkah.`,
       type: 'penalty'
     });
   }
@@ -139,7 +139,7 @@ export const processTurn = (
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: Date.now(),
       playerName: playerToUpdate.name,
-      message: 'Amnesia Sejarah! Kamu kebingungan dan melangkah mundur.',
+      message: `💀 ${playerToUpdate.name} terkena efek Amnesia Sejarah! Kebingungan dan melangkah mundur.`,
       type: 'penalty'
     });
   }
@@ -151,7 +151,7 @@ export const processTurn = (
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: Date.now(),
       playerName: playerToUpdate.name,
-      message: `Pajak Kolonial aktif! Kehilangan ${diceValue} poin karena melangkah.`,
+      message: `💀 ${playerToUpdate.name} terkena efek Pajak Kolonial! Kehilangan ${diceValue} poin karena melangkah.`,
       type: 'penalty'
     });
   }
@@ -164,7 +164,7 @@ export const processTurn = (
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: Date.now(),
       playerName: playerToUpdate.name,
-      message: 'Mendapat dorongan semangat +2 Langkah (Fase Krisis)',
+      message: `🔥 ${playerToUpdate.name} mendapat dorongan semangat +2 Langkah (Fase Krisis).`,
       type: 'bonus'
     });
   }
@@ -190,7 +190,7 @@ export const processTurn = (
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: Date.now(),
       playerName: playerToUpdate.name,
-      message: 'Gagal masuk garis akhir karena melebihi batas! (Terpental)',
+      message: `⚠️ ${playerToUpdate.name} terpental! Gagal masuk garis akhir karena melebihi batas!`,
       type: 'penalty'
     });
   }
@@ -254,7 +254,7 @@ export const processTurn = (
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
             timestamp: Date.now(),
             playerName: playerToUpdate.name,
-            message: '🛡️ Menahan gigitan ular menggunakan efek AntiSnake',
+            message: `🛡️ ${playerToUpdate.name} menggunakan efek AntiSnake! Berhasil menahan gigitan ular.`,
             type: 'system'
           });
           tileEvent = { type: 'Normal' };
@@ -282,7 +282,7 @@ export const processTurn = (
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
             timestamp: Date.now(),
             playerName: playerToUpdate.name,
-            message: 'Phobia Tangga! Kamu menolak untuk naik tangga.',
+            message: `💀 ${playerToUpdate.name} terkena efek Phobia Tangga! Menolak untuk naik tangga.`,
             type: 'system'
           });
           tileEvent = { type: 'Normal' };
@@ -313,7 +313,7 @@ export const processTurn = (
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           timestamp: Date.now(),
           playerName: playerToUpdate.name,
-          message: 'Terlalu cepat! Petak bonus tidak memicu efek di giliran ganda.',
+          message: `⚠️ ${playerToUpdate.name} terlalu cepat! Petak bonus tidak memicu efek di giliran ganda.`,
           type: 'system'
         });
         tileEvent = { type: 'Normal' };
@@ -326,15 +326,15 @@ export const processTurn = (
       
       let effectMsg = '';
       switch (acquiredEffect.type) {
-        case 'AntiSnake': effectMsg = 'Mendapat kekebalan dari ular berikutnya'; break;
+        case 'AntiSnake': effectMsg = `✨ ${playerToUpdate.name} mendapatkan efek AntiSnake! Mendapat kekebalan dari ular berikutnya`; break;
         case 'DoubleRoll': 
-          effectMsg = 'Mendapat ekstra giliran melempar dadu'; 
+          effectMsg = `✨ ${playerToUpdate.name} mendapatkan efek Double Roll! Mendapat ekstra giliran melempar dadu`; 
           // [PATCH v1.1 - Double Roll] Aktifkan extra turn
           playerToUpdate.hasExtraTurn = true;
           break;
-        case 'StealPoint': effectMsg = 'Mencuri poin dari lawan'; break;
-        case 'Cendekiawan': effectMsg = 'Poin kuis berikutnya akan dilipatgandakan (x2)'; break;
-        case 'MesinWaktu': effectMsg = 'Teleportasi 5 langkah ke depan secara instan!'; break;
+        case 'StealPoint': effectMsg = `✨ ${playerToUpdate.name} mendapatkan efek StealPoint! Mencuri poin dari lawan`; break;
+        case 'Cendekiawan': effectMsg = `✨ ${playerToUpdate.name} mendapatkan efek Cendekiawan! Poin kuis berikutnya akan dilipatgandakan (x2)`; break;
+        case 'MesinWaktu': effectMsg = `✨ ${playerToUpdate.name} mendapatkan efek Mesin Waktu! Teleportasi 5 langkah ke depan secara instan!`; break;
       }
       
       newState.logs.push({
@@ -357,7 +357,7 @@ export const processTurn = (
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
             timestamp: Date.now() + 1,
             playerName: playerToUpdate.name,
-            message: 'Bonus Konsistensi! Sebagai pemimpin, kamu mendapat +3 Poin dari sistem.',
+            message: `✨ ${playerToUpdate.name} mendapatkan Bonus Konsistensi! Sebagai pemimpin mendapat +3 Poin dari sistem.`,
             type: 'bonus'
           });
         } else {
@@ -390,7 +390,7 @@ export const processTurn = (
               id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
               timestamp: Date.now() + 1,
               playerName: newState.players[highestOpponentIndex].name,
-              message: `⚠️ AWAS! ${stolenAmount} Poinmu dicuri oleh ${playerToUpdate.name}!`,
+              message: `⚠️ ${newState.players[highestOpponentIndex].name} kehilangan ${stolenAmount} Poin yang dicuri oleh ${playerToUpdate.name}!`,
               type: 'penalty'
             });
           }
@@ -405,7 +405,18 @@ export const processTurn = (
         keepResolving = false;
         break;
       } else {
-        playerToUpdate.activeEffects.push(acquiredEffect);
+        // [EXPERIMENT: Stacking System] Cek kategori intensitas
+        if (['AntiSnake', 'Cendekiawan'].includes(acquiredEffect.type)) {
+          const existingIdx = playerToUpdate.activeEffects.findIndex(e => e.type === acquiredEffect.type);
+          if (existingIdx !== -1) {
+            // Intensitas: Refresh durasi (Batas max stack 1)
+            playerToUpdate.activeEffects[existingIdx].duration = acquiredEffect.duration;
+          } else {
+            playerToUpdate.activeEffects.push(acquiredEffect);
+          }
+        } else {
+          playerToUpdate.activeEffects.push(acquiredEffect);
+        }
       }
       
       shouldAdvanceTurn = false;
@@ -415,18 +426,36 @@ export const processTurn = (
 
     case 'Penalty': {
       acquiredEffect = getRandomDebuff();
-      playerToUpdate.activeEffects.push(acquiredEffect);
+      
+      // [EXPERIMENT: Stacking System]
+      const intensityDebuffs = ['AmnesiaSejarah', 'PhobiaTangga'];
+      const durationDebuffs = ['AbsoluteRoll', 'DecreasedRoll', 'Silence', 'PajakKolonial'];
+
+      const existingIdx = playerToUpdate.activeEffects.findIndex(e => e.type === acquiredEffect.type);
+      
+      if (existingIdx !== -1) {
+        if (intensityDebuffs.includes(acquiredEffect.type as string)) {
+          // Intensitas: Refresh durasi (Max stack 1)
+          playerToUpdate.activeEffects[existingIdx].duration = acquiredEffect.duration;
+        } else if (durationDebuffs.includes(acquiredEffect.type as string)) {
+          // Durasi: Akumulasi giliran (Infinite stack)
+          playerToUpdate.activeEffects[existingIdx].duration += acquiredEffect.duration;
+        }
+      } else {
+        playerToUpdate.activeEffects.push(acquiredEffect);
+      }
+
       shouldAdvanceTurn = false;
       newState.gameStatus = 'showing_effect';
       
       let effectMsg = '';
       switch (acquiredEffect.type) {
-        case 'AbsoluteRoll': effectMsg = 'Lemparan dadu maksimal bernilai 4 di giliran berikutnya'; break;
-        case 'Silence': effectMsg = 'Akan kehilangan 1 giliran berikutnya'; break;
-        case 'DecreasedRoll': effectMsg = 'Lemparan dadu berikutnya akan dikurangi 2'; break;
-        case 'AmnesiaSejarah': effectMsg = 'Akan berjalan mundur di giliran berikutnya'; break;
-        case 'PajakKolonial': effectMsg = 'Akan dikenakan denda poin sesuai angka dadu selama 2 giliran'; break;
-        case 'PhobiaTangga': effectMsg = 'Tidak bisa menggunakan tangga di giliran berikutnya'; break;
+        case 'AbsoluteRoll': effectMsg = `💀 ${playerToUpdate.name} terkena efek Batas Kecepatan! Dadu maksimal 4 selama giliran aktif`; break;
+        case 'DecreasedRoll': effectMsg = `💀 ${playerToUpdate.name} terkena efek Kelelahan! Langkah dadu dikurangi 2`; break;
+        case 'Silence': effectMsg = `💀 ${playerToUpdate.name} terkena efek Silence! Kehilangan giliran berikutnya`; break;
+        case 'AmnesiaSejarah': effectMsg = `💀 ${playerToUpdate.name} terkena efek Amnesia Sejarah! Akan melangkah mundur di giliran berikutnya`; break;
+        case 'PajakKolonial': effectMsg = `💀 ${playerToUpdate.name} terkena efek Pajak Kolonial! Poin dikurangi berdasarkan jumlah langkah`; break;
+        case 'PhobiaTangga': effectMsg = `💀 ${playerToUpdate.name} terkena efek Phobia Tangga! Tidak bisa naik tangga`; break;
       }
       
       newState.logs.push({
@@ -449,7 +478,7 @@ export const processTurn = (
   // 6. Check Win (Post-Tile Resolution)
   if (playerToUpdate.position === GAME_CONSTANTS.BOARD_SIZE) {
     newState.fastestExplorer = playerToUpdate.id;
-    playerToUpdate.score = addScore(playerToUpdate.score, 15).newScore; // Reward +15 poin
+    playerToUpdate.score = addScore(playerToUpdate.score, 100).newScore; // Grand Finish Bonus +100 Poin
     newState.players[activePlayerIndex] = playerToUpdate;
     const champion = [...newState.players].sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
@@ -529,7 +558,7 @@ export const submitQuizAnswer = (
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         timestamp: Date.now(),
         playerName: playerToUpdate.name,
-        message: `Cendekiawan aktif! Poin kuis dilipatgandakan menjadi +${reward}`,
+        message: `✨ ${playerToUpdate.name} menggunakan efek Cendekiawan! Poin kuis dilipatgandakan menjadi +${reward}`,
         type: 'bonus'
       });
     }
@@ -548,7 +577,7 @@ export const submitQuizAnswer = (
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         timestamp: Date.now(),
         playerName: playerToUpdate.name,
-        message: `Cendekiawan hangus karena salah menjawab!`,
+        message: `⚠️ Efek Cendekiawan milik ${playerToUpdate.name} hangus karena salah menjawab!`,
         type: 'system'
       });
     }
@@ -602,7 +631,7 @@ export const acknowledgeEffect = (state: GameState): GameState => {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         timestamp: Date.now(),
         playerName: playerToUpdate.name,
-        message: '🎲 Mendapat Giliran Tambahan (Double Roll)!',
+        message: `🎲 ${playerToUpdate.name} mendapat Giliran Tambahan (Double Roll)!`,
         type: 'bonus'
       });
       

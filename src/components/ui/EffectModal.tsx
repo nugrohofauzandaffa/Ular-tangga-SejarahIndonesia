@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { PlayerEffect } from '@/types/player';
+import { useAudio } from '@/contexts/AudioContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface EffectModalProps {
   effect: PlayerEffect;
@@ -10,8 +11,9 @@ interface EffectModalProps {
 }
 
 export const EffectModal: React.FC<EffectModalProps> = ({ effect, onAcknowledge }) => {
+  const { playSFX } = useAudio();
   const { currentTheme } = useTheme();
-  const isBuff = ['AntiSnake', 'DoubleRoll', 'StealPoint'].includes(effect.type);
+  const isBuff = ['AntiSnake', 'DoubleRoll', 'StealPoint', 'Cendekiawan', 'MesinWaktu'].includes(effect.type);
 
   // Dynamic header bg based on active theme
   const getHeaderBg = () => {
@@ -26,6 +28,7 @@ export const EffectModal: React.FC<EffectModalProps> = ({ effect, onAcknowledge 
   const headerBgClass = getHeaderBg();
 
   useEffect(() => {
+    playSFX(isBuff ? 'popup_bonus' : 'popup_penalty');
     const timer = setTimeout(() => {
       onAcknowledge();
     }, 2500);

@@ -22,7 +22,7 @@ export const useTheme = () => {
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [themeId, setThemeIdState] = useState<string>('classic');
 
-  // Load saved theme on mount
+  // Load saved theme & mode on mount
   useEffect(() => {
     try {
       const savedTheme = localStorage.getItem('game_theme');

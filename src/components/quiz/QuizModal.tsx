@@ -24,6 +24,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({ question, isOpen, onSubmit
   // Reset internal state when modal closes or question changes
   useEffect(() => {
     if (isOpen && question) {
+      playSFX('popup_quiz');
       Promise.resolve().then(() => {
         setShuffledOptions([...question.options].sort(() => Math.random() - 0.5));
       });

@@ -17,9 +17,9 @@ export const GameLogBox: React.FC<GameLogBoxProps> = ({ logs, title = "Game Log"
   }, [logs]);
 
   return (
-    <div className={`flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden ${className}`}>
-      <div className="bg-slate-100 px-4 py-2 border-b border-slate-200">
-        <h3 className="font-semibold text-slate-700 text-sm">{title}</h3>
+    <div className={`flex flex-col bg-[var(--color-parchment)] rounded-xl shadow-sm border border-[var(--color-wood)]/20 overflow-hidden ${className}`}>
+      <div className="bg-[var(--color-cream)] px-4 py-2 border-b border-[var(--color-wood)]/20">
+        <h3 className="font-semibold text-[var(--color-navy)] text-sm">{title}</h3>
       </div>
       
       <div 
@@ -44,10 +44,12 @@ export const GameLogBox: React.FC<GameLogBoxProps> = ({ logs, title = "Game Log"
             }
 
             return (
-              <div key={log.id} className="flex flex-col text-sm border-b border-slate-50 pb-2 last:border-0">
+              <div key={log.id} className="flex flex-col text-sm border-b border-[var(--color-wood)]/10 pb-2 last:border-0">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-slate-700">{log.playerName}</span>
-                  <span className="text-[10px] text-slate-400">{time}</span>
+                  <span className="font-semibold text-[var(--color-navy)]">{log.playerName}</span>
+                  <span className="text-[10px] text-[var(--color-wood)] uppercase tracking-wider font-bold">
+                    {time}
+                  </span>
                 </div>
                 <div className={`text-xs px-2 py-1.5 rounded-md border ${badgeColor} inline-block`}>
                   <span className="mr-1">{badgeIcon}</span> {log.message}

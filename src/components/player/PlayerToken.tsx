@@ -12,6 +12,7 @@ interface PlayerTokenProps {
   totalTokens?: number;
   x?: number; // Persentase X
   y?: number; // Persentase Y
+  rotation?: number; // Sudut rotasi saat spline animation
   isTransitioning?: boolean; // Menandakan sedang di-animasikan oleh RAF (bypass CSS transition)
   animationStyle?: AnimationStyle;
 }
@@ -22,6 +23,7 @@ export default function PlayerToken({
   totalTokens = 1, 
   x = 50, 
   y = 50, 
+  rotation = 0,
   isTransitioning = false,
   animationStyle = 'hop'
 }: PlayerTokenProps) {
@@ -31,10 +33,10 @@ export default function PlayerToken({
 
   // Jewel-toned premium board game token styles with wooden/gold trims
   const colorClasses = isJakarta ? [
-    'bg-teal-700 border-[#fcd34d] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.45),_0_2px_4px_rgba(0,0,0,0.3)]',
-    'bg-[#ea580c] border-[#fcd34d] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.45),_0_2px_4px_rgba(0,0,0,0.3)]',
-    'bg-[#0d9488] border-[#fcd34d] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.45),_0_2px_4px_rgba(0,0,0,0.3)]',
-    'bg-[#ca8a04] border-[#fcd34d] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.45),_0_2px_4px_rgba(0,0,0,0.3)]',
+    'bg-teal-700 border-[#fcd34d] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.45),_0_6px_12px_rgba(0,0,0,0.6)]',
+    'bg-[#ea580c] border-[#fcd34d] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.45),_0_6px_12px_rgba(0,0,0,0.6)]',
+    'bg-[#0d9488] border-[#fcd34d] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.45),_0_6px_12px_rgba(0,0,0,0.6)]',
+    'bg-[#ca8a04] border-[#fcd34d] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.45),_0_6px_12px_rgba(0,0,0,0.6)]',
   ] : [
     'bg-blue-600 border-[#c9a84c] shadow-[inset_0_-2px_3px_rgba(0,0,0,0.35),_0_2px_3px_rgba(0,0,0,0.2)]',
     'bg-rose-600 border-[#c9a84c] shadow-[inset_0_-2px_3px_rgba(0,0,0,0.35),_0_2px_3px_rgba(0,0,0,0.2)]',
@@ -48,6 +50,7 @@ export default function PlayerToken({
   
   const [isHopping, setIsHopping] = useState(false);
   const [showRipple, setShowRipple] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const prevPos = useRef({ x, y });
   const prevIsTransitioning = useRef(isTransitioning);
   const wasHopping = useRef(false);
@@ -61,6 +64,13 @@ export default function PlayerToken({
     wasHopping.current = isHopping;
   }, [isHopping]);
 
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const wasTransitioning = prevIsTransitioning.current;
@@ -104,6 +114,9 @@ export default function PlayerToken({
     ? 'inset 0 -2px 4px rgba(0,0,0,0.45)' 
     : 'inset 0 -2px 3px rgba(0,0,0,0.35)';
 
+  const idleShadowExt = isJakarta ? '0px 6px 12px rgba(0,0,0,0.6)' : '0px 4px 6px rgba(0,0,0,0.1)';
+  const hopShadowExt = isJakarta ? '0px 20px 25px rgba(0,0,0,0.6)' : '0px 15px 15px rgba(0,0,0,0.3)';
+
   // Konfigurasi variants berdasarkan tipe animasi yang dipilih
   const getHoppingVariant = (): import('framer-motion').TargetAndTransition => {
     switch (animationStyle) {
@@ -114,7 +127,7 @@ export default function PlayerToken({
           scale: 1,
           y: offsetY,
           x: offsetX,
-          boxShadow: `${baseInsetShadow}, 0px 4px 6px rgba(0,0,0,0.1)`,
+          boxShadow: `${baseInsetShadow}, ${idleShadowExt}`,
           transition: { duration: hopDuration, ease: 'linear' }
         };
       case 'slide':
@@ -131,34 +144,39 @@ export default function PlayerToken({
         return {
           left: `${x}%`,
           top: `${y}%`,
-          scale: 1,
-          y: [offsetY, offsetY - 25, offsetY],
+          scale: [1, 1.25, 1],
+          y: [offsetY, offsetY - 35, offsetY],
           x: offsetX,
           boxShadow: [
-            `${baseInsetShadow}, 0px 4px 6px rgba(0,0,0,0.1)`, 
-            `${baseInsetShadow}, 0px 20px 20px rgba(0,0,0,0.2)`, 
-            `${baseInsetShadow}, 0px 4px 6px rgba(0,0,0,0.1)`
+            `${baseInsetShadow}, ${idleShadowExt}`, 
+            `${baseInsetShadow}, ${hopShadowExt}`, 
+            `${baseInsetShadow}, ${idleShadowExt}`
           ],
           transition: {
-            left: { duration: hopDuration, ease: 'linear' },
-            top: { duration: hopDuration, ease: 'linear' },
-            y: { duration: hopDuration, times: [0, 0.5, 1], ease: ['easeOut', 'easeIn'] },
-            boxShadow: { duration: hopDuration, times: [0, 0.5, 1], ease: ['easeOut', 'easeIn'] }
+            duration: hopDuration,
+            ease: 'linear',
+            y: { duration: hopDuration, times: [0, 0.45, 1], ease: ['circOut', 'circIn'] },
+            scale: { duration: hopDuration, times: [0, 0.45, 1], ease: ['circOut', 'circIn'] },
+            boxShadow: { duration: hopDuration, times: [0, 0.45, 1], ease: ['circOut', 'circIn'] }
           }
         };
       case 'squash':
+        const bounceY = isMobile ? 12 : 20;
+        const bounceSettle = isMobile ? 3 : 5;
+        const scaleXArray = isMobile ? [1, 0.85, 1.1, 0.95, 1] : [1, 0.7, 1.2, 0.9, 1];
+        const scaleYArray = isMobile ? [1, 1.15, 0.9, 1.05, 1] : [1, 1.3, 0.8, 1.1, 1];
         return {
           left: `${x}%`,
           top: `${y}%`,
-          scaleX: [1, 0.7, 1.2, 0.9, 1],
-          scaleY: [1, 1.3, 0.8, 1.1, 1],
-          y: [offsetY, offsetY - 20, offsetY + 5, offsetY],
+          scaleX: scaleXArray,
+          scaleY: scaleYArray,
+          y: [offsetY, offsetY - bounceY, offsetY + bounceSettle, offsetY],
           x: offsetX,
           boxShadow: [
-            `${baseInsetShadow}, 0px 4px 6px rgba(0,0,0,0.1)`, 
-            `${baseInsetShadow}, 0px 15px 15px rgba(0,0,0,0.3)`, 
-            `${baseInsetShadow}, 0px 2px 4px rgba(0,0,0,0.3)`, 
-            `${baseInsetShadow}, 0px 4px 6px rgba(0,0,0,0.1)`
+            `${baseInsetShadow}, ${idleShadowExt}`, 
+            `${baseInsetShadow}, ${hopShadowExt}`, 
+            `${baseInsetShadow}, 0px 2px 4px rgba(0,0,0,0.4)`, 
+            `${baseInsetShadow}, ${idleShadowExt}`
           ],
           transition: { duration: hopDuration, ease: 'easeInOut' }
         };
@@ -171,10 +189,10 @@ export default function PlayerToken({
           y: [offsetY, offsetY - 15, offsetY + 2, offsetY],
           x: offsetX,
           boxShadow: [
-            `${baseInsetShadow}, 0px 4px 6px rgba(0,0,0,0.1)`, 
-            `${baseInsetShadow}, 0px 15px 15px rgba(0,0,0,0.3)`, 
-            `${baseInsetShadow}, 0px 2px 4px rgba(0,0,0,0.2)`, 
-            `${baseInsetShadow}, 0px 4px 6px rgba(0,0,0,0.1)`
+            `${baseInsetShadow}, ${idleShadowExt}`, 
+            `${baseInsetShadow}, ${hopShadowExt}`, 
+            `${baseInsetShadow}, 0px 2px 4px rgba(0,0,0,0.3)`, 
+            `${baseInsetShadow}, ${idleShadowExt}`
           ],
           transition: { duration: hopDuration, ease: 'easeInOut' }
         };
@@ -185,12 +203,13 @@ export default function PlayerToken({
     idle: {
       left: `${x}%`,
       top: `${y}%`,
+      rotateZ: 0,
       scale: 1,
       scaleX: 1,
       scaleY: 1,
       y: offsetY,
       x: offsetX,
-      boxShadow: '0px 4px 6px rgba(0,0,0,0.1)',
+      boxShadow: idleShadowExt,
       transition: {
         left: { duration: 0.3, ease: 'easeOut' },
         top: { duration: 0.3, ease: 'easeOut' },
@@ -209,7 +228,8 @@ export default function PlayerToken({
       scaleY: 1,
       y: offsetY,
       x: offsetX,
-      boxShadow: '0px 10px 15px rgba(0,0,0,0.3)',
+      rotateZ: rotation,
+      boxShadow: '0px 10px 15px rgba(0,0,0,0.5)',
       transition: {
         duration: 0
       }
@@ -224,6 +244,8 @@ export default function PlayerToken({
   const textClasses = isStacked
     ? 'text-[5px] sm:text-[8px]'
     : 'text-[8px] sm:text-xs';
+
+  const isDefaultName = player.name.startsWith('Penjelajah ') || player.name.startsWith('Bot ');
 
   return (
     <motion.div 
@@ -243,12 +265,14 @@ export default function PlayerToken({
         />
       )}
       <div 
-        className={`absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 ${sizeClasses} rounded-full border flex items-center justify-center ${colorClass}`}
+        className={`absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 ${sizeClasses} rounded-full ${isJakarta ? 'border-2' : 'border'} flex items-center justify-center ${colorClass}`}
         title={`${player.name} (Score: ${player.score})`}
       >
-        <span className={`${textClasses} font-bold text-white leading-none`}>
-          {player.name.charAt(0).toUpperCase()}
-        </span>
+        {!isDefaultName && (
+          <span className={`${textClasses} font-extrabold ${isJakarta ? 'text-[#fdf6e3]' : 'text-white'} leading-none`} style={isJakarta ? { textShadow: '0px 1px 2px rgba(0,0,0,0.8)' } : {}}>
+            {player.name.charAt(0).toUpperCase()}
+          </span>
+        )}
       </div>
     </motion.div>
   );

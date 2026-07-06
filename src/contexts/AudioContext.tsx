@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { Howl, Howler } from 'howler';
 
-export type SFXType = 'dice' | 'correct' | 'wrong' | 'snake' | 'ladder' | 'click';
+export type SFXType = 'dice' | 'correct' | 'wrong' | 'snake' | 'ladder' | 'click' | 'hop' | 'popup_quiz' | 'popup_effect' | 'popup_dicemod' | 'popup_crisis' | 'popup_result' | 'popup_bonus' | 'popup_penalty';
 
 interface AudioContextType {
   volume: number;
@@ -11,8 +11,8 @@ interface AudioContextType {
   setVolume: (volume: number) => void;
   toggleMute: () => void;
   playSFX: (type: SFXType) => void;
-  playBGM: (type?: 'menu' | 'game') => void;
-  stopBGM: (type?: 'menu' | 'game' | 'all') => void;
+  playBGM: (type?: 'menu' | 'game' | 'game_jakarta') => void;
+  stopBGM: (type?: 'menu' | 'game' | 'game_jakarta' | 'all') => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -33,6 +33,14 @@ const sfxAssets: Record<SFXType, string> = {
   snake: '/assets/audio/snake.mp3',
   ladder: '/assets/audio/ladder.mp3',
   click: '/assets/audio/click.mp3',
+  hop: '/assets/audio/hop.wav',
+  popup_quiz: '/assets/audio/popup_quiz.wav',
+  popup_effect: '/assets/audio/popup_effect.wav',
+  popup_dicemod: '/assets/audio/popup_dicemod.wav',
+  popup_crisis: '/assets/audio/popup_crisis.wav',
+  popup_result: '/assets/audio/popup_result.wav',
+  popup_bonus: '/assets/audio/popup_bonus.wav',
+  popup_penalty: '/assets/audio/popup_penalty.wav',
 };
 
 export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -40,9 +48,10 @@ export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isMuted, setIsMuted] = useState<boolean>(false);
 
   // Instance for BGM so we can start/stop it specifically
-  const bgmRefs = useRef<{ game: Howl | null; menu: Howl | null }>({
-    game: null,
+  const bgmRefs = useRef<{ game: Howl | null; menu: Howl | null; game_jakarta: Howl | null }>({
     menu: null,
+    game: null,
+    game_jakarta: null,
   });
 
   // References to all SFX Howl instances
@@ -53,6 +62,14 @@ export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     snake: null,
     ladder: null,
     click: null,
+    hop: null,
+    popup_quiz: null,
+    popup_effect: null,
+    popup_dicemod: null,
+    popup_crisis: null,
+    popup_result: null,
+    popup_bonus: null,
+    popup_penalty: null,
   });
 
   // Load saved settings on mount
@@ -97,6 +114,14 @@ export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       });
       bgmRefs.current.menu = bgmMenu;
 
+      const bgmGameJakarta = new Howl({
+        src: ['/assets/audio/bgm_jakarta.mp3'],
+        loop: true,
+        volume: 0.3,
+        preload: true,
+      });
+      bgmRefs.current.game_jakarta = bgmGameJakarta;
+
       // Initialize SFX
       (Object.keys(sfxAssets) as SFXType[]).forEach((type) => {
         sfxRefs.current[type] = new Howl({
@@ -136,20 +161,26 @@ export const AudioProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
-  const playBGM = (type: 'menu' | 'game' = 'game') => {
-    const targetBgm = type === 'game' ? bgmRefs.current.game : bgmRefs.current.menu;
+  const playBGM = (type: 'menu' | 'game' | 'game_jakarta' = 'game') => {
+    let targetBgm = bgmRefs.current.game;
+    if (type === 'menu') targetBgm = bgmRefs.current.menu;
+    if (type === 'game_jakarta') targetBgm = bgmRefs.current.game_jakarta;
+
     if (targetBgm && !targetBgm.playing()) {
       targetBgm.play();
     }
   };
 
-  const stopBGM = (type: 'menu' | 'game' | 'all' = 'all') => {
+  const stopBGM = (type: 'menu' | 'game' | 'game_jakarta' | 'all' = 'all') => {
     const currentBgmRefs = bgmRefs.current;
     if ((type === 'game' || type === 'all') && currentBgmRefs.game && currentBgmRefs.game.playing()) {
       currentBgmRefs.game.stop();
     }
     if ((type === 'menu' || type === 'all') && currentBgmRefs.menu && currentBgmRefs.menu.playing()) {
       currentBgmRefs.menu.stop();
+    }
+    if ((type === 'game_jakarta' || type === 'all') && currentBgmRefs.game_jakarta && currentBgmRefs.game_jakarta.playing()) {
+      currentBgmRefs.game_jakarta.stop();
     }
   };
 

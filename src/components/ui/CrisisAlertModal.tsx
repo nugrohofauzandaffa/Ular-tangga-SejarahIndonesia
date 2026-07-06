@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAudio } from '@/contexts/AudioContext';
 import { motion } from 'framer-motion';
 
 interface CrisisAlertModalProps {
@@ -10,9 +11,11 @@ interface CrisisAlertModalProps {
 
 export const CrisisAlertModal: React.FC<CrisisAlertModalProps> = ({ isOpen, onAcknowledge }) => {
   const { currentTheme } = useTheme();
+  const { playSFX } = useAudio();
   
   useEffect(() => {
     if (isOpen) {
+      playSFX('popup_crisis');
       const timer = setTimeout(() => {
         onAcknowledge();
       }, 2500);

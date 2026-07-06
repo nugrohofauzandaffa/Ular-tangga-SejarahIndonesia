@@ -19,7 +19,8 @@ export const DiceModifierModal: React.FC<DiceModifierModalProps> = ({ info, onAc
 
   useEffect(() => {
     if (info) {
-      playSFX('wrong'); // Mainkan suara penalti
+      const isDecreased = info.type === 'DecreasedRoll';
+      playSFX(isDecreased ? 'popup_penalty' : 'popup_bonus');
       const timer = setTimeout(() => {
         onAcknowledge();
       }, 3000); // Tutup otomatis setelah 3 detik

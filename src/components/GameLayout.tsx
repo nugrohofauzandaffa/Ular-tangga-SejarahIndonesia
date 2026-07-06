@@ -4,13 +4,14 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Board from './papan/Board';
 import { Dice } from './dice/Dice';
 import { HUD } from './ui/HUD';
-import { QuizModal } from './quiz/QuizModal';
-import { ResultScreen } from './ui/ResultScreen';
-import { EffectModal } from './ui/EffectModal';
-import { GameLogBox } from './ui/GameLogBox';
-import { FloatingAudioControl } from './ui/FloatingAudioControl';
-import { CrisisAlertModal } from './ui/CrisisAlertModal';
+import { QuizModal } from '@/components/quiz/QuizModal';
+import { ResultScreen } from '@/components/ui/ResultScreen';
+import { EffectModal } from '@/components/ui/EffectModal';
+import { GameLogBox } from '@/components/ui/GameLogBox';
+import { FloatingAudioControl } from '@/components/ui/FloatingAudioControl';
+import { CrisisAlertModal } from '@/components/ui/CrisisAlertModal';
 import { useAudio } from '@/contexts/AudioContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 import { Player, PlayerEffect } from '@/types/player';
 import { GameState, GameLog } from '@/types/gameState';
@@ -34,17 +35,26 @@ import {
   GameEngineContext,
   ProcessTurnResult
 } from '@/lib/gameEngine';
-import { DiceModifierModal, DiceModifierInfo } from './ui/DiceModifierModal';
+import { DiceModifierModal, DiceModifierInfo } from '@/components/ui/DiceModifierModal';
 
 export interface GameLayoutProps {
   initialPlayers: Player[];
   onMainMenu: () => void;
 }
 
+const AMBIENT_PARTICLES = Array.from({ length: 40 }).map((_, i) => ({
+  cx: `${Math.floor(Math.random() * 100)}%`,
+  cy: `${100 + Math.floor(Math.random() * 50)}%`,
+  durY: `${15 + Math.floor(Math.random() * 20)}s`,
+  durX: `${10 + Math.floor(Math.random() * 20)}s`,
+  durO: `${5 + Math.floor(Math.random() * 10)}s`,
+  r: 2 + Math.random() * 6, // Radius 2 - 8
+}));
+
 export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutProps) {
   const [currentBoard, setCurrentBoard] = useState<Tile[]>([]);
   const [isMounted, setIsMounted] = useState(false);
-  const [transitioningPlayers, setTransitioningPlayers] = useState<Record<string, { x: number, y: number }>>({});
+  const [transitioningPlayers, setTransitioningPlayers] = useState<Record<string, { x: number, y: number, rotation?: number }>>({});
 
   const [gameState, setGameState] = useState<GameState>({
     players: initialPlayers,
@@ -103,12 +113,15 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
   const [isDesktopLogOpen, setIsDesktopLogOpen] = useState(false);
 
   const { playBGM, stopBGM, playSFX } = useAudio();
+  const { currentTheme } = useTheme();
+  const isJakarta = currentTheme.id === 'jakarta-heritage';
   const { triggerLandingFeedback, triggerScreenShake, prefersReducedMotion } = useGameFeedbackPipeline();
 
   // Memutar BGM saat permainan dimulai
   useEffect(() => {
-    playBGM('game');
-    return () => stopBGM('game');
+    const bgmType = isJakarta ? 'game_jakarta' : 'game';
+    playBGM(bgmType);
+    return () => stopBGM(bgmType);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -208,13 +221,6 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
 
     if (result.acquiredEffect) {
       setActiveEffect(result.acquiredEffect);
-
-      const isBuff = ['AntiSnake', 'DoubleRoll', 'StealPoint'].includes(result.acquiredEffect.type);
-      if (isBuff) {
-        playSFX('ladder');
-      } else {
-        playSFX('snake');
-      }
     } else {
       setActiveEffect(null);
     }
@@ -250,7 +256,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
           return { ...prev, players: newPlayers };
         });
 
-        playSFX('click');
+        playSFX('hop');
         if (isLanding) {
           triggerLandingFeedback(0, 0, true);
         }
@@ -308,19 +314,36 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
           : 1 - Math.pow(-2 * progress + 2, 2) / 2;
         
         let x: number, y: number;
+        let rotation = 0;
         
         if (isSnake && snakeParams) {
           x = getBezierPoint(easeProgress, snakeParams.head.x, snakeParams.cx1, snakeParams.cx2, snakeParams.tail.x);
           y = getBezierPoint(easeProgress, snakeParams.head.y, snakeParams.cy1, snakeParams.cy2, snakeParams.tail.y);
+          
+          // Kalkulasi sudut kemiringan (tangent) dari turunan Bezier cubic
+          const t = easeProgress;
+          const mt = 1 - t;
+          const dx = 3 * mt * mt * (snakeParams.cx1 - snakeParams.head.x) + 
+                     6 * mt * t * (snakeParams.cx2 - snakeParams.cx1) + 
+                     3 * t * t * (snakeParams.tail.x - snakeParams.cx2);
+          const dy = 3 * mt * mt * (snakeParams.cy1 - snakeParams.head.y) + 
+                     6 * mt * t * (snakeParams.cy2 - snakeParams.cy1) + 
+                     3 * t * t * (snakeParams.tail.y - snakeParams.cy2);
+                     
+          rotation = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
         } else {
           // Tangga bergerak lurus
           x = start.x + (end.x - start.x) * easeProgress;
           y = start.y + (end.y - start.y) * easeProgress;
+          
+          const dx = end.x - start.x;
+          const dy = end.y - start.y;
+          rotation = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
         }
 
         setTransitioningPlayers(prev => ({
           ...prev,
-          [activePlayerId]: { x, y }
+          [activePlayerId]: { x, y, rotation }
         }));
 
         if (progress < 1) {
@@ -531,6 +554,52 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
 
   return (
     <div className={`flex flex-col h-screen overflow-hidden relative transition-colors duration-300 ${isShaking ? 'animate-[shake_0.5s_ease-in-out]' : ''}`} style={{ backgroundColor: 'var(--color-cream)', color: 'var(--color-navy-dark)' }}>
+      
+      {/* Background Ambience Pattern & Vignette */}
+      <div 
+        className="absolute inset-0 pointer-events-none z-0 opacity-40" 
+        style={{ 
+          backgroundImage: currentTheme.bgPattern,
+          backgroundSize: isJakarta ? '60px 60px' : '320px 320px',
+        }} 
+      />
+      {/* Spotlight for Jakarta Theme */}
+      {isJakarta && (
+        <div 
+          className="absolute inset-0 pointer-events-none z-0 opacity-60" 
+          style={{ background: 'radial-gradient(circle at center, rgba(253,211,77,0.3) 0%, transparent 50%)', mixBlendMode: 'screen' }} 
+        />
+      )}
+      <div 
+        className="absolute inset-0 pointer-events-none z-0 mix-blend-multiply" 
+        style={{ background: isJakarta 
+          ? 'radial-gradient(circle at center, rgba(69,26,3,0) 20%, rgba(69,26,3,0.8) 100%)' 
+          : 'radial-gradient(circle at center, rgba(30,58,95,0.1) 0%, rgba(30,58,95,0.6) 100%)' 
+        }} 
+      />
+      <div className="absolute inset-0 pointer-events-none z-0 bg-slate-900/10 mix-blend-multiply" />
+
+      {/* Ambient Floating Particles */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-100" preserveAspectRatio="xMidYMid slice" style={{ filter: 'drop-shadow(0px 0px 4px rgba(255,255,255,0.5))' }}>
+        <defs>
+          <radialGradient id="ambientParticleGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+            <stop offset="30%" stopColor={currentTheme.id === 'jakarta-heritage' ? "#60a5fa" : "#fcd34d"} stopOpacity="0.8" />
+            <stop offset="100%" stopColor={currentTheme.id === 'jakarta-heritage' ? "#1e3a8a" : "#b45309"} stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        {!prefersReducedMotion && AMBIENT_PARTICLES.map((p, i) => {
+          const cxVal = parseFloat(p.cx);
+          return (
+            <circle key={i} cx={p.cx} cy={p.cy} r={p.r} fill="url(#ambientParticleGrad)">
+              <animate attributeName="cy" values={`${p.cy}; -10%`} dur={p.durY} repeatCount="indefinite" />
+              <animate attributeName="cx" values={`${p.cx}; ${cxVal + 10}%; ${p.cx}`} dur={p.durX} repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0; 1; 0" dur={p.durO} repeatCount="indefinite" />
+            </circle>
+          );
+        })}
+      </svg>
+
       {/* Turn Banner Overlay */}
       {showTurnBanner && gameState.gameStatus === 'idle' && (
         <div className="absolute top-[20%] left-1/2 -translate-x-1/2 z-[40] animate-in slide-in-from-top-10 fade-in zoom-in duration-300 pointer-events-none">
@@ -553,7 +622,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
             if (window.innerWidth >= 1024) setIsDesktopLogOpen(!isDesktopLogOpen);
             else setIsMobileLogOpen(true);
           }}
-          className={`w-10 h-10 sm:w-12 sm:h-12 bg-white text-slate-700 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] flex items-center justify-center text-lg sm:text-xl pointer-events-auto border border-slate-200 transition-transform hover:scale-105 active:scale-95 ${isDesktopLogOpen ? 'lg:hidden' : ''}`}
+          className={`w-10 h-10 sm:w-12 sm:h-12 bg-[var(--color-parchment)] text-[var(--color-navy)] rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] flex items-center justify-center text-lg sm:text-xl pointer-events-auto border border-[var(--color-wood)]/30 transition-transform hover:scale-105 active:scale-95 ${isDesktopLogOpen ? 'lg:hidden' : ''}`}
         >
           📝
         </button>
@@ -561,9 +630,9 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
         {/* Middle: Headline Text */}
         <div className="flex-1 lg:flex-none lg:w-[45%] xl:w-[40%] mx-2 flex justify-center pointer-events-auto overflow-hidden lg:absolute lg:left-1/2 lg:-translate-x-1/2">
           {latestLog && showHeadline && (
-            <div className="bg-white/95 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.1)] border-2 border-blue-100 rounded-full py-2 flex w-full overflow-hidden animate-in fade-in slide-in-from-top-4 slide-out-to-top-4">
+            <div className="bg-[var(--color-parchment)]/95 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.1)] border-2 border-[var(--color-wood)]/30 rounded-full py-2 flex w-full overflow-hidden animate-in fade-in slide-in-from-top-4 slide-out-to-top-4">
               <div 
-                className="whitespace-nowrap w-full animate-[marquee_8s_linear_forwards] min-w-full px-4 text-xs sm:text-sm font-bold text-slate-700"
+                className="whitespace-nowrap w-full animate-[marquee_8s_linear_forwards] min-w-full px-4 text-xs sm:text-sm font-bold text-[var(--color-navy)]"
                 onAnimationEnd={() => setShowHeadline(false)}
               >
                 {latestLog.message}
@@ -579,7 +648,7 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
       {/* Pop-up Modifier Dadu (DecreasedRoll / AbsoluteRoll) */}
       {diceModifierPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-          <div className="bg-white/95 backdrop-blur-sm px-8 py-6 rounded-2xl shadow-2xl border-4 border-red-500 flex flex-col items-center animate-in zoom-in duration-300 transform scale-110">
+          <div className="bg-[var(--color-parchment)]/95 backdrop-blur-sm px-8 py-6 rounded-2xl shadow-2xl border-4 border-red-500 flex flex-col items-center animate-in zoom-in duration-300 transform scale-110">
             <h3 className="text-xl font-extrabold text-red-600 mb-2 uppercase tracking-widest">
               {diceModifierPopup.type === 'DecreasedRoll' ? 'Kelelahan!' : 'Batas Kecepatan!'}
             </h3>
@@ -633,8 +702,8 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
 
         {/* Desktop Game Log Sidebar */}
         <aside 
-          className={`hidden lg:flex absolute top-0 bottom-0 left-0 z-40 transition-transform duration-300 ${isDesktopLogOpen ? 'translate-x-0' : '-translate-x-full'} w-[25%] xl:w-[28%] p-4 flex-col shadow-2xl border-r`}
-          style={{ backgroundColor: 'var(--color-parchment)', borderColor: 'var(--color-cream-dark)' }}
+          className={`hidden lg:flex absolute top-0 bottom-0 left-0 z-40 transition-transform duration-300 ${isDesktopLogOpen ? 'translate-x-0' : '-translate-x-full'} w-[25%] xl:w-[28%] p-4 flex-col shadow-[4px_0_24px_rgba(30,58,95,0.08)] border-r border-[var(--color-wood)]/20 backdrop-blur-md bg-[var(--color-parchment)]/80`}
+          style={{ borderColor: 'rgba(201,168,76,0.3)' }}
         >
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-bold text-lg text-slate-800">Game Log</h2>
@@ -655,17 +724,20 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
             tiles={currentBoard} 
             players={gameState.players} 
             transitioningPlayers={transitioningPlayers} 
-            animationStyle="arc"
+            animationStyle="squash"
           />
         </section>
 
         {/* Desktop Control Area (Right Side) */}
         <aside 
-          className="hidden lg:flex lg:w-[25%] xl:w-[28%] shrink-0 border-l p-6 flex-col gap-6 overflow-y-auto shadow-sm z-10 transition-colors duration-300"
-          style={{ backgroundColor: 'var(--color-parchment)', borderColor: 'var(--color-cream-dark)' }}
+          className="hidden lg:flex lg:w-[25%] xl:w-[28%] shrink-0 border-l border-[var(--color-wood)]/20 p-6 flex-col gap-6 overflow-y-auto shadow-[-4px_0_24px_rgba(30,58,95,0.08)] z-10 transition-colors duration-300 backdrop-blur-md bg-[var(--color-parchment)]/80"
+          style={{ borderColor: 'rgba(201,168,76,0.3)' }}
         >
           <HUD activePlayer={activePlayer} players={gameState.players} layout="desktop" />
-          <div className="mt-auto p-4 bg-slate-100 rounded-lg text-center border border-slate-200 min-h-[150px] flex items-center justify-center shrink-0">
+          <div 
+            className={`mt-auto p-4 rounded-lg text-center border min-h-[150px] flex items-center justify-center shrink-0 transition-colors duration-300 ${isJakarta ? 'shadow-[inset_0_4px_20px_rgba(120,53,15,0.15)] bg-[#fdf6e3]' : 'bg-slate-100 border-slate-200'}`}
+            style={isJakarta ? { borderColor: 'var(--color-wood)', backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23d97706\' fill-opacity=\'0.03\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")' } : {}}
+          >
             <Dice
               diceState={gameState.dice}
               onRoll={handleRollDice}
@@ -677,13 +749,16 @@ export default function GameLayout({ initialPlayers, onMainMenu }: GameLayoutPro
 
         {/* Mobile Bottom Panel (Takes remaining vertical space on small screens) */}
         <div 
-          className="lg:hidden h-[40%] w-full border-t p-4 pb-safe flex flex-col gap-4 items-center justify-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 overflow-y-auto relative transition-colors duration-300"
-          style={{ backgroundColor: 'var(--color-parchment)', borderColor: 'var(--color-cream-dark)' }}
+          className="lg:hidden h-[40%] w-full border-t border-[var(--color-wood)]/20 p-4 pb-safe flex flex-col gap-4 items-center justify-center shadow-[0_-8px_24px_rgba(30,58,95,0.08)] z-20 overflow-y-auto relative transition-colors duration-300 backdrop-blur-md bg-[var(--color-parchment)]/90"
+          style={{ borderColor: 'rgba(201,168,76,0.3)' }}
         >
           <div className="w-full">
             <HUD activePlayer={activePlayer} players={gameState.players} layout="mobile" />
           </div>
-          <div className="flex-none flex justify-center mt-2 relative w-full">
+          <div 
+            className={`flex-none flex justify-center mt-2 relative w-full p-2 rounded-lg border ${isJakarta ? 'bg-[#fdf6e3] shadow-[inset_0_2px_10px_rgba(120,53,15,0.15)]' : 'border-transparent'}`}
+            style={isJakarta ? { borderColor: 'var(--color-wood)', backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23d97706\' fill-opacity=\'0.03\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")' } : {}}
+          >
             <Dice
               diceState={gameState.dice}
               onRoll={handleRollDice}

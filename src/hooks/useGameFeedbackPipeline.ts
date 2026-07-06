@@ -14,7 +14,7 @@ export const useGameFeedbackPipeline = () => {
    * Coordinates Audio and Particles.
    */
   const triggerLandingFeedback = useCallback((x: number, y: number, isHeavy = false) => {
-    playSFX('click');
+    playSFX('hop');
     
     if (!prefersReducedMotion && isHeavy) {
       // Spawn dust particle at the token's coordinates (need raw screen coords or normalized)

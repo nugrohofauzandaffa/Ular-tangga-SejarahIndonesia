@@ -55,6 +55,7 @@
   --foreground: var(--color-navy-dark);
 }
 
+
 /* ─── Gigi Balang Pattern Utilities ────────────────────────── */
 .gigi-balang-top {
   position: relative;
@@ -93,10 +94,15 @@
   --color-foreground: var(--foreground);
 }
 
-body {
+body, html {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body);
+  overflow: hidden;
+  margin: 0;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height untuk mobile */
+  width: 100vw;
 }
 
 /* ─── Typography Utilities ───────────────────────────────────── */

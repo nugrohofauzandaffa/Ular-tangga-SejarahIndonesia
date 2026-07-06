@@ -210,7 +210,7 @@ export const THEMES: Record<string, ThemeConfig> = {
     board: {
       borderColor: '#78350f', // deep wood
       ringColor: '#d97706', // orange/amber ring
-      gridBg: '#fdfbf7', // batavia cream
+      gridBg: '#fdf6e3', // warmer parchment/cream base, less flat white
       snakeGrad: { start: '#ea580c', end: '#7c2d12' }, // orange-red Betawi snake
       ladderGrad: { start: '#0d9488', end: '#115e59' }, // teal-700 / Gigi Balang green
       decorations: 'gigi-balang',

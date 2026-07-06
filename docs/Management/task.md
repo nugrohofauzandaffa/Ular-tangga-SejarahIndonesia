@@ -45,9 +45,18 @@
   - [x] Rekonstruksi Reward Garis Akhir (Finish Line Reward)
   - [x] Pengurangan Dampak Tangga Ekstrem (28 ke 54)
   - [x] Penyesuaian Reward Efek (StealPoint menjadi 7)
-  - [x] Visualisasi "Zona Farming" pada UI (Tile 91-99)
-  - [x] Self review & Smoke test
-  - [x] Update Development Log/ Post-MVP
+  - [x] Desain ulang frame dengan ornamen Batik & Gold border
+  - [x] Self-review (memastikan fungsionalitas UI tetap solid)
+  - [x] Update dokumentasi
+
+- [x] **Sandbox: Gameplay Visual Infusion (Phase 1) (Selesai)**
+  - [x] Ekstraksi komponen Gameplay ke dalam rute Sandbox (`/prototype/gameplay`)
+  - [x] Mengubah `currentBoard` state initialization untuk mendukung Board preview
+  - [x] Implementasi Background Vignette & Ambient Particles Motion
+  - [x] Implementasi efek Frosted Glass pada panel kontrol UI
+  - [x] Refinement material SVG pada ornamen Papan (Shadows, Highlight, Bevel)
+  - [x] Responsive layout polishing (ukuran Logo Khusus pada Petak Mobile)
+
 - [x] Phase 10: Main Menu & Bot System
 - [x] Phase 11: Audio & Sound Effects (SFX) System
 - [x] Phase 12: Late Game Mechanics (Krisis) & MVP Win Condition
@@ -117,3 +126,10 @@
   - [x] Redesign hero container dengan multiple frames & border ukiran
   - [x] Implementasi 3D bevel text-shadow
   - [x] Tambah SVG Gunungan Wayang sebagai background ilustrasi
+
+- [x] **Sandbox: Tema Jakarta Visual Polish (Selesai)**
+  - [x] Update tema `jakarta-heritage` pada `themes.tsx` (Board config & background pattern)
+  - [x] Buat `PrototypeHUD.tsx` dengan desain material kayu & perkamen
+  - [x] Buat `PrototypeDice.tsx` dengan elemen dekoratif tray dan tekstur dadu
+  - [x] Modifikasi bayangan & pencahayaan Ular dan Tangga pada `PrototypeBoard.tsx`
+  - [x] Update `PrototypeGameLayout.tsx` untuk mengimpor komponen purwarupa

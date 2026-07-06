@@ -6,6 +6,7 @@ import { Player } from '@/types/player';
 import { useAudio } from '@/contexts/AudioContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { AudioSettings } from './AudioSettings';
+import { AboutModal } from './AboutModal';
 
 type SetupStep = 'mode' | 'players' | 'theme';
 type GameMode = 'multiplayer' | 'solo';
@@ -106,6 +107,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
   const [playerCount, setPlayerCount] = useState<number>(2);
   const [playerNames, setPlayerNames] = useState<string[]>(['', '', '', '']);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
 
   useEffect(() => {
     playBGM('menu');
@@ -120,18 +122,13 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
     if (mode === 'solo') {
       setPlayerNames(prev => {
         const n = [...prev];
-        n[1] = 'Bot (AI)';
+        n[1] = 'Bot 1 (AI)';
+        n[2] = 'Bot 2 (AI)';
+        n[3] = 'Bot 3 (AI)';
         return n;
       });
     } else {
-      setPlayerNames(prev => {
-        if (prev[1] === 'Bot (AI)') {
-          const n = [...prev];
-          n[1] = '';
-          return n;
-        }
-        return prev;
-      });
+      setPlayerNames(['', '', '', '']);
     }
     setCurrentStep('players');
   };
@@ -150,11 +147,11 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
   const handleStart = () => {
     playSFX('click');
     const initialPlayers: Player[] = [];
-    for (let i = 0; i < (activeMode === 'solo' ? 2 : playerCount); i++) {
+    for (let i = 0; i < playerCount; i++) {
       const isBot = activeMode === 'solo' && i > 0;
       initialPlayers.push({
         id: `p${i + 1}`,
-        name: playerNames[i] || (isBot ? 'Bot (AI)' : `Penjelajah ${i + 1}`),
+        name: playerNames[i] || (isBot ? `Bot ${i} (AI)` : `Penjelajah ${i + 1}`),
         position: 1,
         score: 0,
         correctAnswers: 0,
@@ -234,27 +231,38 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
           </h2>
         </div>
 
-        {/* Audio Settings Button & Popover */}
-        <div className="absolute top-4 md:top-6 right-4 md:right-6 z-30">
+        {/* Top Right Actions (About & Settings) */}
+        <div className="absolute top-4 md:top-6 right-4 md:right-6 z-30 flex items-center gap-3">
            <button 
-             onClick={() => { playSFX('click'); setShowAudioSettings(!showAudioSettings); }}
+             onClick={() => { playSFX('click'); setShowAboutModal(true); }}
              className="w-10 h-10 rounded-full border border-[var(--color-gold)]/20 bg-[#0a182b]/50 backdrop-blur-md flex items-center justify-center text-[var(--color-gold)]/70 hover:bg-[#112a4a] hover:text-[var(--color-gold)] hover:border-[var(--color-gold)] transition-all shadow-lg"
+             title="Tentang Game"
            >
-             <span className="text-lg">⚙️</span>
+             <span className="text-lg">❓</span>
            </button>
-           
-           <AnimatePresence>
-             {showAudioSettings && (
-               <motion.div 
-                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                 className="absolute top-14 right-0 w-64 origin-top-right z-40"
-               >
-                 <AudioSettings />
-               </motion.div>
-             )}
-           </AnimatePresence>
+
+           <div className="relative">
+             <button 
+               onClick={() => { playSFX('click'); setShowAudioSettings(!showAudioSettings); }}
+               className="w-10 h-10 rounded-full border border-[var(--color-gold)]/20 bg-[#0a182b]/50 backdrop-blur-md flex items-center justify-center text-[var(--color-gold)]/70 hover:bg-[#112a4a] hover:text-[var(--color-gold)] hover:border-[var(--color-gold)] transition-all shadow-lg"
+               title="Pengaturan"
+             >
+               <span className="text-lg">⚙️</span>
+             </button>
+             
+             <AnimatePresence>
+               {showAudioSettings && (
+                 <motion.div 
+                   initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                   animate={{ opacity: 1, y: 0, scale: 1 }}
+                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                   className="absolute top-14 right-0 w-64 origin-top-right z-40"
+                 >
+                   <AudioSettings />
+                 </motion.div>
+               )}
+             </AnimatePresence>
+           </div>
         </div>
       </div>
 
@@ -315,10 +323,10 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                     <motion.button 
                       variants={itemVariants}
                       onClick={() => handleSelectMode('multiplayer')}
-                      className="group relative overflow-hidden p-6 rounded-xl border border-[var(--color-wood)] bg-[#fffcf5] shadow-[0_8px_16px_rgba(30,58,95,0.06),inset_0_2px_4px_rgba(255,255,255,1)] hover:shadow-[0_12px_24px_rgba(30,58,95,0.12),inset_0_2px_4px_rgba(255,255,255,1),inset_0_0_0_2px_var(--color-gold)] transition-all text-left flex items-center gap-5 translate-y-0 hover:-translate-y-1"
+                      className="group relative overflow-hidden p-6 rounded-xl border border-[var(--color-wood)] bg-[var(--color-parchment)] shadow-[0_8px_16px_rgba(30,58,95,0.06),inset_0_2px_4px_rgba(255,255,255,1)] hover:shadow-[0_12px_24px_rgba(30,58,95,0.12),inset_0_2px_4px_rgba(255,255,255,1),inset_0_0_0_2px_var(--color-gold)] transition-all text-left flex items-center gap-5 translate-y-0 hover:-translate-y-1"
                     >
                       <div className="absolute -right-6 -top-6 w-24 h-24 bg-[var(--color-gold)]/5 rounded-full blur-xl group-hover:bg-[var(--color-gold)]/10 transition-colors" />
-                      <div className="relative w-14 h-14 rounded-full border border-[var(--color-gold)] bg-[#fdf6e3] flex items-center justify-center text-3xl shadow-inner group-hover:bg-[var(--color-navy)] transition-colors duration-500">
+                      <div className="relative w-14 h-14 rounded-full border border-[var(--color-gold)] bg-[var(--color-cream)] flex items-center justify-center text-3xl shadow-inner group-hover:bg-[var(--color-navy)] transition-colors duration-500">
                         <span className="group-hover:scale-110 transition-transform duration-500">👥</span>
                       </div>
                       <div className="relative">
@@ -330,10 +338,10 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                     <motion.button 
                       variants={itemVariants}
                       onClick={() => handleSelectMode('solo')}
-                      className="group relative overflow-hidden p-6 rounded-xl border border-[var(--color-wood)] bg-[#fffcf5] shadow-[0_8px_16px_rgba(30,58,95,0.06),inset_0_2px_4px_rgba(255,255,255,1)] hover:shadow-[0_12px_24px_rgba(30,58,95,0.12),inset_0_2px_4px_rgba(255,255,255,1),inset_0_0_0_2px_var(--color-gold)] transition-all text-left flex items-center gap-5 translate-y-0 hover:-translate-y-1"
+                      className="group relative overflow-hidden p-6 rounded-xl border border-[var(--color-wood)] bg-[var(--color-parchment)] shadow-[0_8px_16px_rgba(30,58,95,0.06),inset_0_2px_4px_rgba(255,255,255,1)] hover:shadow-[0_12px_24px_rgba(30,58,95,0.12),inset_0_2px_4px_rgba(255,255,255,1),inset_0_0_0_2px_var(--color-gold)] transition-all text-left flex items-center gap-5 translate-y-0 hover:-translate-y-1"
                     >
                       <div className="absolute -right-6 -top-6 w-24 h-24 bg-[var(--color-gold)]/5 rounded-full blur-xl group-hover:bg-[var(--color-gold)]/10 transition-colors" />
-                      <div className="relative w-14 h-14 rounded-full border border-[var(--color-gold)] bg-[#fdf6e3] flex items-center justify-center text-3xl shadow-inner group-hover:bg-[var(--color-navy)] transition-colors duration-500">
+                      <div className="relative w-14 h-14 rounded-full border border-[var(--color-gold)] bg-[var(--color-cream)] flex items-center justify-center text-3xl shadow-inner group-hover:bg-[var(--color-navy)] transition-colors duration-500">
                         <span className="group-hover:scale-110 transition-transform duration-500">🤖</span>
                       </div>
                       <div className="relative">
@@ -359,14 +367,27 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                     </div>
                     
                     {activeMode === 'multiplayer' && (
-                      <motion.div variants={itemVariants} className="flex items-center bg-[#fdf6e3] rounded-lg p-1 border border-[var(--color-wood)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]">
+                      <motion.div variants={itemVariants} className="flex items-center bg-[var(--color-cream)] rounded-lg p-1 border border-[var(--color-wood)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]">
                         {[2,3,4].map(num => (
                           <button 
                             key={num}
                             onClick={() => { playSFX('click'); setPlayerCount(num); }}
-                            className={`w-10 h-8 rounded text-xs font-bold transition-all font-display ${playerCount === num ? 'bg-[var(--color-navy)] text-[var(--color-gold)] shadow-md' : 'text-[var(--color-navy-light)] hover:bg-white'}`}
+                            className={`w-10 h-8 rounded text-xs font-bold transition-all font-display ${playerCount === num ? 'bg-[var(--color-navy)] text-[var(--color-gold)] shadow-md' : 'text-[var(--color-navy-light)] hover:bg-[var(--color-parchment)]'}`}
                           >
                             {num} Kru
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                    {activeMode === 'solo' && (
+                      <motion.div variants={itemVariants} className="flex items-center bg-[var(--color-cream)] rounded-lg p-1 border border-[var(--color-wood)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]">
+                        {[1,2,3].map(num => (
+                          <button 
+                            key={num}
+                            onClick={() => { playSFX('click'); setPlayerCount(num + 1); }}
+                            className={`w-10 h-8 rounded text-xs font-bold transition-all font-display ${playerCount === num + 1 ? 'bg-[var(--color-navy)] text-[var(--color-gold)] shadow-md' : 'text-[var(--color-navy-light)] hover:bg-[var(--color-parchment)]'}`}
+                          >
+                            {num} AI
                           </button>
                         ))}
                       </motion.div>
@@ -374,12 +395,12 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                   </div>
 
                   <div className="space-y-4 flex-1 overflow-y-auto pr-2 hide-scrollbar">
-                    {Array.from({ length: activeMode === 'solo' ? 2 : playerCount }).map((_, i) => {
-                      const isBot = activeMode === 'solo' && i === 1;
-                      const colors = ['#1d4ed8', '#b91c1c', '#047857', '#b45309'];
-                      const badges = ['I', 'II', 'III', 'IV'];
+                    {Array.from({ length: playerCount }).map((_, i) => {
+                      const isBot = activeMode === 'solo' && i > 0;
+                      const colors = ['#1d4ed8', '#b91c1c', '#047857', '#b45309', '#6d28d9'];
+                      const badges = ['I', 'II', 'III', 'IV', 'V'];
                       return (
-                        <motion.div variants={itemVariants} key={i} className="relative group flex items-stretch rounded-xl border border-[var(--color-wood)] bg-white overflow-hidden transition-all focus-within:border-[var(--color-navy)] focus-within:shadow-[0_8px_20px_rgba(30,58,95,0.15)] hover:shadow-md">
+                        <motion.div variants={itemVariants} key={i} className="relative group flex items-stretch rounded-xl border border-[var(--color-wood)] bg-[var(--color-parchment)] overflow-hidden transition-all focus-within:border-[var(--color-navy)] focus-within:shadow-[0_8px_20px_rgba(30,58,95,0.15)] hover:shadow-md">
                           <div className="w-2 self-stretch" style={{ backgroundColor: colors[i] }} />
                           <div className="flex-1 p-3 flex items-center gap-4 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] bg-opacity-50">
                             <div className="w-10 h-10 rounded border border-dashed border-[var(--color-wood)]/30 flex items-center justify-center shrink-0">
@@ -391,8 +412,8 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                               </label>
                               <input 
                                 type="text"
-                                placeholder={isBot ? 'Bot (AI)' : `Masukkan Nama...`}
-                                value={isBot ? 'Bot (AI)' : playerNames[i]}
+                                placeholder={isBot ? `Bot ${i} (AI)` : `Masukkan Nama...`}
+                                value={isBot ? `Bot ${i} (AI)` : playerNames[i]}
                                 onChange={(e) => handleNameChange(i, e.target.value)}
                                 disabled={isBot}
                                 className="w-full bg-transparent border-none outline-none text-base font-bold text-[var(--color-navy)] placeholder:opacity-30 disabled:opacity-50 font-display tracking-wider"
@@ -407,7 +428,7 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
                   <motion.div variants={itemVariants} className="mt-6 pt-4 border-t border-[var(--color-wood)]/20 shrink-0">
                     <button 
                       onClick={checkNamesFilled}
-                      className="w-full relative overflow-hidden rounded-xl bg-white border border-[var(--color-navy)] text-[var(--color-navy)] py-3 font-display font-bold text-sm tracking-[0.2em] uppercase hover:bg-[var(--color-navy)] hover:text-[var(--color-gold-light)] hover:shadow-[0_8px_20px_rgba(30,58,95,0.2)] transition-all duration-300"
+                      className="w-full relative overflow-hidden rounded-xl bg-[var(--color-parchment)] border border-[var(--color-navy)] text-[var(--color-navy)] py-3 font-display font-bold text-sm tracking-[0.2em] uppercase hover:bg-[var(--color-navy)] hover:text-[var(--color-gold-light)] hover:shadow-[0_8px_20px_rgba(30,58,95,0.2)] transition-all duration-300"
                     >
                       Setujui Manifes
                     </button>
@@ -495,6 +516,8 @@ export function MainMenu({ onStartGame }: MainMenuProps) {
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
+
+      <AboutModal isOpen={showAboutModal} onClose={() => setShowAboutModal(false)} />
     </div>
   );
 }

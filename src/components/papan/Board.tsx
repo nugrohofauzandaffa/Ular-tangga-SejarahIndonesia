@@ -2,7 +2,7 @@ import React from 'react';
 import { Tile as TileType } from '@/types/board';
 import { Player } from '@/types/player';
 import Tile from './Tile';
-import PlayerToken, { AnimationStyle } from '../player/PlayerToken';
+import PlayerToken, { AnimationStyle } from '@/components/player/PlayerToken';
 import { snakes } from '@/data/papan/snakes';
 import { ladders } from '@/data/papan/ladders';
 import { getCoordinates, getSnakeCurveParams } from '@/utils/geometry';
@@ -31,7 +31,7 @@ const getOrderedTiles = (tiles: TileType[]): TileType[] => {
 interface BoardProps {
   tiles: TileType[];
   players: Player[];
-  transitioningPlayers?: Record<string, { x: number; y: number }>;
+  transitioningPlayers?: Record<string, { x: number; y: number; rotation?: number }>;
   animationStyle?: AnimationStyle;
 }
 
@@ -43,16 +43,18 @@ export default function Board({ tiles, players, transitioningPlayers = {}, anima
   return (
     <div 
       className={`w-full max-w-2xl aspect-square grid grid-cols-10 grid-rows-10 relative overflow-hidden transition-all duration-300 ${
-        currentTheme.id === 'jakarta-heritage' ? 'gigi-balang-top gigi-balang-bottom border-y-8 pt-2 pb-2' : 'border-4 rounded-xl'
+        isJakarta ? 'border-[6px] rounded-xl' : 'border-4 rounded-xl'
       }`}
       style={{
         backgroundColor: currentTheme.board.gridBg,
-        borderColor: currentTheme.board.borderColor,
-        boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 4px ${currentTheme.board.ringColor}`,
+        borderColor: isJakarta ? 'var(--color-wood)' : currentTheme.board.borderColor,
+        boxShadow: isJakarta 
+          ? `inset 0 0 40px rgba(120,53,15,0.15), inset 0 0 15px rgba(0,0,0,0.3), 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 2px var(--color-gold-dark), 0 0 0 6px var(--color-wood-dark)`
+          : `inset 0 0 40px rgba(0,0,0,0.1), inset 0 0 10px rgba(0,0,0,0.3), 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 4px ${currentTheme.board.ringColor}`,
         backgroundImage: currentTheme.bgPattern,
-        backgroundSize: currentTheme.id === 'jakarta-heritage' ? '60px 60px' : 'cover',
+        backgroundSize: isJakarta ? '60px 60px' : 'cover',
         backgroundPosition: 'center',
-        backgroundBlendMode: currentTheme.id === 'jakarta-heritage' ? 'normal' : 'multiply'
+        backgroundBlendMode: 'multiply'
       }}
     >
       {orderedTiles.map((tile) => {
@@ -74,9 +76,12 @@ export default function Board({ tiles, players, transitioningPlayers = {}, anima
             <stop offset="0%" stopColor={currentTheme.board.ladderGrad.start} />
             <stop offset="100%" stopColor={currentTheme.board.ladderGrad.end} />
           </linearGradient>
-          {/* SVG drop shadow filter for ladders depth */}
-          <filter id="shadowFilter" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0.4" dy="0.6" stdDeviation="0.4" floodColor="#000000" floodOpacity="0.25" />
+          {/* SVG drop shadow filter for premium depth */}
+          <filter id="premiumShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodColor="#000000" floodOpacity="0.8" />
+          </filter>
+          <filter id="ladderShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="1" dy="1.5" stdDeviation="1.2" floodColor="#000000" floodOpacity="0.75" />
           </filter>
         </defs>
 
@@ -91,16 +96,27 @@ export default function Board({ tiles, players, transitioningPlayers = {}, anima
           const tailAngle = Math.atan2(tail.y - cy2, tail.x - cx2) * (180 / Math.PI) - 90;
 
           return (
-            <g key={`snake-${i}`}>
+            <g key={`snake-${i}`} filter={isJakarta ? "drop-shadow(1px 2px 2px rgba(0,0,0,0.4))" : "url(#premiumShadow)"}>
               {/* Shadow of the snake body */}
               {isJakarta && (
                 <path
                   d={pathData}
-                  stroke="rgba(0, 0, 0, 0.15)"
-                  strokeWidth="4.2"
+                  stroke="rgba(0, 0, 0, 0.3)"
+                  strokeWidth="3.0"
                   fill="none"
                   strokeLinecap="round"
-                  transform="translate(0.4, 0.6)"
+                  transform="translate(0.4, 0.8)"
+                />
+              )}
+
+              {/* Base outline for contrast */}
+              {isJakarta && (
+                <path
+                  d={pathData}
+                  stroke="#451a03"
+                  strokeWidth="2.4"
+                  fill="none"
+                  strokeLinecap="round"
                 />
               )}
 
@@ -108,10 +124,32 @@ export default function Board({ tiles, players, transitioningPlayers = {}, anima
               <path
                 d={pathData}
                 stroke="url(#snakeGrad)"
-                strokeWidth={isJakarta ? "3.2" : "2.0"}
+                strokeWidth={isJakarta ? "2.0" : "2.0"}
                 fill="none"
                 strokeLinecap="round"
               />
+
+              {/* Shiny highlight */}
+              <path
+                d={pathData}
+                stroke={isJakarta ? "rgba(253, 211, 77, 0.3)" : "rgba(255,255,255,0.3)"}
+                strokeWidth={isJakarta ? "0.8" : "0.8"}
+                fill="none"
+                strokeLinecap="round"
+                transform="translate(-0.2, -0.2)"
+              />
+
+              {/* Inner depth shadow for tubular feel */}
+              {isJakarta && (
+                <path
+                  d={pathData}
+                  stroke="rgba(0,0,0,0.2)"
+                  strokeWidth="0.4"
+                  fill="none"
+                  strokeLinecap="round"
+                  transform="translate(0.2, 0.2)"
+                />
+              )}
 
               {/* Sisik/Pola Ular */}
               {isJakarta ? (
@@ -119,18 +157,11 @@ export default function Board({ tiles, players, transitioningPlayers = {}, anima
                   <path
                     d={pathData}
                     stroke="var(--color-gold-light)"
-                    strokeWidth="1.2"
+                    strokeWidth="0.8"
                     fill="none"
                     strokeDasharray="1.5, 3"
                     strokeLinecap="round"
-                    opacity="0.85"
-                  />
-                  <path
-                    d={pathData}
-                    stroke="var(--color-gold-dark)"
-                    strokeWidth="0.4"
-                    fill="none"
-                    opacity="0.8"
+                    opacity="0.5"
                   />
                 </>
               ) : (
@@ -185,10 +216,10 @@ export default function Board({ tiles, players, transitioningPlayers = {}, anima
                     <circle cx="0.2" cy="0.2" r="0.15" fill="var(--color-gold-light)" />
                     
                     {/* Teeth / Fangs */}
-                    <path d="M-0.6,1.2 L-0.4,1.8 L-0.2,1.2 L0.2,1.2 L0.4,1.8 L0.6,1.2" stroke="var(--color-gold-light)" strokeWidth="0.2" fill="none" />
+                    <path d="M-0.6,1.2 L-0.4,1.8 L-0.2,1.2 L0.2,1.2 L0.4,1.8 L0.6,1.2" stroke="var(--color-gold-light)" strokeWidth="0.1" fill="none" opacity="0.6" />
                     
                     {/* Long Red Tongue */}
-                    <path d="M 0,1.5 C -0.3,2.5 0.3,3 0,3.8" stroke="#ef4444" strokeWidth="0.2" fill="none" strokeLinecap="round" />
+                    <path d="M 0,1.5 C -0.2,2.0 0.2,2.5 0,3.0" stroke="#ef4444" strokeWidth="0.15" fill="none" strokeLinecap="round" opacity="0.8" />
                   </>
                 ) : (
                   <>
@@ -222,35 +253,33 @@ export default function Board({ tiles, players, transitioningPlayers = {}, anima
           }
 
           return (
-            <g key={`ladder-${i}`} transform={`translate(${start.x}, ${start.y}) rotate(${angle})`} filter={isJakarta ? "url(#shadowFilter)" : undefined}>
+            <g key={`ladder-${i}`} transform={`translate(${start.x}, ${start.y}) rotate(${angle})`} filter={isJakarta ? "drop-shadow(0.5px 1px 1px rgba(0,0,0,0.5))" : undefined}>
               {/* Rel Tangga 1 */}
-              <line x1="0" y1="-1.6" x2={length} y2="-1.6" stroke={isJakarta ? "#78350f" : "url(#ladderGrad)"} strokeWidth={isJakarta ? "1.4" : "0.8"} strokeLinecap="round" />
+              <line x1="0" y1="-1.6" x2={length} y2="-1.6" stroke={isJakarta ? "#612c09" : "url(#ladderGrad)"} strokeWidth={isJakarta ? "1.0" : "0.8"} strokeLinecap="round" />
               {isJakarta && (
                 // Highlight line to give 3D cylindrical shine
-                <line x1="0" y1="-1.8" x2={length} y2="-1.8" stroke="rgba(253, 211, 77, 0.4)" strokeWidth="0.3" strokeLinecap="round" />
+                <line x1="0" y1="-1.8" x2={length} y2="-1.8" stroke="rgba(253, 211, 77, 0.3)" strokeWidth="0.2" strokeLinecap="round" />
               )}
 
               {/* Rel Tangga 2 */}
-              <line x1="0" y1="1.6" x2={length} y2="1.6" stroke={isJakarta ? "#78350f" : "url(#ladderGrad)"} strokeWidth={isJakarta ? "1.4" : "0.8"} strokeLinecap="round" />
+              <line x1="0" y1="1.6" x2={length} y2="1.6" stroke={isJakarta ? "#612c09" : "url(#ladderGrad)"} strokeWidth={isJakarta ? "1.0" : "0.8"} strokeLinecap="round" />
               {isJakarta && (
-                <line x1="0" y1="1.4" x2={length} y2="1.4" stroke="rgba(253, 211, 77, 0.4)" strokeWidth="0.3" strokeLinecap="round" />
+                <line x1="0" y1="1.4" x2={length} y2="1.4" stroke="rgba(253, 211, 77, 0.3)" strokeWidth="0.2" strokeLinecap="round" />
               )}
 
               {/* Anak Tangga */}
               {rungs.map((rx, rIndex) => (
                 <g key={rIndex}>
                   {/* Underlay dark line for depth */}
-                  <line x1={rx} y1="-1.6" x2={rx} y2="1.6" stroke={isJakarta ? "#451a03" : "url(#ladderGrad)"} strokeWidth={isJakarta ? "1.0" : "0.6"} />
+                  <line x1={rx} y1="-1.6" x2={rx} y2="1.6" stroke={isJakarta ? "#3b1703" : "url(#ladderGrad)"} strokeWidth={isJakarta ? "0.6" : "0.6"} />
                   {isJakarta && (
                     <>
                       {/* Main rung */}
-                      <line x1={rx} y1="-1.6" x2={rx} y2="1.6" stroke="var(--color-gold-dark)" strokeWidth="0.8" />
-                      {/* Highlight */}
-                      <line x1={rx - 0.2} y1="-1.4" x2={rx - 0.2} y2="1.4" stroke="rgba(253, 211, 77, 0.6)" strokeWidth="0.2" />
+                      <line x1={rx} y1="-1.6" x2={rx} y2="1.6" stroke="var(--color-wood-light)" strokeWidth="0.5" />
                       
-                      {/* Tali Pengikat (Lashings) - Bamboo rope joints */}
-                      <circle cx={rx} cy="-1.6" r="0.4" fill="#1e293b" />
-                      <circle cx={rx} cy="1.6" r="0.4" fill="#1e293b" />
+                      {/* Tali Pengikat (Lashings) - Minimalist joints */}
+                      <circle cx={rx} cy="-1.6" r="0.2" fill="#1e293b" opacity="0.8" />
+                      <circle cx={rx} cy="1.6" r="0.2" fill="#1e293b" opacity="0.8" />
                     </>
                   )}
                 </g>
@@ -282,6 +311,7 @@ export default function Board({ tiles, players, transitioningPlayers = {}, anima
                 totalTokens={playersOnSameTile.length}
                 x={coords.x}
                 y={coords.y}
+                rotation={transitionCoord?.rotation || 0}
                 isTransitioning={isTransitioning}
                 animationStyle={animationStyle}
               />

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { GameState } from '@/types/gameState';
 import { Confetti } from './Confetti';
 import { useAudio } from '@/contexts/AudioContext';
@@ -18,49 +18,148 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
   const { playSFX } = useAudio();
   const { currentTheme } = useTheme();
 
-  // 1. Leaderboard Ranking
+  useEffect(() => {
+    if (gameState.gameStatus === 'finished') {
+      playSFX('popup_result');
+    }
+  }, [gameState.gameStatus, playSFX]);
+
+  // 1. Leaderboard Ranking & Champion
   const sortedPlayers = useMemo(() => [...gameState.players].sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     if (b.correctAnswers !== a.correctAnswers) return b.correctAnswers - a.correctAnswers;
     return b.position - a.position;
   }), [gameState.players]);
-  
-  // 4. History Master (Pemain dengan jawaban benar terbanyak)
-  const historyMaster = useMemo(() => {
-    if (!sortedPlayers || sortedPlayers.length === 0) return null;
-    let bestPlayer = sortedPlayers[0];
-    let maxCorrect = -1;
-    for (const player of sortedPlayers) {
-      if (player.correctAnswers > maxCorrect) {
-        maxCorrect = player.correctAnswers;
-        bestPlayer = player;
-      }
-    }
-    return maxCorrect > 0 ? bestPlayer : null;
-  }, [sortedPlayers]);
-
-
 
   if (gameState.gameStatus !== 'finished') {
     return null;
   }
   
-  // 2. Champion (Pemenang Utama berdasarkan skor tertinggi)
-  const championId = gameState.winner;
-  const champion = gameState.players.find(p => p.id === championId) || sortedPlayers[0];
+  const champion = sortedPlayers[0];
 
-  // 3. Fastest Explorer (Pemain yang menyentuh petak 100)
-  const fastestExplorerId = gameState.fastestExplorer;
-  const fastestExplorer = gameState.players.find(p => p.id === fastestExplorerId);
+  // 2. Fastest Explorer
+  const fastestExplorerRaw = gameState.players.find(p => p.id === gameState.fastestExplorer);
+  const isChampionFastest = champion.id === fastestExplorerRaw?.id;
+  const actualFastestExplorer = isChampionFastest ? null : fastestExplorerRaw;
+
+  // 3. History Master & Sharpshooter Candidates
+  const historyMasterCandidates = [...gameState.players].sort((a, b) => {
+    if (b.correctAnswers !== a.correctAnswers) return b.correctAnswers - a.correctAnswers;
+    const accA = a.correctAnswers + a.wrongAnswers >= 3 ? (a.correctAnswers / (a.correctAnswers + a.wrongAnswers)) * 100 : 0;
+    const accB = b.correctAnswers + b.wrongAnswers >= 3 ? (b.correctAnswers / (b.correctAnswers + b.wrongAnswers)) * 100 : 0;
+    if (accB !== accA) return accB - accA;
+    return b.score - a.score;
+  });
+  
+  const sharpshooterCandidates = [...gameState.players]
+    .filter(p => (p.correctAnswers + p.wrongAnswers) >= 3)
+    .sort((a, b) => {
+      const accA = (a.correctAnswers / (a.correctAnswers + a.wrongAnswers)) * 100;
+      const accB = (b.correctAnswers / (b.correctAnswers + b.wrongAnswers)) * 100;
+      if (accB !== accA) return accB - accA;
+      const totalA = a.correctAnswers + a.wrongAnswers;
+      const totalB = b.correctAnswers + b.wrongAnswers;
+      if (totalB !== totalA) return totalB - totalA;
+      return b.score - a.score;
+    });
+
+  // Alokasi Gelar
+  const actualHistoryMaster = historyMasterCandidates.find(p => p.id !== champion.id && p.correctAnswers > 0);
+  const actualSharpshooter = sharpshooterCandidates.find(p => p.id !== champion.id && p.id !== actualHistoryMaster?.id);
+
+  // Penentuan Slot Panel 1 & 2
+  let slot1 = null;
+  let slot2 = null;
+
+  if (isChampionFastest) {
+    // Skenario A
+    if (actualHistoryMaster) slot1 = { type: 'history', player: actualHistoryMaster };
+    if (actualSharpshooter) slot2 = { type: 'sharpshooter', player: actualSharpshooter };
+  } else {
+    // Skenario B
+    if (actualFastestExplorer) slot1 = { type: 'fastest', player: actualFastestExplorer };
+    if (actualHistoryMaster) slot2 = { type: 'history', player: actualHistoryMaster };
+    else if (actualSharpshooter) slot2 = { type: 'sharpshooter', player: actualSharpshooter };
+  }
 
   const isJakarta = currentTheme.id === 'jakarta-heritage';
 
+  // Helper: Render Kartu Achievement
+  const renderAchievementCard = (slot: { type: string, player: any } | null) => {
+    if (!slot) {
+      return (
+        <div className="flex items-center p-3 sm:p-4 rounded-2xl border transition-all duration-300 opacity-60" style={{ backgroundColor: 'var(--color-cream)/30', borderColor: 'var(--color-cream-dark)/30' }}>
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--color-parchment)] text-slate-400 rounded-full border-2 flex items-center justify-center text-xl sm:text-2xl mr-3 shrink-0 shadow-inner" style={{ borderColor: 'var(--color-cream-dark)' }}>
+            -
+          </div>
+          <div className="flex flex-col">
+             <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-navy)' }}>Slot Kosong</span>
+             <span className="text-sm font-bold leading-tight" style={{ color: 'var(--color-navy-dark)' }}>Tidak Ada yang Memenuhi Syarat</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (slot.type === 'fastest') {
+      return (
+        <div className="flex items-center p-3 sm:p-4 rounded-2xl border transition-all duration-300" style={{ backgroundColor: 'var(--color-cream)/30', borderColor: 'var(--color-cream-dark)/30' }}>
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--color-parchment)] text-emerald-600 rounded-full border-2 flex items-center justify-center text-xl sm:text-2xl mr-3 shrink-0 shadow-inner" style={{ borderColor: 'var(--color-cream-dark)' }}>
+            🏃
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-navy)' }}>Fastest Explorer</span>
+            <span className="text-base sm:text-lg font-bold leading-tight" style={{ color: 'var(--color-navy-dark)', fontFamily: 'var(--font-display)' }}>
+              {slot.player.name}
+            </span>
+            <span className="text-[10px] sm:text-xs text-[var(--color-navy-light)] opacity-70">Pertama mencapai petak 100</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (slot.type === 'history') {
+      return (
+        <div className="flex items-center p-3 sm:p-4 rounded-2xl border transition-all duration-300" style={{ backgroundColor: 'var(--color-cream)/30', borderColor: 'var(--color-cream-dark)/30' }}>
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--color-parchment)] text-purple-600 rounded-full border-2 flex items-center justify-center text-xl sm:text-2xl mr-3 shrink-0 shadow-inner" style={{ borderColor: 'var(--color-cream-dark)' }}>
+            🧠
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-navy)' }}>History Master</span>
+            <span className="text-base sm:text-lg font-bold leading-tight" style={{ color: 'var(--color-navy-dark)', fontFamily: 'var(--font-display)' }}>
+              {slot.player.name}
+            </span>
+            <span className="text-[10px] sm:text-xs text-[var(--color-navy-light)] opacity-70">Menjawab {slot.player.correctAnswers} kuis benar</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (slot.type === 'sharpshooter') {
+      const acc = Math.round((slot.player.correctAnswers / (slot.player.correctAnswers + slot.player.wrongAnswers)) * 100);
+      return (
+        <div className="flex items-center p-3 sm:p-4 rounded-2xl border transition-all duration-300" style={{ backgroundColor: 'var(--color-cream)/30', borderColor: 'var(--color-cream-dark)/30' }}>
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--color-parchment)] text-orange-600 rounded-full border-2 flex items-center justify-center text-xl sm:text-2xl mr-3 shrink-0 shadow-inner" style={{ borderColor: 'var(--color-cream-dark)' }}>
+            🎯
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-navy)' }}>The Sharpshooter</span>
+            <span className="text-base sm:text-lg font-bold leading-tight" style={{ color: 'var(--color-navy-dark)', fontFamily: 'var(--font-display)' }}>
+              {slot.player.name}
+            </span>
+            <span className="text-[10px] sm:text-xs text-[var(--color-navy-light)] opacity-70">Akurasi tebakan {acc}%</span>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto select-none animate-fade-in">
+    <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-hidden select-none animate-fade-in">
       <Confetti />
       <div 
-        className={`w-full max-w-3xl rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-500 my-8 transition-all duration-300 ${
-          isJakarta ? 'gigi-balang-top gigi-balang-bottom border-y-8 pt-2 pb-2' : 'border-2'
+        className={`w-full max-w-2xl max-h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-500 transition-all duration-300 ${
+          isJakarta ? 'gigi-balang-top gigi-balang-bottom border-y-8 pt-1 pb-1' : 'border-2'
         }`}
         style={{ 
           backgroundColor: 'var(--color-parchment)',
@@ -70,7 +169,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
         
         {/* Header Hasil - Champion */}
         <div 
-          className="text-white p-8 text-center relative overflow-hidden transition-all duration-300"
+          className="text-white p-4 sm:p-6 text-center relative overflow-hidden transition-all duration-300 shrink-0"
           style={{ background: 'linear-gradient(135deg, var(--color-navy-dark), var(--color-navy), var(--color-navy-dark))' }}
         >
           <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent animate-pulse"></div>
@@ -86,20 +185,29 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
             Hasil Akhir Permainan
           </h1>
           
-          <div className="mt-4 mb-2 relative z-10 flex flex-col items-center">
-            <div className="w-28 h-28 bg-gradient-to-b from-yellow-300 to-yellow-500 rounded-full border-4 border-[var(--color-cream)] shadow-xl flex items-center justify-center mb-4 relative animate-bounce">
-              <span className="text-6xl drop-shadow-md">🏆</span>
-              <div className="absolute -bottom-3 bg-[var(--color-cream)] border border-[var(--color-gold)] text-[var(--color-navy-dark)] text-xs font-black uppercase tracking-wider px-4 py-1 rounded-full shadow-md">
+          <div className="mt-2 mb-1 relative z-10 flex flex-col items-center">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-b from-yellow-300 to-yellow-500 rounded-full border-4 border-[var(--color-cream)] shadow-xl flex items-center justify-center mb-3 relative animate-bounce">
+              <span className="text-4xl sm:text-5xl drop-shadow-md">🏆</span>
+              <div className="absolute -bottom-2 bg-[var(--color-cream)] border border-[var(--color-gold)] text-[var(--color-navy-dark)] text-[10px] font-black uppercase tracking-wider px-3 py-0.5 rounded-full shadow-md">
                 Juara
               </div>
             </div>
             <h2 
-              className="text-4xl font-extrabold drop-shadow-md mb-2 font-display uppercase tracking-wide"
+              className="text-2xl sm:text-3xl font-extrabold drop-shadow-md mb-1 font-display uppercase tracking-wide"
               style={{ color: 'var(--color-gold)' }}
             >
               {champion?.name}
             </h2>
-            <p className="font-semibold text-lg" style={{ color: 'var(--color-cream)' }}>
+            
+            {/* Bypass Visual: Jika Juara Utama juga adalah Fastest Explorer (Skenario A) */}
+            {isChampionFastest && (
+              <div className="flex items-center gap-1.5 mb-2 bg-[var(--color-navy-dark)]/50 border border-[var(--color-gold)]/50 px-3 py-1 rounded-full shadow-inner">
+                <span className="text-emerald-400 text-sm">🏃</span>
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[var(--color-cream)]">Fastest Explorer</span>
+              </div>
+            )}
+
+            <p className="font-semibold text-sm sm:text-base" style={{ color: 'var(--color-cream)' }}>
               Berhasil mengumpulkan {champion?.score} Poin!
             </p>
           </div>
@@ -107,61 +215,27 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
 
         {/* Special Achievements Panel */}
         <div 
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-6 border-b transition-all duration-300"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 p-3 sm:p-4 border-b transition-all duration-300 shrink-0"
           style={{ backgroundColor: 'var(--color-cream)/20', borderColor: 'var(--color-cream-dark)/30' }}
         >
-          
-          {/* Fastest Explorer */}
-          <div 
-            className="flex items-center p-4 rounded-2xl border transition-all duration-300"
-            style={{ backgroundColor: 'var(--color-cream)/30', borderColor: 'var(--color-cream-dark)/30' }}
-          >
-            <div className="w-12 h-12 bg-[var(--color-parchment)] text-emerald-600 rounded-full border-2 flex items-center justify-center text-2xl mr-4 shrink-0 shadow-inner" style={{ borderColor: 'var(--color-cream-dark)' }}>
-              🏃
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-navy)' }}>Fastest Explorer</span>
-              <span className="text-lg font-bold leading-tight" style={{ color: 'var(--color-navy-dark)', fontFamily: 'var(--font-display)' }}>
-                {fastestExplorer ? fastestExplorer.name : 'Tidak Ada'}
-              </span>
-              <span className="text-xs text-[var(--color-navy-light)] opacity-70">Pertama mencapai petak 100</span>
-            </div>
-          </div>
-
-          {/* History Master */}
-          <div 
-            className="flex items-center p-4 rounded-2xl border transition-all duration-300"
-            style={{ backgroundColor: 'var(--color-cream)/30', borderColor: 'var(--color-cream-dark)/30' }}
-          >
-            <div className="w-12 h-12 bg-[var(--color-parchment)] text-purple-600 rounded-full border-2 flex items-center justify-center text-2xl mr-4 shrink-0 shadow-inner" style={{ borderColor: 'var(--color-cream-dark)' }}>
-              🧠
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-navy)' }}>History Master</span>
-              <span className="text-lg font-bold leading-tight" style={{ color: 'var(--color-navy-dark)', fontFamily: 'var(--font-display)' }}>
-                {historyMaster ? historyMaster.name : 'Tidak Ada'}
-              </span>
-              <span className="text-xs text-[var(--color-navy-light)] opacity-70">
-                {historyMaster ? `Menjawab ${historyMaster.correctAnswers} kuis benar` : 'Belum ada kuis terjawab'}
-              </span>
-            </div>
-          </div>
-
+          {/* Dynamic Slots based on Allocation */}
+          {renderAchievementCard(slot1)}
+          {renderAchievementCard(slot2)}
         </div>
         
         {/* Papan Peringkat (Ranking) */}
         <div 
-          className="p-6 md:p-8 flex-1 transition-all duration-300"
+          className="p-4 flex-1 flex flex-col transition-all duration-300 overflow-hidden"
           style={{ backgroundColor: 'var(--color-cream)/10' }}
         >
           <h3 
-            className="text-sm font-bold uppercase tracking-widest mb-4 px-2 text-center"
+            className="text-xs sm:text-sm font-bold uppercase tracking-widest mb-3 px-2 text-center shrink-0"
             style={{ color: 'var(--color-navy-light)', fontFamily: 'var(--font-display)' }}
           >
             Klasemen Akhir
           </h3>
           
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2 overflow-y-auto hide-scrollbar pr-1 pb-2">
             {sortedPlayers.map((player, index) => {
               const isChampion = player.id === champion?.id;
               
@@ -183,9 +257,9 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
               return (
                 <div 
                   key={player.id}
-                  className={`flex items-center p-4 rounded-xl border-2 transition-all ${rowBgStyle}`}
+                  className={`flex items-center p-2.5 sm:p-3 rounded-xl border-2 transition-all ${rowBgStyle}`}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm mr-4 shrink-0 shadow-sm ${medalClass}`}>
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm mr-3 shrink-0 shadow-sm ${medalClass}`}>
                     #{index + 1}
                   </div>
                   
@@ -205,9 +279,12 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                           </span>
                         )}
                       </span>
-                      <div className="flex items-center gap-3 text-xs text-slate-500 font-medium mt-0.5">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 font-medium mt-0.5">
                         <span className="flex items-center gap-1"><span className="text-emerald-600">✓</span> {player.correctAnswers} Benar</span>
                         <span className="flex items-center gap-1"><span className="text-rose-600">✗</span> {player.wrongAnswers} Salah</span>
+                        {player.correctAnswers + player.wrongAnswers > 0 && (
+                          <span className="text-orange-600 font-bold">🎯 {Math.round((player.correctAnswers / (player.correctAnswers + player.wrongAnswers)) * 100)}%</span>
+                        )}
                         <span className="text-amber-700">Petak {player.position}</span>
                       </div>
                     </div>
@@ -230,12 +307,12 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
 
         {/* Footer / Aksi */}
         <div 
-          className="p-6 border-t flex flex-col sm:flex-row gap-4 justify-center transition-all duration-300"
+          className="p-4 border-t flex flex-col sm:flex-row gap-3 justify-center transition-all duration-300 shrink-0"
           style={{ backgroundColor: 'var(--color-parchment)', borderColor: 'var(--color-cream-dark)/40' }}
         >
           <button
             onClick={() => { playSFX('click'); onPlayAgain?.(); }}
-            className="px-8 py-4 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer flex-1"
+            className="px-6 py-3 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer flex-1 text-sm"
             style={{ 
               backgroundColor: 'var(--color-navy)',
               borderColor: 'var(--color-gold)',

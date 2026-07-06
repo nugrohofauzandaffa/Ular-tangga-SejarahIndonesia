@@ -1,4 +1,277 @@
+## [2026-07-06] Dokumentasi: Penulisan Ulang README.md
+
+- **Phase**: Documentation
+- **File yang dibuat atau diubah**:
+  - `README.md`
+- **Alasan Perubahan**:
+  - `README.md` yang lama memiliki beberapa konsep *legacy* yang sudah tidak relevan (seperti mekanik terpental dari petak 100) dan belum mencakup keseluruhan arsitektur canggih yang telah kita bangun (sistem gelar anti-monopoli, tumpukan *buff/debuff*, fase krisis).
+- **Dampak Perubahan**:
+  - Merombak seluruh deskripsi `README.md` menjadi komprehensif, mencakup narasi tujuan permainan (edukasi tanpa kebosanan melalui *active recall*), penjelasan mendalam mengenai 6 fitur utama (Kuis, Fase Krisis, Gelar), serta perbaikan tatanan *stack* teknologi yang digunakan.
+- **Status**: Completed
+
+## [2026-07-06] Bugfix: Menghilangkan Scrollbar di Semua Tema Permainan
+
+- **Phase**: UI & UX Refinement
+- **File yang dibuat atau diubah**:
+  - `src/app/globals.css`
+- **Alasan Perubahan**:
+  - Permainan terkadang memunculkan *scrollbar* utama di peramban yang memungkinkan pemain men-*scroll* ke luar jalur area *gameplay*, padahal seharusnya (sesuai GDD) seluruh permainan termuat dalam 1 layar pas (*single page viewport*) tanpa perpindahan posisi.
+- **Dampak Perubahan**:
+  - Menambahkan aturan ketat `overflow: hidden;`, `height: 100vh;`, `height: 100dvh;` (untuk *mobile browser* adaptif), dan `width: 100vw;` pada selektor `body` dan `html` di `globals.css`. Hal ini menjamin bahwa apa pun temanya, area permainan tidak akan bocor melebihi ukuran layar fisik.
+- **Status**: Completed
+
+## [2026-07-06] Fitur: Sistem Anti-Monopoli Gelar (Result Screen)
+
+- **Phase**: Gameplay Logic & UI Refinement
+- **File yang dibuat atau diubah**:
+  - `src/lib/gameEngine.ts`
+  - `src/components/ui/ResultScreen.tsx`
+- **Alasan Perubahan**:
+  - Diperlukan aturan yang jelas untuk menentukan Juara Utama berdasarkan poin tertinggi, serta menghindari pemonopolian gelar (seperti Fastest Explorer, History Master, Sharpshooter) oleh satu pemain saja agar apresiasi terdistribusi merata ke pemain lain.
+- **Dampak Perubahan**:
+  - Mengubah *engine* untuk langsung menyetop permainan ketika ada yang mencapai petak 100 dan memberikan *Grand Finish Bonus* sebesar +1000 Poin.
+  - Menerapkan fungsi *Tie-Breaker* di Backend UI: Jika skor sama, pemenang ditentukan oleh jumlah Jawaban Benar, lalu Posisi Petak. Gelar *Sharpshooter* minimal harus menjawab 3 soal.
+  - Memasukkan visualisasi *Bypass* (Skenario A): Jika Juara Utama adalah *Fastest Explorer*, gelarnya diintegrasikan ke Header tanpa mengambil slot penghargaan orang lain.
+  - Pembuatan *helper* `renderAchievementCard` yang secara dinamis mengisi 2 slot penghargaan spesial di bawah Header dengan prioritas *Fastest Explorer* (Jika Skenario B) -> *History Master* -> *Sharpshooter*.
+  - Menambahkan informasi statistik Persentase Akurasi (🎯) pada Papan Peringkat Akhir.
+- **Status**: Completed
+
+## [2026-07-06] Bugfix: Layar Game Over Terlalu Besar
+
+- **Phase**: UI & UX Refinement
+- **File yang dibuat atau diubah**:
+  - `src/components/ui/ResultScreen.tsx`
+- **Alasan Perubahan**:
+  - Tampilan layar saat permainan selesai (*Game Over*) yang memunculkan rekap hasil, terlalu besar dan memakan ruang (padding besar) sehingga seringkali memerlukan *scroll* di mode *Desktop* maupun *Mobile*.
+- **Dampak Perubahan**:
+  - Membatasi tinggi maksimal *container* utama menjadi `max-h-[95vh]` agar tidak menembus tinggi layar.
+  - Mengubah struktur tabel pemain menjadi `overflow-y-auto` agar *scroll* terjadi di dalam tabel klasemen alih-alih di seluruh *page*.
+  - Menyesuaikan (mengurangi) nilai *padding* di berbagai komponen penyusun (*Header*, *Special Achievements*, dan *Footer*) agar lebih ringkas (*compact*).
+- **Status**: Completed
+
+## [2026-07-06] Fitur (Eksperimen): Sistem Stacking Efek
+
+- **Phase**: Gameplay Logic Refinement
+- **File yang dibuat atau diubah**:
+  - `src/lib/gameEngine.ts`
+  - `src/components/ui/HUD.tsx`
+  - `src/app/prototype/gameplay/components/PrototypeHUD.tsx`
+- **Alasan Perubahan**:
+  - Diperlukan standarisasi terhadap efek ganda (*stacking*) yang dialami pemain, membedakannya antara yang bersifat statis (intensitas) dan yang terakumulasi (durasi).
+- **Dampak Perubahan**:
+  - Menuliskan perlindungan berlapis di `gameEngine.ts` agar efek kategori *Intensitas* (seperti `AntiSnake`) hanya di-refresh durasinya (maksimal *stack* 1), sedangkan efek kategori *Durasi* (seperti `PajakKolonial`) akan terakumulasi giliran sisanya.
+  - Menambahkan *badge* angka merah kecil di pojok kanan ikon efek pada panel Klasemen untuk mengindikasikan bahwa durasi sisa efek penalti lebih dari 1 giliran.
+  - Implementasi ini ditandai dengan komentar `[EXPERIMENT: Stacking System]` agar dapat ditarik kembali (*revert*) dengan sangat mudah apabila eksperimen ini dirasa kurang sesuai.
+- **Status**: Completed
+
+## [2026-07-06] Fitur: Indikator Efek pada Klasemen (Leaderboard)
+
+- **Phase**: UI & UX Refinement
+- **File yang dibuat atau diubah**:
+  - `src/components/ui/HUD.tsx`
+  - `src/app/prototype/gameplay/components/PrototypeHUD.tsx`
+- **Alasan Perubahan**:
+  - Pemain perlu mengetahui efek (Buff/Debuff) yang sedang dimiliki oleh lawannya secara *real-time* tanpa harus menunggu giliran lawan tersebut tiba, agar mereka dapat memikirkan strategi.
+- **Dampak Perubahan**:
+  - Membuat fungsi pemetaan ikon efek `getEffectIcon()` dan komponen fungsi render terpisah `renderPlayerEffects(player: Player)`.
+  - Memasukkan deretan indikator ikon kecil di samping nama setiap pemain pada panel Klasemen Sementara. Kini setiap efek (mulai dari Anti-Snake hingga Mesin Waktu) akan ditandai dengan emoji unik yang jelas.
+- **Status**: Completed
+
+## [2026-07-06] Bugfix: Klasemen Terpotong pada Mode Desktop
+
+- **Phase**: Bug Fix
+- **File yang dibuat atau diubah**:
+  - `src/components/ui/HUD.tsx`
+  - `src/app/prototype/gameplay/components/PrototypeHUD.tsx`
+- **Alasan Perubahan**:
+  - Saat ada 4 pemain, informasi pemain peringkat ke-4 pada klasemen tidak terlihat (terpotong) karena *container* HUD terpaksa mengecil (`flex-shrink`) dan area klasemen tertutup *overflow* di mode *Desktop*.
+- **Dampak Perubahan**:
+  - Menghapus aturan `overflow-y-auto` di dalam daftar list pemain agar daftar dirender secara utuh.
+  - Menambahkan class `shrink-0` pada kotak utama HUD agar kotak tersebut tidak bisa menyusut (*squished*) karena limitasi tinggi layar, sehingga semua isinya selalu dijamin tampil. Scroll bar hanya akan muncul di area layar samping (`aside`) jika layar benar-benar pendek.
+- **Status**: Completed
+
+## [2026-07-06] Fitur (Eksperimen): Velocity Stretch pada Path Following
+
+- **Phase**: UI & UX Refinement (Experimental)
+- **File yang dibuat atau diubah**:
+  - `src/components/player/PlayerToken.tsx`
+- **Alasan Perubahan**:
+  - Untuk melengkapi efek *Path Following* pada saat menuruni ular atau menaiki tangga, pengguna ingin mencoba melihat bagaimana jika token diregangkan seolah-olah ditarik oleh kecepatan jatuhnya (aerodinamis).
+- **Dampak Perubahan**:
+  - Menambahkan modifikasi `scaleX: 0.8` dan `scaleY: 1.25` pada varian `transitioning`. Ini membuat pion memanjang sejajar dengan arah rotasi jatuhnya selama dalam animasi kurva bezier. Sifatnya tidak permanen dan mudah dibatalkan jika visualnya terasa aneh.
+- **Status**: Reverted (Dibatalkan sesuai permintaan pengguna)
+
+## [2026-07-06] Fitur: Optimasi Animasi Stretch di Mode Mobile
+
+- **Phase**: UI & UX Refinement
+- **File yang dibuat atau diubah**:
+  - `src/components/player/PlayerToken.tsx`
+- **Alasan Perubahan**:
+  - Proporsi tinggi lompatan (Y) dan distorsi (*squash & stretch*) yang dibuat untuk layar *desktop* terlalu ekstrem untuk perangkat *mobile*, membuat pergerakan animasi terlihat janggal karena petak papan berukuran sangat kecil di *mobile*.
+- **Dampak Perubahan**:
+  - Menambahkan *event listener* ukuran layar `window.innerWidth < 768` (`isMobile`).
+  - Mengurangi lompatan maksimal ke arah sumbu Y pada *smartphone* menjadi `-12px` (dari sebelumnya `-20px`).
+  - Merapikan rasio meregang maksimal hingga `1.15x` dan rasio memipih maksimal hingga `0.85x` secara responsif.
+- **Status**: Completed
+
+## [2026-07-06] Bugfix: Kesalahan Kategori Pop-up Buff & Debuff
+
+- **Phase**: Bug Fix
+- **File yang dibuat atau diubah**:
+  - `src/components/ui/EffectModal.tsx`
+- **Alasan Perubahan**:
+  - Terdapat *logical bug* dimana efek "Cendekiawan" dan "Mesin Waktu" terdeteksi sebagai Debuff (sehingga memunculkan Pop-up merah) padahal seharusnya berupa Buff (Pop-up hijau).
+- **Dampak Perubahan**:
+  - Memperbarui array `isBuff` di `EffectModal.tsx` untuk secara eksplisit mencakup `'Cendekiawan'` dan `'MesinWaktu'`. Kini semua pop up tampil dengan warna yang seharusnya.
+- **Status**: Completed
+
+## [2026-07-06] Fitur: Peningkatan Animasi Token (Squash & Path Following)
+
+- **Phase**: UI & UX Refinement
+- **File yang dibuat atau diubah**:
+  - `src/components/GameLayout.tsx`
+  - `src/app/prototype/gameplay/components/PrototypeGameLayout.tsx`
+  - `src/components/papan/Board.tsx`
+  - `src/app/prototype/gameplay/components/PrototypeBoard.tsx`
+  - `src/components/player/PlayerToken.tsx`
+- **Alasan Perubahan**:
+  - Mengubah rasa permainan (Game Feel) agar lebih memuaskan. Animasi lompat saat bergerak petak-demi-petak diubah menjadi "Squash and Stretch", sedangkan saat ular dan tangga menggunakan "Path Following" dengan menyertakan perhitungan rotasi arah, sehingga pion terlihat condong meluncur alami.
+- **Dampak Perubahan**:
+  - Semua state transisi posisi pion saat ini mendukung kalkulasi nilai rotasi derajat matematis yang dibaca melalui kurva bezier ular atau garis linear tangga.
+  - Varian `squash` dari `framer-motion` diaktifkan secara global untuk pergerakan papan normal.
+- **Status**: Completed
+
+## [2026-07-06] Fitur: Penyempurnaan Teks Game Log dan Headline
+
+- **Phase**: UI & UX Refinement
+- **File yang dibuat atau diubah**:
+  - `src/lib/gameEngine.ts`
+- **Alasan Perubahan**:
+  - Pengguna meminta agar teks Game Log dan Headline (popup yang berjalan di atas) secara eksplisit menyebutkan nama pemain dan nama efek yang didapatkan, agar lebih jelas saat dibaca.
+- **Dampak Perubahan**:
+  - Mengubah struktur *string message* pada seluruh eksekusi `newState.logs.push` di `gameEngine.ts`.
+  - Semua efek Buff dan Debuff, serta respons sistem (terkena ular, menolak tangga, dll) kini mencantumkan nama pemain (misalnya: `✨ Fauzan mendapatkan efek Double Roll!`).
+- **Status**: Completed
+
+## [2026-07-06] Fitur: About Game Modal
+
+- **Phase**: UI Feature
+- **File yang dibuat atau diubah**:
+  - `src/components/ui/AboutModal.tsx`
+  - `src/components/ui/MainMenu.tsx`
+  - `implementation_plan.md`
+  - `task.md`
+- **Alasan Perubahan**:
+  - Menambahkan menu informasi permainan (About Game) pada layar utama (Main Menu) sebagai tugas kelompok sesuai referensi pengguna.
+- **Dampak Perubahan**:
+  - `AboutModal.tsx` dirender sebagai modal popup dinamis yang menampilkan identitas kampus, anggota kelompok, dan deskripsi singkat.
+  - Terdapat mekanisme _expand_ (Lihat Anggota) dengan animasi mulus via Framer Motion.
+  - `MainMenu.tsx` kini memiliki tombol "❓" (About) di area sudut kanan atas bersebelahan dengan tombol pengaturan (⚙️).
+- **Status**: Completed
+
+## [2026-07-06] Phase 4: Prototype Integration (UI Migration)
+
+- **Phase**: Prototype Integration
+- **File yang dibuat atau diubah**:
+  - src/app/page.tsx
+  - src/components/ui/MainMenu.tsx
+  - src/components/GameLayout.tsx
+  - src/components/papan/Board.tsx
+  - src/components/papan/Tile.tsx
+  - src/components/ui/HUD.tsx
+  - src/components/dice/Dice.tsx
+- **Alasan Perubahan**:
+  - Prototipe untuk halaman Landing Page, Main Menu, dan Gameplay telah disetujui secara visual oleh reviewer.
+  - Memigrasikan semua komponen UI yang ada pada \src/app/prototype\ ke aplikasi utama tanpa mengubah \Game Logic\, \State Management\, atau \API\ (Sesuai dengan aturan Prototype sebagai Design Source of Truth).
+- **Dampak Perubahan**:
+  - Aplikasi utama sekarang menampilkan tata letak, efek gerak (Framer Motion), tema responsif, ornamen SVG, dan detail visual persis seperti yang disetujui pada prototipe.
+  - Gameplay berjalan dengan mesin state lama tetapi dibalut visual baru.
+  - Proses build (Next.js) terverifikasi berhasil dan bebas galat syntax/Tipe.
+- **Status**: Waiting Review
+
 # Development Log
+
+## [Sandbox] - Tema Jakarta Visual Polish (Iterasi 2)
+
+- **Phase**: Visual Polish (Sandbox)
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype/gameplay/components/PrototypeBoard.tsx`
+  - `src/app/prototype/gameplay/components/PrototypeGameLayout.tsx`
+  - `src/app/prototype/gameplay/components/PrototypeTile.tsx` (Baru)
+  - `src/components/player/PlayerToken.tsx`
+- **Alasan Perubahan**:
+  - Umpan balik dari pengguna untuk menyempurnakan dominasi ular, menyederhanakan tangga, mempertegas token, dan menambah *ambience* tanpa menyentuh *logic* dan komponen utama (*sandbox isolation*).
+- **Dampak Perubahan**:
+  - Papan terlihat jauh lebih rapi, token sangat menonjol berkat ekstensi *box-shadow*, dan petak permainan dapat bercahaya ketika diarahkan (hover). Modals dan animasi dibiarkan terlebih dahulu.
+- **Status**: Completed
+
+## [Sandbox] - Tema Jakarta Visual Polish (Iterasi 1)
+
+- **Phase**: Visual Polish (Sandbox)
+
+## [Milestone 3] - Gameplay Visual Infusion (Phase 1)
+
+- **Phase**: Visual Infusion (Phase 1)
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype/gameplay/components/PrototypeGameLayout.tsx`
+  - `src/app/prototype/gameplay/components/PrototypeBoard.tsx`
+- **Alasan Perubahan**:
+  - Memulai proses peningkatan visual (*Visual Infusion*) ke dalam Gameplay Sandbox tanpa mengubah UX maupun hierarchy layout yang sudah stabil. Fokus pada elemen-elemen estetik.
+- **Dampak Perubahan**:
+  - **Background Ambience**: Menambahkan efek vignette dan pola latar belakang (sesuai tema) pada tata letak utama dengan blend mode agar terasa lebih dalam.
+  - **Ambient Motion**: Menambahkan sistem animasi partikel mengambang (*floating ambient particles*) berbasis SVG di belakang papan yang bergerak secara asinkron untuk memberikan efek kehidupan (bernafas) pada lingkungan permainan tanpa membebani performa.
+  - **Panel Styling**: Panel HUD dan Game Log kini memiliki nuansa frosted glass premium (`backdrop-blur`) dengan border aksen emas tanpa membuang warna dasar perkamen.
+  - **Board Material**: Container papan permainan diberi *inner shadow* untuk efek pencahayaan 3D (seperti cekungan fisik) yang menambah kesan artefak premium.
+  - **Snakes & Ladders**: Filter drop shadow `premiumShadow` ditambahkan pada ular untuk memberinya efek melayang namun tebal, serta garis *highlight* putih semi-transparan untuk efek kilap/licin. Tangga mendapatkan `ladderShadow` khusus untuk menguatkan siluet bentuk aslinya tanpa terlalu berlebihan.
+- **Status**: Completed (Menunggu Feedback Tahap Berikutnya)
+## [Milestone 3] - Gameplay Redesign Iteration 1 (Foundation Layout)
+
+- **Phase**: Milestone 3 & Iteration 1
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype/gameplay/page.tsx`
+- **Alasan Perubahan**:
+  - Mengulang Gameplay Redesign mulai dari Iteration 1 berdasarkan Concept Art terbaru sebagai Single Source of Truth.
+  - Fokus utama pada Foundation Layout: Responsive Grid, proporsi, *visual hierarchy*, dan posisi komponen untuk Desktop, Tablet, dan Mobile.
+- **Dampak Perubahan**:
+  - **Responsive Grid**: Layout diubah menjadi 3-kolom di Desktop, adaptif 2-kolom/fleksibel di Tablet, dan vertikal (*flex-col*) di Mobile.
+  - **Board Position**: Papan ditempatkan di *Center Column* dengan proporsi maksimal yang merespons ukuran layar. Area papan diperkecil di Desktop untuk ruang lega, dan dimaksimalkan (*w-full*) di Mobile.
+  - **HUD & Log**: Panel HUD (Turn, Active Effect, Ranking) dikelompokkan di kolom kiri. *Game Log* dibuat sebagai *placeholder* kotak bergaris berbentuk buku terbuka khusus desktop (yang telah dipadatkan ukurannya agar tidak mendominasi), dan tombol *pop-up* di mobile.
+  - **Dice Area**: Menggunakan layout gabungan (desktop vertikal kanan, mobile horizontal bawah) dengan mempertahankan model visual dadu yang ada dan ukuran yang lebih ringkas.
+  - **SVG Assets**: Ular ditingkatkan kualitasnya dengan tubuh organik S-curve panjang, shading premium dan 3D kepala. Tangga diberi depth 3D perspektif dan efek bilah kayu realistis.
+- **Status**: Completed (Gameplay Polish Pass Verified)
+
+## [Milestone 3] - Gameplay Prototype: Iteration 3 (HUD & Modals)
+
+- **Phase**: Milestone 3 (Tahap 4) & Iteration 3
+- **File yang dibuat atau diubah**:
+  - `src/app/prototype/gameplay/page.tsx`
+- **Alasan Perubahan**:
+  - Meningkatkan UI pendukung di sekitar papan agar sesuai tema "Expedition Table" dan mengimplementasikan konsistensi *Interaction Pattern* yang dioptimalkan untuk Mobile UX (Interaction Frequency > Information Importance).
+- **Dampak Perubahan**: 
+  - **Ranking**: Menggunakan Accordion di mobile dan Panel Tetap di desktop.
+  - **Game Log**: Berubah menjadi *Collapsible Bottom Sheet* dengan indikator badge (titik notifikasi) merah pada tombol FAB log.
+  - **Dice Tray**: Posisi & dimensi statis dipertahankan; visual ditingkatkan dengan tekstur beludru merah, bingkai kuningan tebal, bevel shadow, dan animasi glow konstan.
+  - **Toast & Modals**: Penambahan mock-up Toast Ribbon (pita klasik berwarna emas/sukses) dan Popup Crisis (bergaya lembar perkamen tua, drop shadow berlapis, efek vignette).
+  - Tidak merusak sedikitpun layer Grid, SVG Naga Nusantara, dan layout `100dvh` dari Iterasi 1 dan 2.
+- **Status**: Completed (HUD & MODAL VERIFIED)
+
+## [Milestone 3] - Gameplay Foundation Redesign (Planning Phase)
+
+- **Phase**: Milestone 3 (Tahap 1, 2, 3) & Iteration 1 & 2
+- **File yang dibuat atau diubah**:
+  - `implementation_plan.md`
+  - `docs/Management/Gameplay-Visual-Rules.md`
+  - `src/app/prototype/gameplay/page.tsx`
+- **Alasan Perubahan**:
+  - Menjalankan Iterasi 2: Memperbaiki kualitas visual spesifik pada Papan Permainan (Board) agar tampil sebagai obyek fisik premium, sesuai batasan desain yang ditetapkan.
+- **Dampak Perubahan**:
+  - **Board Frame**: Diberi gaya pinggiran berbayang, tekstur kayu berukir, lengkap dengan aksen ujung kuningan (brass) agar terasa seperti kotak tebal sungguhan.
+  - **Board Surface**: Menerapkan tekstur perkamen (parchment) dengan sedikit *noise* untuk menyimulasikan nuansa masa lampau (aging effect).
+  - **Tile**: Menambah kontras petak nomor (bevel, inset shadow) serta desain ikon spesial (Start, Finish, Quiz, Bonus) tanpa menghalangi ruang pion.
+  - **Snake & Ladder**: Menggunakan *drop shadow filter* berbasis SVG yang tajam. Tangga diganti material kayu solid (thick rails & rungs), sementara ular direvisi menjadi siluet ular utuh dengan *glossy highlight*, bintik sisik, kepala, mata, dan lidah yang jelas. Keduanya benar-benar berada di *atas* petak papan secara Z-index.
+  - **Player Token**: Diberi penempatan semu (*dummy*) dengan bayangan kuat (*drop shadow* vertikal tinggi) untuk menunjukkan dimensi 3D pion logam/kayu.
+  - Keseluruhan dimensi tata letak selaras 100% dengan dasar yang disetujui pada Iterasi 1 tanpa perubahan posisi sedikitpun. **Area Dadu (Dice Tray)** yang sempat terduplikasi secara keliru di dalam frame papan telah dihapus, mempertahankan komponen final dari Iterasi 1 yang posisinya berada di luar frame.
+- **Status**: Iteration 2 Completed & Verified (Memasuki Iteration 3)
 
 ## [Tahap 8] - Main Menu Production Implementation (Milestone 2 Completed)
 
