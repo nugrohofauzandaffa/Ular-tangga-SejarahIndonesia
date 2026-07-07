@@ -1,3 +1,20 @@
+## [2026-07-07] Optimasi Performa Tema Jakarta Heritage (Mengurangi Lagging)
+
+- **Phase**: Optimization
+- **File yang dibuat atau diubah**:
+  - `src/components/papan/Board.tsx`
+  - `src/constants/themes.tsx`
+  - `src/components/papan/Tile.tsx`
+- **Alasan Perubahan**:
+  - Tema "Jakarta Heritage" mengalami penurunan performa (lagging) saat dimainkan. Hal ini disebabkan oleh penggunaan filter CSS `drop-shadow` dan `inset shadow` yang terlalu berat dan di-render berulang kali pada elemen SVG maupun petak papan (tiles), serta animasi CSS tak terbatas pada ikon kemenangan.
+- **Dampak Perubahan**:
+  - Menghapus filter `drop-shadow` dari ikon Monas dan Ondel-ondel di `themes.tsx`.
+  - Menghapus efek `drop-shadow` khusus tema Jakarta pada perenderan elemen Ular dan Tangga di `Board.tsx`.
+  - Menyederhanakan tumpukan box-shadow pada papan (dari 5 layer menjadi 4 layer yang lebih ringan).
+  - Menghapus animasi ping/pulse infinite pada ikon kemenangan agar hemat rendering.
+  - Mengurangi kompleksitas `glowEffect` pada petak Quiz, Bonus, dan Penalty dengan beralih menggunakan tailwind `shadow-inner`.
+- **Status**: Completed
+
 ## [2026-07-06] Bugfix: Tombol Tutup Klasemen Mobile Tersembunyi
 
 - **Phase**: UI & UX Refinement

@@ -40,7 +40,7 @@ export interface ThemeConfig {
 
 // Inline SVGs for Jakarta Heritage Theme v2.0
 const WhiteOndelOndelIcon = () => (
-  <svg viewBox="0 0 64 64" className="w-10 h-10 drop-shadow-sm" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 64 64" className="w-10 h-10" fill="none" xmlns="http://www.w3.org/2000/svg">
     {/* Kembang Kelapa spikes (Gold, yellow and white hair spikes) */}
     <path d="M12 20l4-8M20 16l2-10M32 14v-9M44 16l-2-10M52 20l-4-8" stroke="var(--color-gold)" strokeWidth="2.5" strokeLinecap="round" />
     <path d="M15 22l6-10M25 18l3-10M38 18l-3-10M49 22l-6-10" stroke="#fef08a" strokeWidth="2" strokeLinecap="round" />
@@ -75,7 +75,7 @@ const WhiteOndelOndelIcon = () => (
 );
 
 const RedOndelOndelIcon = () => (
-  <svg viewBox="0 0 64 64" className="w-10 h-10 drop-shadow-sm" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 64 64" className="w-10 h-10" fill="none" xmlns="http://www.w3.org/2000/svg">
     {/* Kembang Kelapa spikes (Fierce Red and Dark Blue spikes) */}
     <path d="M12 20l4-8M20 16l2-10M32 14v-9M44 16l-2-10M52 20l-4-8" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" />
     <path d="M15 22l6-10M25 18l3-10M38 18l-3-10M49 22l-6-10" stroke="var(--color-navy)" strokeWidth="2" strokeLinecap="round" />
@@ -109,7 +109,7 @@ const RedOndelOndelIcon = () => (
 );
 
 const PremiumMonasIcon = () => (
-  <svg viewBox="0 0 64 64" className="w-12 h-12 drop-shadow-md" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 64 64" className="w-12 h-12" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
       {/* Soft radial glow in background */}
       <radialGradient id="monasGlow" cx="50%" cy="50%" r="50%">
@@ -140,10 +140,10 @@ const PremiumMonasIcon = () => (
     <path d="M26 16h12l-1.5-3h-9l-1.5 3z" fill="#f5f5f4" stroke="var(--color-gold-dark)" strokeWidth="0.5" />
     <path d="M28 13h8l-1-2h-6l-1 2z" fill="#d6d3d1" />
 
-    {/* Flame of Monas (Gold & Red with pulsating layers) */}
-    <path d="M32 3c-4.5 4.5-2.5 8-2.5 10.5h5c0-2.5 2-6-2.5-10.5z" fill="var(--color-gold-light)" className="animate-pulse" />
+    {/* Flame of Monas (Gold & Red) */}
+    <path d="M32 3c-4.5 4.5-2.5 8-2.5 10.5h5c0-2.5 2-6-2.5-10.5z" fill="var(--color-gold-light)" />
     <path d="M32 5c-2.5 2.5-1 4.5-1 6h2c0-1.5 1.5-3.5-1-6z" fill="#ef4444" />
-    <circle cx="32" cy="3" r="1.5" fill="#fef08a" className="animate-ping" style={{ animationDuration: '2s' }} />
+    <circle cx="32" cy="3" r="1.5" fill="#fef08a" />
   </svg>
 );
 

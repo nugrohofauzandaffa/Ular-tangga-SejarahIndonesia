@@ -49,7 +49,7 @@ export default function Board({ tiles, players, transitioningPlayers = {}, anima
         backgroundColor: currentTheme.board.gridBg,
         borderColor: isJakarta ? 'var(--color-wood)' : currentTheme.board.borderColor,
         boxShadow: isJakarta 
-          ? `inset 0 0 40px rgba(120,53,15,0.15), inset 0 0 15px rgba(0,0,0,0.3), 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 2px var(--color-gold-dark), 0 0 0 6px var(--color-wood-dark)`
+          ? `inset 0 0 20px rgba(120,53,15,0.1), 0 10px 20px -5px rgba(0, 0, 0, 0.3), 0 0 0 2px var(--color-gold-dark), 0 0 0 6px var(--color-wood-dark)`
           : `inset 0 0 40px rgba(0,0,0,0.1), inset 0 0 10px rgba(0,0,0,0.3), 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 4px ${currentTheme.board.ringColor}`,
         backgroundImage: currentTheme.bgPattern,
         backgroundSize: isJakarta ? '60px 60px' : 'cover',
@@ -96,7 +96,7 @@ export default function Board({ tiles, players, transitioningPlayers = {}, anima
           const tailAngle = Math.atan2(tail.y - cy2, tail.x - cx2) * (180 / Math.PI) - 90;
 
           return (
-            <g key={`snake-${i}`} filter={isJakarta ? "drop-shadow(1px 2px 2px rgba(0,0,0,0.4))" : "url(#premiumShadow)"}>
+            <g key={`snake-${i}`} filter={isJakarta ? undefined : "url(#premiumShadow)"}>
               {/* Shadow of the snake body */}
               {isJakarta && (
                 <path
@@ -253,7 +253,7 @@ export default function Board({ tiles, players, transitioningPlayers = {}, anima
           }
 
           return (
-            <g key={`ladder-${i}`} transform={`translate(${start.x}, ${start.y}) rotate(${angle})`} filter={isJakarta ? "drop-shadow(0.5px 1px 1px rgba(0,0,0,0.5))" : undefined}>
+            <g key={`ladder-${i}`} transform={`translate(${start.x}, ${start.y}) rotate(${angle})`}>
               {/* Rel Tangga 1 */}
               <line x1="0" y1="-1.6" x2={length} y2="-1.6" stroke={isJakarta ? "#612c09" : "url(#ladderGrad)"} strokeWidth={isJakarta ? "1.0" : "0.8"} strokeLinecap="round" />
               {isJakarta && (
