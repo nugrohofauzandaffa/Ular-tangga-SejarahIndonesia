@@ -11,7 +11,7 @@ Proyek ini diciptakan untuk mendisrupsi cara tradisional dalam belajar sejarah. 
 ## 🎯 1. Tujuan Permainan (The Goal)
 Permainan ini merevolusi konsep *keberuntungan murni (pure luck)* menjadi permainan **strategi dan pengetahuan**. 
 
-Di sini, **mencapai petak ke-100 bukanlah jaminan kemenangan, melainkan pemicu berakhirnya permainan**. Ketika seorang pemain menginjak petak 100, permainan langsung berhenti, dan pemain tersebut dianugerahi *Grand Finish Bonus* (+1000 Poin). Namun, sang Juara Utama (Pemenang) sejati ditentukan secara mutlak oleh **Total Poin (Skor) tertinggi**. Keberhasilan bergantung pada seberapa pandai pemain memadukan kecepatan langkah, akurasi menjawab kuis, dan kejelian memanfaatkan status efek (Buff/Debuff) yang ada.
+Di sini, **mencapai petak ke-100 bukanlah jaminan kemenangan, melainkan pemicu berakhirnya permainan**. Ketika seorang pemain menginjak petak 100, permainan langsung berhenti, dan pemain tersebut dianugerahi *Grand Finish Bonus* (+100 Poin). Namun, sang Juara Utama (Pemenang) sejati ditentukan secara mutlak oleh **Total Poin (Skor) tertinggi**. Keberhasilan bergantung pada seberapa pandai pemain memadukan kecepatan langkah, akurasi menjawab kuis, dan kejelian memanfaatkan status efek (Buff/Debuff) yang ada.
 
 ---
 
@@ -73,9 +73,6 @@ Pastikan Anda memiliki [Node.js](https://nodejs.org/) terpasang di komputer/lapt
    npm run dev
    ```
 5. Buka peramban (browser) dan akses alamat: [http://localhost:3000](http://localhost:3000)
-
-Atau anda bisa mengaksesnya melalui link berikut ini!
-https://ular-tangga-sejarahindonesia.netlify.app/
 
 _**Catatan Error Next.js:** Jika Anda mendapatkan pesan error `Blocked cross-origin resource HMR` secara berulang saat menjalankan server dev, silakan mematikan server dengan menekan `Ctrl+C` di terminal, lalu ulangi perintah `npm run dev`._
 

@@ -19,4 +19,6 @@ export interface Player {
   // [PATCH v1.1 - Double Roll]
   hasExtraTurn?: boolean;           
   disableBonusForThisTurn?: boolean;
+  // [PATCH v1.2 - Final Boss]
+  failedFinalBossQuizzes?: string[];
 }

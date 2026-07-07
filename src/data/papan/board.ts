@@ -4,7 +4,7 @@ import { ladders } from '@/data/papan/ladders';
 import { GAME_CONSTANTS } from '@/constants/game';
 import { questions } from '@/data/questions';
 
-export const generateRandomBoard = (bonusCount: number = 4, penaltyCount: number = 4): Tile[] => {
+export const generateRandomBoard = (bonusCount: number = 6, penaltyCount: number = 6): Tile[] => {
   // 1. Buat papan dasar dengan ular dan tangga
   const baseBoard: Tile[] = Array.from({ length: GAME_CONSTANTS.BOARD_SIZE }, (_, i) => {
     const position = i + 1;
@@ -72,22 +72,51 @@ export const generateRandomBoard = (bonusCount: number = 4, penaltyCount: number
   distributeQuizzes(zone2, 15, ['Medium', 'Hard']);
   distributeQuizzes(zone3, 10, ['Extreme']);
 
-  // Kumpulkan sisa Normal tiles untuk Bonus dan Penalty
-  const remainingNormals: number[] = [];
-  for (let i = 1; i < GAME_CONSTANTS.BOARD_SIZE - 1; i++) {
-    if (baseBoard[i].type === 'Normal') remainingNormals.push(i);
-  }
-  shuffle(remainingNormals);
+  // 3. Distribusi Bonus & Penalty secara taktis
+  const getSafeTiles = (minPos: number, maxPos: number, checkSnakeProximity: boolean) => {
+    const tiles: number[] = [];
+    for (let i = minPos - 1; i < maxPos; i++) {
+      if (baseBoard[i].type === 'Normal') {
+        let isSafe = true;
+        if (checkSnakeProximity) {
+          const position = i + 1;
+          // Cek 1-6 petak di depan apakah ada ular
+          for (let step = 1; step <= 6; step++) {
+            if (snakes.some(s => s.head === position + step)) {
+              isSafe = false;
+              break;
+            }
+          }
+        }
+        if (isSafe) tiles.push(i);
+      }
+    }
+    shuffle(tiles);
+    return tiles;
+  };
 
-  // 3. Distribusi Bonus
-  for (let i = 0; i < bonusCount && i < remainingNormals.length; i++) {
-    baseBoard[remainingNormals[i]].type = 'Bonus';
-  }
+  const placeEffects = (zoneTiles: number[], type: TileType, count: number) => {
+    let placed = 0;
+    for (let i = 0; i < zoneTiles.length && placed < count; i++) {
+      if (baseBoard[zoneTiles[i]].type === 'Normal') {
+        baseBoard[zoneTiles[i]].type = type;
+        placed++;
+      }
+    }
+  };
 
-  // 4. Distribusi Penalty
-  for (let i = bonusCount; i < bonusCount + penaltyCount && i < remainingNormals.length; i++) {
-    baseBoard[remainingNormals[i]].type = 'Penalty';
-  }
+  const bonusPerZone = Math.floor(bonusCount / 3);
+  const penaltyPerZone = Math.floor(penaltyCount / 3);
+
+  // Tempatkan Bonus (Aman dari ular? Tidak wajib)
+  placeEffects(getSafeTiles(11, 39, false), 'Bonus', bonusPerZone);
+  placeEffects(getSafeTiles(40, 70, false), 'Bonus', bonusPerZone);
+  placeEffects(getSafeTiles(71, 95, false), 'Bonus', bonusCount - (bonusPerZone * 2));
+
+  // Tempatkan Penalty (Aman dari ular? Wajib)
+  placeEffects(getSafeTiles(11, 39, true), 'Penalty', penaltyPerZone);
+  placeEffects(getSafeTiles(40, 70, true), 'Penalty', penaltyPerZone);
+  placeEffects(getSafeTiles(71, 95, true), 'Penalty', penaltyCount - (penaltyPerZone * 2));
 
   return baseBoard;
 };

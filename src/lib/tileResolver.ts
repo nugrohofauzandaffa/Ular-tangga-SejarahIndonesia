@@ -5,6 +5,8 @@ export interface TileEvent {
   contentId?: string; // Berisi ID soal kuis atau ID fakta sejarah
   destination?: number; // Posisi tujuan untuk ular/tangga
   scoreDelta?: number; // Jumlah skor/langkah bonus/penalti
+  title?: string; // Judul custom untuk event (opsional)
+  description?: string; // Deskripsi custom untuk event (opsional)
 }
 
 /**

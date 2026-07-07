@@ -477,26 +477,41 @@ export const processTurn = (
 
   // 6. Check Win (Post-Tile Resolution)
   if (playerToUpdate.position === GAME_CONSTANTS.BOARD_SIZE) {
-    newState.fastestExplorer = playerToUpdate.id;
-    playerToUpdate.score = addScore(playerToUpdate.score, 100).newScore; // Grand Finish Bonus +100 Poin
+    // [PATCH v1.2 - Final Boss]
+    const failedQuizzes = playerToUpdate.failedFinalBossQuizzes || [];
+    let possibleBossQuizzes = context.questions.filter(
+      q => (q.difficulty === 'Hard' || q.difficulty === 'Extreme') && !failedQuizzes.includes(q.id)
+    );
     
-    // [ADD] Log aktivitas untuk membuktikan suntikan poin bekerja
+    if (possibleBossQuizzes.length === 0) {
+      possibleBossQuizzes = context.questions.filter(q => q.difficulty === 'Hard' || q.difficulty === 'Extreme');
+    }
+
+    // Jika database soal kosong (prevent error)
+    if (possibleBossQuizzes.length === 0) {
+        possibleBossQuizzes = context.questions; 
+    }
+
+    const randomQuiz = possibleBossQuizzes[Math.floor(Math.random() * possibleBossQuizzes.length)];
+
     newState.logs.push({
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: Date.now(),
       playerName: playerToUpdate.name,
-      message: `🏁 ${playerToUpdate.name} mencapai petak akhir! Mendapatkan Grand Finish Bonus +100 Poin.`,
+      message: `👑 ${playerToUpdate.name} mencapai petak akhir! Bersiap menghadapi FINAL BOSS QUIZ...`,
       type: 'system'
     });
 
+    newState.gameStatus = 'answering_quiz';
+    
+    tileEvent = {
+      type: 'Quiz',
+      contentId: randomQuiz.id,
+      title: 'Final Boss Quiz',
+      description: 'Jawab dengan benar untuk memenangkan permainan! Jika salah, Anda akan terlempar mundur!'
+    };
+    
     newState.players[activePlayerIndex] = playerToUpdate;
-    const champion = [...newState.players].sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      if (b.correctAnswers !== a.correctAnswers) return b.correctAnswers - a.correctAnswers;
-      return b.position - a.position;
-    })[0];
-    newState.winner = champion.id;
-    newState.gameStatus = 'finished';
     return { newState, tileEvent, acquiredEffect, diceModifierInfo, antiSnakeTriggered, pathEvent, movementSteps, isAmnesia };
   }
 
@@ -573,6 +588,19 @@ export const submitQuizAnswer = (
       });
     }
     playerToUpdate.score = addScore(playerToUpdate.score, reward).newScore;
+    
+    // [PATCH v1.2 - Final Boss]
+    if (playerToUpdate.position === GAME_CONSTANTS.BOARD_SIZE) {
+      newState.fastestExplorer = playerToUpdate.id;
+      playerToUpdate.score = addScore(playerToUpdate.score, 100).newScore; // Grand Finish Bonus +100 Poin
+      newState.logs.push({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: Date.now(),
+        playerName: playerToUpdate.name,
+        message: `🏁 ${playerToUpdate.name} berhasil menaklukkan Final Boss Quiz! Mendapatkan Grand Finish Bonus +100 Poin.`,
+        type: 'system'
+      });
+    }
   } else {
     playerToUpdate.wrongAnswers += 1;
     let penalty = 0;
@@ -592,6 +620,20 @@ export const submitQuizAnswer = (
       });
     }
     playerToUpdate.score = reduceScore(playerToUpdate.score, penalty).newScore;
+    
+    // [PATCH v1.2 - Final Boss]
+    if (playerToUpdate.position === GAME_CONSTANTS.BOARD_SIZE) {
+      playerToUpdate.position = 99; // Hukuman mundur 1 petak
+      playerToUpdate.failedFinalBossQuizzes = playerToUpdate.failedFinalBossQuizzes || [];
+      playerToUpdate.failedFinalBossQuizzes.push(question.id);
+      newState.logs.push({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: Date.now(),
+        playerName: playerToUpdate.name,
+        message: `☠️ ${playerToUpdate.name} gagal menjawab Final Boss Quiz dan dilempar mundur 1 petak!`,
+        type: 'penalty'
+      });
+    }
   }
 
   newState.players[activePlayerIndex] = playerToUpdate;
@@ -620,6 +662,22 @@ const tickDurationAndAdvanceTurn = (state: GameState): GameState => {
 };
 
 export const acknowledgeQuizResult = (state: GameState): GameState => {
+  // [PATCH v1.2 - Final Boss]
+  // Cek apakah pemain aktif menang (berada di petak 100 dan fastestExplorer sudah di-set)
+  const activePlayer = state.players.find(p => p.id === state.currentTurn);
+  if (activePlayer && activePlayer.position === GAME_CONSTANTS.BOARD_SIZE && state.fastestExplorer === activePlayer.id) {
+    const newState = { ...state };
+    newState.players = [...state.players];
+    const champion = [...newState.players].sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (b.correctAnswers !== a.correctAnswers) return b.correctAnswers - a.correctAnswers;
+      return b.position - a.position;
+    })[0];
+    newState.winner = champion.id;
+    newState.gameStatus = 'finished';
+    return newState;
+  }
+  
   return tickDurationAndAdvanceTurn(state);
 };
 

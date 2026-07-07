@@ -1,3 +1,50 @@
+## [2026-07-07] Fitur: Distribusi Taktis Petak Spesial (Buff & Debuff)
+
+- **Phase**: Gameplay Logic Refinement
+- **File yang dibuat atau diubah**:
+  - `src/data/papan/board.ts`
+  - `implementation_plan.md`
+  - `task.md`
+  - `walkthrough.md`
+- **Alasan Perubahan**:
+  - Peningkatan jumlah petak spesial dari 4 menjadi 6 (masing-masing untuk Bonus dan Penalti) agar permainan lebih dinamis.
+  - Untuk menjaga *balance*, petak-petak tersebut harus disebar merata dan petak jebakan tidak boleh diletakkan secara serampangan, terutama di awal permainan atau tepat di depan ular.
+- **Dampak Perubahan**:
+  - `generateRandomBoard` dirombak untuk menggunakan sistem *Safe Zone Distribution*. 
+  - 12 petak dibagi merata ke 3 zona (Early-Mid, Mid, dan Late Game).
+  - Khusus petak Penalti (Debuff), sistem akan menolak menempatkannya di rentang petak 1-10, atau dalam radius 6 langkah sebelum mulut Ular untuk mencegah efek domino yang memberatkan pemain.
+- **Status**: Completed
+
+## [2026-07-07] Bugfix: Object literal may only specify known properties (TileEvent)
+
+- **Phase**: Bug Fix
+- **File yang dibuat atau diubah**:
+  - `src/lib/tileResolver.ts`
+- **Alasan Perubahan**:
+  - Terdapat error TypeScript `Object literal may only specify known properties, and 'title' does not exist in type 'TileEvent'` di `gameEngine.ts` saat menetapkan `tileEvent` untuk Final Boss Quiz. Hal ini karena antarmuka `TileEvent` belum mendefinisikan properti `title` dan `description`.
+- **Dampak Perubahan**:
+  - Menambahkan properti opsional `title?: string;` dan `description?: string;` pada tipe `TileEvent` di `src/lib/tileResolver.ts`.
+  - Error TypeScript pada `gameEngine.ts` telah hilang.
+- **Status**: Completed
+
+## [2026-07-07] Fitur: Final Boss Rule (Petak 100)
+
+- **Phase**: Gameplay Logic Refinement
+- **File yang dibuat atau diubah**:
+  - `src/types/player.ts`
+  - `src/lib/gameEngine.ts`
+  - `implementation_plan.md`
+  - `task.md`
+  - `walkthrough.md`
+- **Alasan Perubahan**:
+  - Menghindari kemenangan instan saat mencapai petak 100 dengan menambahkan tantangan akhir (Final Boss Quiz). Jika gagal, pemain harus mundur agar permainan lebih menegangkan dan tidak bisa diakali (brute force).
+- **Dampak Perubahan**:
+  - `player.ts` kini memiliki `failedFinalBossQuizzes` untuk melacak histori pertanyaan bos akhir yang pernah gagal dijawab pemain agar tidak muncul berulang.
+  - Saat mendarat di petak 100, status game berubah menjadi `answering_quiz` dan memuat pertanyaan *Hard/Extreme*.
+  - Jika salah, pemain terlempar mundur 1 petak (ke petak 99) dan gagal memenangkan game.
+  - Jika benar, pemain mendapat +100 poin dan status juara langsung di-*trigger*.
+- **Status**: Completed
+
 ## [2026-07-07] Optimasi Performa Tema Jakarta Heritage (Mengurangi Lagging)
 
 - **Phase**: Optimization
