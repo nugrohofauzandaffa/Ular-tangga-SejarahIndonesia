@@ -1,5 +1,7 @@
 # 🎲 Ular Tangga Sejarah Indonesia
 
+[![Mainkan Sekarang](https://img.shields.io/badge/Mainkan_Sekarang-Online-success?style=for-the-badge&logo=vercel)](https://ular-tangga-sejarahindonesia.netlify.app/)
+
 **"Membawa Sejarah ke Meja Bermain: Edukasi Tanpa Bosan, Kompetisi Penuh Kejutan"**
 
 **Ular Tangga Sejarah Indonesia** bukanlah sekadar adaptasi digital dari papan permainan klasik. Ini adalah proyek **EdTech Gamification** yang menyuntikkan nyawa kompetitif ke dalam pelajaran sejarah yang selama ini kerap dianggap monoton. 
